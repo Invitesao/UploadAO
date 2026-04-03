@@ -77,43 +77,55 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
  </head>
  <body class="h-full" style="margin:0; font-family: 'Poppins', sans-serif;">
-  <div id="app" class="h-full w-full overflow-auto" style="background: #ffffff; color: #1a1a1a;"><!-- Hidden iframe for form submission --> <iframe name="upload_iframe" style="display:none;"></iframe><!-- Toast container -->
+  <div id="app" class="h-full w-full overflow-auto" style="background: #ffffff; color: #1a1a1a;">
+   <!-- Hidden iframe for form submission --> <iframe name="upload_iframe" style="display:none;"></iframe><!-- Toast container -->
    <div id="toast-container" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 items-center pointer-events-none"></div><!-- LOGIN VIEW -->
    <div id="login-view" class="h-full w-full flex flex-col items-center justify-center px-4">
     <div class="w-full max-w-sm">
      <div class="text-center mb-8">
-      <div style="width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:#2563eb;color:#fff;margin:0 auto 20px;"><i data-lucide="lock" style="width:32px;height:32px;"></i>
+      <div style="width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:#2563eb;color:#fff;margin:0 auto 20px;">
+       <i data-lucide="lock" style="width:32px;height:32px;"></i>
       </div>
       <h1 style="font-family:'Poppins',sans-serif;font-size:28px;font-weight:700;margin:0 0 8px 0;">UploadAO</h1>
       <p style="font-size:14px;opacity:0.5;margin:0;">Painel de Administrador</p>
      </div>
      <div class="space-y-4">
-      <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Senha</label> <input type="password" id="admin-password" placeholder="Digite sua senha" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;transition:all 0.3s;" onkeypress="if(event.key==='Enter') adminLogin();">
+      <div>
+       <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Senha</label> <input type="password" id="admin-password" placeholder="Digite sua senha" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;transition:all 0.3s;" onkeypress="if(event.key==='Enter') adminLogin();">
       </div><button onclick="adminLogin()" style="width:100%;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> Entrar no Painel </button>
      </div>
     </div>
    </div><!-- ADMIN VIEW -->
-   <div id="admin-view" style="display:none;" class="h-full w-full overflow-auto"><!-- Admin Header -->
+   <div id="admin-view" style="display:none;" class="h-full w-full overflow-auto">
+    <!-- Admin Header -->
     <header style="background:#f5f5f5;border-bottom:1px solid rgba(26,26,26,0.1);padding:16px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;">
-     <div style="display:flex;align-items:center;gap:12px;"><i data-lucide="settings" style="width:20px;height:20px;"></i> <span style="font-weight:600;">Painel de Administração</span>
+     <div style="display:flex;align-items:center;gap:12px;">
+      <i data-lucide="settings" style="width:20px;height:20px;"></i> <span style="font-weight:600;">Painel de Administração</span>
      </div><button onclick="adminLogout()" style="background:none;border:none;cursor:pointer;display:flex;gap:6px;align-items:center;opacity:0.6;font-family:'Poppins',sans-serif;font-size:13px;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'"> <i data-lucide="log-out" style="width:18px;height:18px;"></i> <span>Sair</span> </button>
     </header>
-    <div style="padding:24px;max-width:900px;margin:0 auto;"><!-- Create Event Section -->
+    <div style="padding:24px;max-width:900px;margin:0 auto;">
+     <!-- Create Event Section -->
      <div style="background:#fff;border:1px solid rgba(26,26,26,0.1);border-radius:16px;padding:24px;margin-bottom:24px;">
       <h2 style="font-size:18px;font-weight:600;margin:0 0 20px 0;">Criar Novo Evento</h2>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-       <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Nome do Evento</label> <input type="text" id="new-event-title" placeholder="Ex: João &amp; Maria" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;">
+       <div>
+        <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Nome do Evento</label> <input type="text" id="new-event-title" placeholder="Ex: João &amp; Maria" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;">
        </div>
-       <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Data do Evento</label> <input type="date" id="new-event-date" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;">
+       <div>
+        <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Data do Evento</label> <input type="date" id="new-event-date" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;">
        </div>
       </div>
-      <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Mensagem Personalizada</label> <input type="text" id="new-event-message" placeholder="Ex: Partilha as tuas fotos!" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;margin-bottom:16px;">
+      <div>
+       <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Mensagem Personalizada</label> <input type="text" id="new-event-message" placeholder="Ex: Partilha as tuas fotos!" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;margin-bottom:16px;">
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;background:#f0f4ff;border-radius:12px;margin-bottom:16px;border-left:4px solid #2563eb;"><input type="checkbox" id="new-event-allow-videos" checked style="width:18px;height:18px;cursor:pointer;"> <label for="new-event-allow-videos" style="font-size:13px;font-weight:600;margin:0;cursor:pointer;flex:1;">📹 Permitir upload de vídeos</label> <span style="font-size:11px;background:#2563eb;color:#fff;padding:4px 8px;border-radius:6px;font-weight:600;">PREMIUM</span>
       </div><button onclick="addNewEvent()" style="background:#2563eb;color:#fff;border:none;padding:12px 24px;border-radius:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;width:100%;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> <i data-lucide="plus" style="width:16px;height:16px;display:inline;margin-right:8px;vertical-align:-2px;"></i> Criar Evento </button>
      </div><!-- Events List -->
      <div style="background:#fff;border:1px solid rgba(26,26,26,0.1);border-radius:16px;padding:24px;">
       <h2 style="font-size:18px;font-weight:600;margin:0 0 20px 0;">Meus Eventos (<span id="event-count">0</span>)</h2>
       <div id="events-list" style="display:flex;flex-direction:column;gap:12px;"></div>
-      <div id="no-events-message" style="text-align:center;padding:24px;opacity:0.5;"><i data-lucide="inbox" style="width:32px;height:32px;margin:0 auto 8px;display:block;opacity:0.3;"></i>
+      <div id="no-events-message" style="text-align:center;padding:24px;opacity:0.5;">
+       <i data-lucide="inbox" style="width:32px;height:32px;margin:0 auto 8px;display:block;opacity:0.3;"></i>
        <p style="font-size:14px;margin:0;">Nenhum evento criado ainda</p>
       </div>
      </div>
@@ -122,22 +134,24 @@
    <div id="guest-login-view" style="display:none;" class="h-full w-full flex flex-col items-center justify-center px-4">
     <div class="w-full max-w-sm">
      <div class="text-center mb-8">
-      <div style="width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:#2563eb;color:#fff;margin:0 auto 20px;"><i data-lucide="user-plus" style="width:32px;height:32px;"></i>
+      <div style="width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:#2563eb;color:#fff;margin:0 auto 20px;">
+       <i data-lucide="user-plus" style="width:32px;height:32px;"></i>
       </div>
       <h1 id="guest-login-title" style="font-family:'Poppins',sans-serif;font-size:28px;font-weight:700;margin:0 0 8px 0;"></h1>
       <p style="font-size:14px;opacity:0.5;margin:0;">Qual é o teu nome?</p>
      </div>
      <div class="space-y-4">
-      <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Teu Nome</label> <input type="text" id="guest-name-input" placeholder="Ex: João Silva" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;transition:all 0.3s;" onkeypress="if(event.key==='Enter') confirmGuestName();">
+      <div>
+       <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Teu Nome</label> <input type="text" id="guest-name-input" placeholder="Ex: João Silva" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;transition:all 0.3s;" onkeypress="if(event.key==='Enter') confirmGuestName();">
       </div><button onclick="confirmGuestName()" style="width:100%;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> Continuar </button>
      </div>
     </div>
    </div><!-- GUEST VIEW (Convidados) -->
-   <div id="guest-view" style="display:none;" class="h-full w-full overflow-auto">
-    <!-- Header com Nome do Convidado -->
+   <div id="guest-view" style="display:none;" class="h-full w-full overflow-auto"><!-- Header com Nome do Convidado -->
     <header class="text-center pt-6 pb-3 px-4 fade-in stagger-1" style="border-bottom:1px solid rgba(26,26,26,0.1);">
      <div class="inline-flex items-center gap-2 mb-3">
-      <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;" id="logo-box"><i data-lucide="camera" style="width:20px;height:20px;"></i>
+      <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;" id="logo-box">
+       <i data-lucide="camera" style="width:20px;height:20px;"></i>
       </div><span id="brand-name" style="font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;letter-spacing:0.5px;">UploadAO</span>
      </div>
      <p id="guest-name-display" style="font-size:14px;font-weight:600;margin:0;opacity:0.7;"></p>
@@ -152,13 +166,15 @@
      </div>
     </section><!-- Upload Area -->
     <section class="px-4 max-w-lg mx-auto pb-6 fade-in stagger-3">
-     <div id="drop-zone" class="drop-zone relative rounded-2xl border-2 border-dashed p-8 text-center cursor-pointer transition-all" style="border-color: rgba(26,26,26,0.15); background: rgba(26,26,26,0.03);" onclick="document.getElementById('fileInput').click()"><input type="file" id="fileInput" multiple accept="image/*,video/*" class="hidden">
+     <div id="drop-zone" class="drop-zone relative rounded-2xl border-2 border-dashed p-8 text-center cursor-pointer transition-all" style="border-color: rgba(26,26,26,0.15); background: rgba(26,26,26,0.03);" onclick="document.getElementById('fileInput').click()">
+      <input type="file" id="fileInput" multiple accept="image/*,video/*" class="hidden">
       <div class="mb-4">
-       <div class="inline-flex items-center justify-center w-16 h-16 rounded-full" id="upload-icon-circle" style="background: rgba(26,26,26,0.08);"><i data-lucide="upload-cloud" id="upload-icon" style="width:28px;height:28px;"></i>
+       <div class="inline-flex items-center justify-center w-16 h-16 rounded-full" id="upload-icon-circle" style="background: rgba(26,26,26,0.08);">
+        <i data-lucide="upload-cloud" id="upload-icon" style="width:28px;height:28px;"></i>
        </div>
       </div>
       <p style="font-size:16px;font-weight:500;margin:0 0 4px 0;">Toque para selecionar</p>
-      <p style="font-size:13px;opacity:0.4;margin:0;">ou arraste fotos e vídeos aqui</p>
+      <p style="font-size:13px;opacity:0.4;margin:0;" id="upload-accept-text">ou arraste fotos e vídeos aqui</p>
      </div><!-- File list com miniaturas e eliminar -->
      <div id="file-list" class="mt-4 flex flex-col gap-2"></div><!-- Upload button --> <button id="upload-btn" class="w-full mt-5 py-4 rounded-xl font-semibold text-base tracking-wide transition-all duration-300 hidden" style="border:none;cursor:pointer;" onclick="startUpload()"> <span id="upload-btn-text" class="flex items-center justify-center gap-2"> <i data-lucide="send" style="width:18px;height:18px;"></i> <span id="btn-label">Enviar Fotos</span> </span> </button> <!-- Config notice -->
      <div id="config-notice" class="mt-5 rounded-xl p-4 text-center" style="background:rgba(26,26,26,0.08);border:1px solid rgba(26,26,26,0.15);display:none;">
@@ -171,11 +187,14 @@
     </section><!-- How it works -->
     <section class="px-4 max-w-lg mx-auto pb-10 fade-in stagger-4">
      <div class="grid grid-cols-3 gap-3 text-center" style="font-size:12px;opacity:0.35;">
-      <div><i data-lucide="smartphone" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Abre o link
+      <div>
+       <i data-lucide="smartphone" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Abre o link
       </div>
-      <div><i data-lucide="image-plus" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Escolhe fotos
+      <div>
+       <i data-lucide="image-plus" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Escolhe fotos
       </div>
-      <div><i data-lucide="cloud-lightning" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Enviado!
+      <div>
+       <i data-lucide="cloud-lightning" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Enviado!
       </div>
      </div>
     </section><!-- Footer -->
@@ -183,10 +202,12 @@
      Created by <strong>Invites</strong>
     </footer>
    </div><!-- GALLERY VIEW (Noivos) -->
-   <div id="gallery-view" style="display:none;" class="h-full w-full overflow-auto"><!-- Header -->
+   <div id="gallery-view" style="display:none;" class="h-full w-full overflow-auto">
+    <!-- Header -->
     <header class="text-center pt-10 pb-4 px-4 fade-in stagger-1">
      <div class="inline-flex items-center gap-2 mb-3">
-      <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;" id="gallery-logo-box"><i data-lucide="image" style="width:20px;height:20px;"></i>
+      <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;" id="gallery-logo-box">
+       <i data-lucide="image" style="width:20px;height:20px;"></i>
       </div><span id="gallery-brand-name" style="font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;letter-spacing:0.5px;">Galeria</span>
      </div>
     </header><!-- Event Info -->
@@ -196,8 +217,7 @@
     </section><!-- Galeria de Fotos -->
     <section class="px-4 max-w-3xl mx-auto pb-10 fade-in stagger-3">
      <div id="gallery-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));gap:12px;"></div>
-     <div id="gallery-empty" style="text-align:center;padding:40px 20px;opacity:0.5;">
-      <i data-lucide="inbox" style="width:48px;height:48px;margin:0 auto 16px;display:block;opacity:0.3;"></i>
+     <div id="gallery-empty" style="text-align:center;padding:40px 20px;opacity:0.5;"><i data-lucide="inbox" style="width:48px;height:48px;margin:0 auto 16px;display:block;opacity:0.3;"></i>
       <p style="font-size:16px;margin:0;">Nenhuma foto foi partilhada ainda 📷</p>
      </div>
     </section><!-- Footer -->
@@ -228,6 +248,224 @@
   let allEvents = [];
   let currentGuestId = null;
   let currentGuestName = null;
+
+  // --- QUEUE SYSTEM COM RETRY INTELIGENTE ---
+  const uploadQueue = {
+    queue: [],
+    maxConcurrent: 2,
+    currentlyUploading: 0,
+    maxRetries: 5,
+    retryDelay: 2000,
+    isSystemOverloaded: false,
+    pausedItems: [],
+    
+    add(file, index) {
+      const item = {
+        file,
+        index,
+        id: 'queue_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        retries: 0,
+        status: 'waiting', // waiting, uploading, paused, completed, failed
+        progress: 0,
+        errorMessage: null,
+        lastAttemptTime: null
+      };
+      this.queue.push(item);
+      this.processQueue();
+      return item;
+    },
+
+    async processQueue() {
+      // Se sistema está sobrecarregado, pausa tudo silenciosamente
+      if (this.isSystemOverloaded) {
+        return;
+      }
+
+      // Processa enquanto houver itens e espaço para uploads paralelos
+      while (this.queue.length > 0 && this.currentlyUploading < this.maxConcurrent) {
+        const item = this.queue.find(i => i.status === 'waiting');
+        if (!item) break;
+
+        item.status = 'uploading';
+        item.lastAttemptTime = Date.now();
+        this.currentlyUploading++;
+
+        // Executa o upload (não aguarda)
+        this.uploadFileWithRetry(item).then(() => {
+          this.currentlyUploading--;
+          this.processQueue();
+        });
+      }
+
+      updateQueueUI();
+    },
+
+    async uploadFileWithRetry(item) {
+      try {
+        await uploadFileToServer(item.file, item.index, item);
+        item.status = 'completed';
+        item.progress = 100;
+      } catch (err) {
+        console.warn(`[Queue] Erro no upload de ${item.file.name} (tentativa ${item.retries + 1}):`, err.message);
+
+        // Detecta se é timeout ou overload
+        const isTimeout = err.message.includes('timeout') || err.message.includes('504') || err.message.includes('503');
+        const isNetworkError = err.message.includes('Failed to fetch') || err.message.includes('Network');
+
+        if (isTimeout) {
+          console.warn('[Queue] ⚠️ SISTEMA SOBRECARREGADO - Ativando pausa...');
+          this.isSystemOverloaded = true;
+          item.status = 'paused';
+          item.errorMessage = 'Sistema sobrecarregado - em pausa automática';
+          
+          // Pausa por 30-60 segundos antes de tentar novamente
+          setTimeout(() => {
+            console.log('[Queue] 🔄 Retomando uploads após pausa...');
+            this.isSystemOverloaded = false;
+            item.status = 'waiting';
+            this.processQueue();
+          }, 30000 + Math.random() * 30000);
+
+        } else if (isNetworkError) {
+          console.warn('[Queue] 🌐 Erro de rede - aguardando conexão...');
+          item.status = 'paused';
+          item.errorMessage = 'Internet fraca - aguardando conexão';
+          
+          // Aguarda 10 segundos e tenta novamente
+          setTimeout(() => {
+            item.status = 'waiting';
+            item.retries++;
+            this.processQueue();
+          }, 10000);
+
+        } else if (item.retries < this.maxRetries) {
+          // Retry exponencial
+          item.retries++;
+          const delay = this.retryDelay * Math.pow(2, item.retries - 1);
+          item.status = 'paused';
+          item.errorMessage = `Tentando novamente... (${item.retries}/${this.maxRetries})`;
+          
+          console.log(`[Queue] ⏳ Retry em ${delay}ms para ${item.file.name}`);
+          setTimeout(() => {
+            item.status = 'waiting';
+            this.processQueue();
+          }, delay);
+
+        } else {
+          item.status = 'failed';
+          item.errorMessage = `Falha permanente após ${this.maxRetries} tentativas`;
+          console.error(`[Queue] ❌ FALHOU: ${item.file.name}`);
+        }
+      }
+
+      updateQueueUI();
+    },
+
+    getStats() {
+      return {
+        total: this.queue.length,
+        waiting: this.queue.filter(i => i.status === 'waiting').length,
+        uploading: this.queue.filter(i => i.status === 'uploading').length,
+        paused: this.queue.filter(i => i.status === 'paused').length,
+        completed: this.queue.filter(i => i.status === 'completed').length,
+        failed: this.queue.filter(i => i.status === 'failed').length,
+        isOverloaded: this.isSystemOverloaded
+      };
+    },
+
+    clear() {
+      this.queue = [];
+      this.currentlyUploading = 0;
+      this.isSystemOverloaded = false;
+      updateQueueUI();
+    }
+  };
+
+  function updateQueueUI() {
+    const stats = uploadQueue.getStats();
+    
+    // Atualiza a barra de progresso de cada item
+    uploadQueue.queue.forEach((item) => {
+      const bar = document.querySelector(`[data-progress-bar="${item.index}"]`);
+      if (bar) {
+        const fillBar = bar.querySelector('.upload-progress');
+        if (fillBar) fillBar.style.width = item.progress + '%';
+
+        const parent = bar.closest('[data-file-index]');
+        if (parent) {
+          let statusText = '';
+          let statusColor = '#999';
+
+          switch(item.status) {
+            case 'completed':
+              statusText = '✅ Enviado';
+              statusColor = '#27ae60';
+              break;
+            case 'uploading':
+              statusText = `📤 A enviar... (${Math.round(item.progress)}%)`;
+              statusColor = '#2563eb';
+              break;
+            case 'paused':
+              statusText = `⏸️ ${item.errorMessage}`;
+              statusColor = '#f39c12';
+              break;
+            case 'waiting':
+              statusText = '⏳ Na fila...';
+              statusColor = '#666';
+              break;
+            case 'failed':
+              statusText = `❌ ${item.errorMessage}`;
+              statusColor = '#e74c3c';
+              break;
+          }
+
+          let statusEl = parent.querySelector('[data-status-text]');
+          if (!statusEl) {
+            statusEl = document.createElement('p');
+            statusEl.setAttribute('data-status-text', '');
+            statusEl.style.cssText = 'font-size:11px;margin:4px 0 0 0;';
+            const sizeEl = parent.querySelector('p:nth-of-type(2)');
+            if (sizeEl) sizeEl.parentElement.insertBefore(statusEl, sizeEl.nextSibling);
+          }
+          statusEl.textContent = statusText;
+          statusEl.style.color = statusColor;
+          statusEl.style.fontWeight = '500';
+        }
+      }
+    });
+
+    // Mostra status geral da fila
+    const queueStatus = document.getElementById('queue-status-indicator');
+    if (queueStatus) {
+      let statusText = '';
+      let bgColor = 'transparent';
+
+      if (stats.isOverloaded) {
+        statusText = `⚠️ Sistema em pausa automática (${stats.paused} em espera)`;
+        bgColor = '#fff3cd';
+      } else if (stats.uploading > 0) {
+        statusText = `📤 A enviar ${stats.uploading} ficheiro(s)... (${stats.completed}/${stats.total} completos)`;
+        bgColor = '#d1ecf1';
+      } else if (stats.paused > 0) {
+        statusText = `🔄 ${stats.paused} ficheiro(s) aguardando retry`;
+        bgColor = '#fff3cd';
+      } else if (stats.waiting > 0) {
+        statusText = `⏳ ${stats.waiting} ficheiro(s) na fila`;
+        bgColor = '#e7f3ff';
+      } else if (stats.completed > 0 && stats.total === stats.completed) {
+        statusText = `✅ Todos os ${stats.total} ficheiro(s) foram enviados!`;
+        bgColor = '#d4edda';
+      }
+
+      if (statusText) {
+        queueStatus.style.display = 'block';
+        queueStatus.style.background = bgColor;
+        queueStatus.innerHTML = `<p style="margin:0;font-size:12px;font-weight:500;">${statusText}</p>`;
+      } else {
+        queueStatus.style.display = 'none';
+      }
+    }
+  }
 
   const defaultConfig = {
     background_color: "#ffffff",
@@ -453,6 +691,7 @@
     const title = document.getElementById('new-event-title').value.trim();
     const dateInput = document.getElementById('new-event-date').value.trim();
     const message = document.getElementById('new-event-message').value.trim();
+    const allowVideos = document.getElementById('new-event-allow-videos').checked;
 
     if (!title || !dateInput) {
       showToast('Preencha nome e data do evento', 'warning');
@@ -476,7 +715,8 @@
         event_message: message || "Partilha as tuas fotos!",
         upload_url: uploadUrl,
         gallery_url: galleryUrl,
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        allow_videos: allowVideos
       }]);
 
     if (error) {
@@ -487,6 +727,7 @@
     document.getElementById('new-event-title').value = '';
     document.getElementById('new-event-date').value = '';
     document.getElementById('new-event-message').value = '';
+    document.getElementById('new-event-allow-videos').checked = true;
     
     loadEvents();
     showToast('Evento criado com sucesso!', 'success');
@@ -627,11 +868,15 @@
           <p style="font-size:13px;opacity:0.6;margin:0 0 8px 0;">📅 ${event.event_date}</p>
           ${getDeleteStatusBadge(event)}
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
             <button onclick="showLinkOptions('${event.id}', '${event.upload_url}', '${event.gallery_url}')" style="background:none;border:1px solid #2563eb;color:#2563eb;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;" onmouseover="this.style.background='#2563eb1f'" onmouseout="this.style.background='none'">
               <i data-lucide="link" style="width:12px;height:12px;display:inline;margin-right:4px;vertical-align:-1px;"></i> Links
             </button>
             <button onclick="generateQRCode('${event.upload_url}')" style="background:none;border:1px solid #2563eb;color:#2563eb;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;" onmouseover="this.style.background='#2563eb1f'" onmouseout="this.style.background='none'">
               <i data-lucide="qr-code" style="width:12px;height:12px;display:inline;margin-right:4px;vertical-align:-1px;"></i> QR Code
+            </button>
+            <button onclick="toggleVideoOption('${event.id}')" style="background:none;border:1px solid #7c3aed;color:#7c3aed;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;" onmouseover="this.style.background='#7c3aed1f'" onmouseout="this.style.background='none'">
+              <i data-lucide="${event.allow_videos ? 'film' : 'image'}" style="width:12px;height:12px;display:inline;margin-right:4px;vertical-align:-1px;"></i> ${event.allow_videos ? 'Com Vídeos' : 'Só Imagens'}
             </button>
             <button onclick="showEventStats('${event.id}')" style="background:none;border:1px solid #f39c12;color:#f39c12;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;" onmouseover="this.style.background='#f39c121f'" onmouseout="this.style.background='none'">
               <i data-lucide="bar-chart-3" style="width:12px;height:12px;display:inline;margin-right:4px;vertical-align:-1px;"></i> Estatísticas
@@ -645,6 +890,7 @@
             <button onclick="deleteEventConfirm(${idx}, '${event.event_title}')" style="background:none;border:1px solid #e74c3c;color:#e74c3c;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;" onmouseover="this.style.background='#e74c3c1f'" onmouseout="this.style.background='none'">
               <i data-lucide="trash-2" style="width:12px;height:12px;display:inline;margin-right:4px;vertical-align:-1px;"></i> Apagar
             </button>
+          </div>
           </div>
         </div>
       </div>
@@ -916,6 +1162,27 @@
       });
   }
 
+  function toggleVideoOption(eventId) {
+    const event = allEvents.find(e => e.id === eventId);
+    if (!event) return;
+
+    const newValue = !event.allow_videos;
+    supabaseClient
+      .from('events')
+      .update({ allow_videos: newValue })
+      .eq('id', eventId)
+      .then(({ error }) => {
+        if (error) {
+          showToast('Erro ao atualizar configuração', 'error');
+        } else {
+          event.allow_videos = newValue;
+          renderEventsList();
+          const status = newValue ? '✅ Com vídeos' : '❌ Só imagens';
+          showToast(`${status} - Evento atualizado!`, 'success');
+        }
+      });
+  }
+
   function checkGuestMode() {
     const params = new URLSearchParams(window.location.search);
     const eventId = params.get('event');
@@ -1037,6 +1304,16 @@
     document.getElementById('event-date').textContent = event.event_date;
     document.getElementById('guest-name-display').textContent = `👋 ${currentGuestName}`;
     
+    // Atualiza o texto de aceitação de ficheiros
+    const acceptText = document.getElementById('upload-accept-text');
+    if (event.allow_videos) {
+      acceptText.textContent = 'ou arraste fotos e vídeos aqui';
+      document.getElementById('fileInput').accept = 'image/*,video/*';
+    } else {
+      acceptText.textContent = 'ou arraste fotos aqui';
+      document.getElementById('fileInput').accept = 'image/*';
+    }
+    
     const msgBox = document.getElementById('event-message-box');
     const msgEl = document.getElementById('event-message');
     if (event.event_message) {
@@ -1079,31 +1356,51 @@
     brand.style.fontSize = `${(config.font_size || defaultConfig.font_size) * 1.375}px`;
 
     applyConfig(config);
+    
+    // Mostra loading inicial
+    const grid = document.getElementById('gallery-grid');
+    const empty = document.getElementById('gallery-empty');
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;"><svg class="animate-spin" style="width:40px;height:40px;margin:0 auto 16px;display:block;color:#2563eb;" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25"></circle><path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path></svg><p style="font-size:14px;opacity:0.6;margin:0;">A carregar galeria...</p></div>';
+    empty.style.display = 'none';
+    
     renderGalleryPhotos();
     
-    // Atualiza galeria a cada 30 segundos
+    // Atualiza galeria a cada 10 segundos (mais frequente)
     setInterval(() => {
       if (document.getElementById('gallery-view').style.display !== 'none') {
         renderGalleryPhotos();
       }
-    }, 30000);
+    }, 10000);
   }
 
   async function renderGalleryPhotos() {
-    if (!supabaseClient) return;
+    if (!supabaseClient || !currentEventId) {
+      console.warn('[Gallery] Supabase ou currentEventId não disponível');
+      return;
+    }
 
     const config = window.elementSdk?.config || defaultConfig;
     const primary = config.primary_action || defaultConfig.primary_action;
     const baseSize = config.font_size || defaultConfig.font_size;
+
+    console.log('[Gallery] Carregando fotos para evento:', currentEventId);
 
     // Carrega todas as fotos do evento (sem filtro de guest)
     const { data: uploads, error } = await supabaseClient
       .from('uploads')
       .select('*')
       .eq('event_id', currentEventId)
-      .order('uploaded_at', { ascending: false });
+      .order('file_upload_time', { ascending: false });
 
-    if (error || !uploads || uploads.length === 0) {
+    if (error) {
+      console.error('[Gallery] Erro ao carregar fotos:', error);
+      document.getElementById('gallery-empty').style.display = 'block';
+      return;
+    }
+
+    console.log('[Gallery] Fotos encontradas:', uploads?.length || 0);
+
+    if (!uploads || uploads.length === 0) {
       document.getElementById('gallery-grid').innerHTML = '';
       document.getElementById('gallery-empty').style.display = 'block';
       return;
@@ -1122,9 +1419,11 @@
       card.onmouseout = () => { card.style.transform = 'scale(1)'; };
       
       if (isImage) {
-        // Para imagens, faz preview via Google Drive (assumindo que o ID está guardado)
+        // Para imagens, mostra placeholder com ícone (não temos URL de preview)
         card.innerHTML = `
-          <div style="width:100%;height:100%;background:url('https://drive-thirdparty.googleusercontent.com/16m7u85jbvzt4f0jqcjbgf30g1j2/');background-size:cover;background-position:center;"></div>
+          <div style="width:100%;height:100%;background:linear-gradient(135deg, ${primary}20, ${primary}05);display:flex;align-items:center;justify-content:center;">
+            <i data-lucide="image" style="width:40px;height:40px;color:${primary};opacity:0.5;"></i>
+          </div>
           <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top, rgba(0,0,0,0.6), transparent);padding:12px;color:#fff;font-size:12px;">
             <p style="margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;">${file.file_name}</p>
           </div>
@@ -1132,7 +1431,9 @@
       } else {
         // Para vídeos, mostra ícone
         card.innerHTML = `
-          <i data-lucide="film" style="width:40px;height:40px;color:${primary};opacity:0.5;"></i>
+          <div style="width:100%;height:100%;background:linear-gradient(135deg, ${primary}30, ${primary}10);display:flex;align-items:center;justify-content:center;">
+            <i data-lucide="film" style="width:40px;height:40px;color:${primary};opacity:0.6;"></i>
+          </div>
           <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top, rgba(0,0,0,0.6), transparent);padding:12px;color:#fff;font-size:11px;">
             <p style="margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${file.file_name}</p>
           </div>
@@ -1169,8 +1470,26 @@
   });
 
   function addFiles(files) {
-    const mediaFiles = files.filter(f => f.type.startsWith('image/') || f.type.startsWith('video/'));
-    if (!mediaFiles.length) { showToast('Seleciona fotos ou vídeos', 'warning'); return; }
+    const allowVideos = currentEventId && allEvents.find(e => e.id === currentEventId)?.allow_videos;
+    const accept = allowVideos ? ['image/', 'video/'] : ['image/'];
+    
+    const mediaFiles = files.filter(f => {
+      const isMedia = f.type.startsWith('image/') || f.type.startsWith('video/');
+      if (!isMedia) return false;
+      
+      if (!allowVideos && f.type.startsWith('video/')) {
+        showToast('📹 Vídeos não permitidos neste evento', 'warning');
+        return false;
+      }
+      
+      return true;
+    });
+
+    if (!mediaFiles.length) { 
+      const msg = allowVideos ? 'Seleciona fotos ou vídeos' : 'Seleciona apenas fotos';
+      showToast(msg, 'warning'); 
+      return; 
+    }
 
     mediaFiles.forEach(f => {
       if (!selectedFiles.find(s => s.name === f.name && s.size === f.size)) {
@@ -1255,73 +1574,66 @@
         <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25"></circle>
         <path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>
       </svg>
-      A enviar...
+      A processar...
     `;
 
     document.querySelectorAll('[data-progress-bar]').forEach(el => el.style.display = 'block');
 
-    let successCount = 0;
-    for (let i = 0; i < selectedFiles.length; i++) {
-      try {
-        await uploadFile(selectedFiles[i], i);
-        successCount++;
-      } catch (err) {
-        console.error('Upload failed:', selectedFiles[i].name, err);
+    // Adiciona todos os ficheiros à fila
+    selectedFiles.forEach((file, idx) => {
+      uploadQueue.add(file, idx);
+    });
+
+    // Aguarda até que todos os uploads estejam completos (ou falhados)
+    const checkCompletion = setInterval(() => {
+      const stats = uploadQueue.getStats();
+      if (stats.uploading === 0 && stats.waiting === 0 && stats.paused === 0) {
+        clearInterval(checkCompletion);
+
+        const successCount = stats.completed;
+        const failedCount = stats.failed;
+
+        isUploading = false;
+        uploadBtn.disabled = false;
+        uploadBtn.style.opacity = '1';
+
+        if (successCount > 0) {
+          const msg = config.thank_you_message || defaultConfig.thank_you_message;
+          if (failedCount > 0) {
+            showToast(`${msg} (${successCount} enviados, ${failedCount} falhados)`, 'warning');
+          } else {
+            showToast(`${msg} (${successCount}/${selectedFiles.length})`, 'success');
+          }
+          selectedFiles = [];
+          uploadQueue.clear();
+          renderFileList();
+          setTimeout(() => {
+            document.getElementById('fileInput').value = '';
+          }, 500);
+        } else {
+          showToast('Nenhum ficheiro foi enviado. Tenta novamente.', 'error');
+        }
+
+        const btnLabel = config.upload_button_text || defaultConfig.upload_button_text;
+        document.getElementById('upload-btn-text').innerHTML = `
+          <i data-lucide="send" style="width:18px;height:18px;"></i>
+          <span id="btn-label">${btnLabel}</span>
+        `;
+        lucide.createIcons();
       }
-    }
-
-    isUploading = false;
-    uploadBtn.disabled = false;
-    uploadBtn.style.opacity = '1';
-
-    if (successCount > 0) {
-      const msg = config.thank_you_message || defaultConfig.thank_you_message;
-      showToast(`${msg} (${successCount}/${selectedFiles.length})`, 'success');
-      selectedFiles = [];
-      renderFileList();
-      setTimeout(() => {
-        document.getElementById('fileInput').value = '';
-      }, 500);
-    } else {
-      showToast('Erro no envio. Tenta novamente.', 'error');
-    }
-
-    const btnLabel = config.upload_button_text || defaultConfig.upload_button_text;
-    document.getElementById('upload-btn-text').innerHTML = `
-      <i data-lucide="send" style="width:18px;height:18px;"></i>
-      <span id="btn-label">${btnLabel}</span>
-    `;
-    lucide.createIcons();
+    }, 500);
   }
 
-  function uploadFile(file, index) {
+  async function uploadFileToServer(file, index, queueItem) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       const bar = document.querySelector(`[data-progress-bar="${index}"] .upload-progress`);
 
-      // Barra de progresso simulada (começa logo)
-      if (bar) {
-        let p = 0;
-        const interval = setInterval(() => {
-          p = Math.min(p + Math.random() * 25, 85);
-          bar.style.width = p + '%';
-          if (p >= 85) clearInterval(interval);
-        }, 150);
-      }
-
       reader.onload = function() {
         try {
-          console.log('📤 Enviando para Google Drive:', file.name);
-
-          // Gera um nome único para o ficheiro
-          const timestamp = Date.now();
-          const randomStr = Math.random().toString(36).substr(2, 9);
-          const fileId = 'file_' + timestamp + '_' + randomStr;
-
-          // Converte para base64 (sem o prefixo data:)
+          // Base64 (sem prefixo data:)
           const base64Data = reader.result.split(',')[1];
 
-          // 🔥 ENVIA VIA FETCH + JSON (correto para Apps Script)
           const payload = {
             file: base64Data,
             fileName: file.name,
@@ -1333,12 +1645,11 @@
             timestamp: new Date().toISOString()
           };
 
-          // 🔥 URL DO APPS SCRIPT - SUBSTITUI PELO TEU URL!
-          const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkKxR49A8njWzv1PUZtJbeR6yr2wmnKsrOhjTD7s6nGpS0JtgLuiNoEOSDBPtq88M2/exec"; // ← ATUALIZA COM TEU NOVO URL!
+          const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkKxR49A8njWzv1PUZtJbeR6yr2wmnKsrOhjTD7s6nGpS0JtgLuiNoEOSDBPtq88M2/exec";
           
-          console.log('🌐 URL configurado:', APPS_SCRIPT_URL);
-          console.log('📦 A enviar JSON com', JSON.stringify(payload).length, 'bytes');
-          console.log('🔍 Dados:', { eventId: currentEventId, guestId: currentGuestId, fileName: file.name });
+          // Timeout de 45 segundos para cada upload
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 45000);
 
           fetch(APPS_SCRIPT_URL, {
             method: "POST",
@@ -1346,15 +1657,16 @@
               "Content-Type": "application/json"
             },
             mode: "no-cors",
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
+            signal: controller.signal
           })
           .then(res => {
-            console.log('📡 Fetch realizado com sucesso (modo no-cors)');
-            console.log('📤 O ficheiro foi enviado para o Apps Script');
-            console.log('✅ Resultado: Ficheiro enviado (no-cors não retorna dados)');
+            clearTimeout(timeoutId);
             
-            // Em modo no-cors, assumimos sucesso se fetch foi bem-sucedido
-            if (bar) bar.style.width = '100%';
+            if (bar) {
+              queueItem.progress = 100;
+              bar.style.width = '100%';
+            }
 
             // Guarda metadados NO SUPABASE
             if (supabaseClient) {
@@ -1371,34 +1683,34 @@
                   file_upload_time: new Date().toISOString()
                 }])
                 .then(() => {
-                  console.log('✅ Metadados guardados no Supabase:', newFileId);
                   renderMyUploadedFiles();
                 })
                 .catch(err => {
-                  console.warn('⚠️ Metadados não guardados (ficheiro foi enviado):', err.message);
+                  console.warn('Metadados não guardados:', err.message);
                 });
             }
 
             resolve();
           })
           .catch(err => {
-            console.error('❌ Erro ao comunicar com Apps Script:', err.message);
-            console.error('💡 Dica: Verifica se o URL do Apps Script está correto');
-            reject(new Error('Erro na comunicação com servidor: ' + err.message));
+            clearTimeout(timeoutId);
+            
+            if (err.name === 'AbortError') {
+              reject(new Error('timeout: Upload excedeu o tempo limite de 45 segundos'));
+            } else {
+              reject(err);
+            }
           });
 
         } catch (err) {
-          console.error('❌ Erro ao processar ficheiro:', err.message);
           reject(err);
         }
       };
 
       reader.onerror = () => {
-        console.error('❌ Erro ao ler ficheiro:', file.name);
         reject(new Error('Erro ao ler ficheiro: ' + file.name));
       };
 
-      // Inicia a leitura do ficheiro
       reader.readAsDataURL(file);
     });
   }
@@ -1548,5 +1860,5 @@
 
   lucide.createIcons();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e6679b464a03e9a',t:'MTc3NTIwMjU1My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e66a882747b3e9a',t:'MTc3NTIwNDQ3MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
