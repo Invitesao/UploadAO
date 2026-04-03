@@ -832,76 +832,95 @@
 
   function uploadFile(file, index) {
     return new Promise((resolve, reject) => {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('name', file.name);
-      formData.append('type', file.type);
-      formData.append('eventId', currentEventId);
-      formData.append('guestId', currentGuestId);
+      const reader = new FileReader();
 
-      console.log('📤 Enviando para Google Drive:', {
-        fileName: file.name,
-        fileSize: file.size,
-        eventId: currentEventId,
-        guestId: currentGuestId
-      });
-
-      // ÚNICO ENVIO: Google Drive (OBRIGATÓRIO)
-      fetch(APPS_SCRIPT_URL, {
-        method: "POST",
-        body: formData
-      })
-      .then(response => response.text())
-      .then(async (result) => {
-        console.log('✅ Ficheiro enviado para Google Drive:', result);
-
-        // DEPOIS: Guarda apenas os METADADOS no Supabase
+      reader.onload = async function() {
         try {
-          if (!supabaseClient) {
-            throw new Error('Supabase client não inicializado');
-          }
+          // Converte para base64 (remove "data:...;base64," prefix)
+          const base64 = reader.result.split(',')[1];
 
-          const fileId = 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-          
-          console.log('📝 Guardando metadados no Supabase:', {
-            fileId,
+          // FormData puro - sem headers personalizados!
+          const formData = new FormData();
+          formData.append('file', base64);
+          formData.append('name', file.name);
+          formData.append('type', file.type);
+          formData.append('eventId', currentEventId);
+          formData.append('guestId', currentGuestId);
+
+          console.log('📤 Enviando para Google Drive:', {
             fileName: file.name,
-            fileSize: file.size
+            fileSize: file.size,
+            eventId: currentEventId,
+            guestId: currentGuestId
           });
 
-          const { data, error: insertError } = await supabaseClient
-            .from('uploads')
-            .insert([{
-              id: fileId,
-              event_id: currentEventId,
-              guest_id: currentGuestId,
-              file_name: file.name,
-              file_size: (file.size / 1024 / 1024).toFixed(1) + ' MB',
-              file_upload_time: new Date().toISOString()
-            }]);
+          // ⚡ FETCH SEM HEADERS - ISTO EVITA CORS!
+          const response = await fetch(APPS_SCRIPT_URL, {
+            method: "POST",
+            body: formData
+            // NÃO adiciones headers!
+          });
 
-          if (insertError) {
-            console.warn('⚠️ Aviso: Metadados no Supabase falharam (mas ficheiro está seguro no Google Drive):', insertError.message);
-            // Não rejeita - o ficheiro está seguro no Drive
-          } else {
-            console.log('✅ Metadados guardados no Supabase:', fileId);
+          const result = await response.json();
+
+          if (!result.success) {
+            throw new Error(result.error || 'Erro desconhecido');
           }
+
+          console.log('✅ Ficheiro enviado para Google Drive:', result.fileId);
+
+          // DEPOIS: Guarda apenas os METADADOS no Supabase
+          try {
+            if (!supabaseClient) {
+              throw new Error('Supabase client não inicializado');
+            }
+
+            const fileId = 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            
+            console.log('📝 Guardando metadados no Supabase:', {
+              fileId,
+              fileName: file.name,
+              fileSize: file.size
+            });
+
+            const { data, error: insertError } = await supabaseClient
+              .from('uploads')
+              .insert([{
+                id: fileId,
+                event_id: currentEventId,
+                guest_id: currentGuestId,
+                file_name: file.name,
+                file_size: (file.size / 1024 / 1024).toFixed(1) + ' MB',
+                file_upload_time: new Date().toISOString()
+              }]);
+
+            if (insertError) {
+              console.warn('⚠️ Aviso: Metadados no Supabase falharam (mas ficheiro está seguro no Google Drive):', insertError.message);
+              // Não rejeita - o ficheiro está seguro no Drive
+            } else {
+              console.log('✅ Metadados guardados no Supabase:', fileId);
+            }
+          } catch (err) {
+            console.warn('⚠️ Aviso: Erro ao guardar metadados (mas ficheiro está seguro no Google Drive):', err.message);
+            // Não rejeita - o ficheiro está seguro no Drive
+          }
+
+          // Atualiza a barra de progresso
+          const bar = document.querySelector(`[data-progress-bar="${index}"] .upload-progress`);
+          if (bar) bar.style.width = '100%';
+
+          console.log('✅ Upload concluído com sucesso');
+          resolve();
+
         } catch (err) {
-          console.warn('⚠️ Aviso: Erro ao guardar metadados (mas ficheiro está seguro no Google Drive):', err.message);
-          // Não rejeita - o ficheiro está seguro no Drive
+          console.error('❌ Upload FALHOU:', err.message);
+          reject(new Error('Falha ao enviar para Google Drive: ' + err.message));
         }
+      };
 
-        // Atualiza a barra de progresso
-        const bar = document.querySelector(`[data-progress-bar="${index}"] .upload-progress`);
-        if (bar) bar.style.width = '100%';
-
-        console.log('✅ Upload concluído com sucesso');
-        resolve();
-      })
-      .catch(err => {
-        console.error('❌ Upload FALHOU - Google Drive error:', err.message);
-        reject(new Error('Falha ao enviar para Google Drive: ' + err.message));
-      });
+      reader.onerror = () => {
+        reject(new Error('Erro ao ler ficheiro'));
+      };
 
       // Barra de progresso simulada
       const bar = document.querySelector(`[data-progress-bar="${index}"] .upload-progress`);
@@ -913,6 +932,9 @@
           if (p >= 85) clearInterval(interval);
         }, 200);
       }
+
+      // Inicia a leitura do ficheiro
+      reader.readAsDataURL(file);
     });
   }
 
@@ -1021,5 +1043,5 @@
 
   lucide.createIcons();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e6569e196183e9a',t:'MTc3NTE5MTQxOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e65847420623e9a',t:'MTc3NTE5MjUwNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
