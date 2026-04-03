@@ -1,1780 +1,1042 @@
 <!doctype html>
-<html lang="pt-BR" class="h-full">
+<html lang="pt" class="h-full">
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Confirmação de Presença</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>UploadAO</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
   <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Georgia&family=Cormorant+Garamond:ital,wght@0,400;0,700;1,400&family=Crimson+Text:ital,wght@0,400;0,700;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
-        
-        body {
-            box-sizing: border-box;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
-        
-        .elegant-font {
-            font-family: 'Playfair Display', serif;
-            font-style: italic;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .fade-in {
-            animation: fadeIn 0.8s ease-out forwards;
-        }
+    * { box-sizing: border-box; }
 
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border-width: 0;
-        }
+    .drop-zone {
+      transition: all 0.3s ease;
+    }
+    .drop-zone.dragover {
+      transform: scale(1.02);
+      border-color: var(--primary-action);
+      background: rgba(255,255,255,0.08);
+    }
 
-        #toggle-dot {
-            transition: transform 0.3s ease;
-        }
+    .file-item {
+      animation: slideIn 0.3s ease forwards;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-        #toggle-aviso-criancas:checked ~ #toggle-dot {
-            transform: translateX(24px);
-        }
+    .upload-progress {
+      transition: width 0.4s ease;
+    }
 
-        #toggle-recados-publicos:checked ~ #toggle-dot-recados {
-            transform: translateX(24px);
-        }
+    .toast {
+      animation: toastIn 0.4s ease forwards;
+    }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .toast-out {
+      animation: toastOut 0.3s ease forwards;
+    }
+    @keyframes toastOut {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(20px); }
+    }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-        }
-        
-        .pulse-animation {
-            animation: pulse 2s ease-in-out infinite;
-        }
-    </style>
-  <style>@view-transition { navigation: auto; }</style>
+    .btn-pulse {
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
+      50% { box-shadow: 0 0 0 12px rgba(37, 99, 235, 0); }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.6s ease forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .stagger-1 { animation-delay: 0.1s; opacity: 0; }
+    .stagger-2 { animation-delay: 0.2s; opacity: 0; }
+    .stagger-3 { animation-delay: 0.35s; opacity: 0; }
+    .stagger-4 { animation-delay: 0.5s; opacity: 0; }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
-  <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
  </head>
- <body class="h-full">
-  <div id="app-container" class="h-full w-full overflow-auto" style="background-color: #faf8f5;"><!-- PÁGINA DO CONVIDADO -->
-   <div id="guest-page" class="min-h-full py-12 px-4">
-    <div class="max-w-2xl mx-auto"><!-- Cabeçalho Elegante -->
-     <div class="text-center mb-10 fade-in">
-      <h1 id="nome-aniversariante" class="text-5xl md:text-6xl font-bold mb-3 elegant-font" style="color: #6f0000;">Carregando...</h1>
-      <div class="h-6"></div>
-      <p id="data-evento" class="text-lg" style="color: #6f0000;">...</p>
-     </div><!-- Contagem Regressiva -->
-     <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 fade-in border" style="animation-delay: 0.2s; border-color: #e5ddd5;">
-      <h2 class="text-xl font-semibold text-center mb-4" style="color: #6f0000;">Contagem Regressiva</h2>
-      <div id="countdown" class="grid grid-cols-4 gap-3"><!-- Countdown será preenchido via JavaScript -->
-      </div>
-     </div><!-- Aviso de Data Limite -->
-     <div id="aviso-data-limite" class="bg-gradient-to-r from-red-50 to-pink-50 rounded-xl shadow-sm p-5 mb-6 text-center fade-in border-2 pulse-animation" style="animation-delay: 0.25s; border-color: #ef4444; display: none;">
-      <p class="text-lg font-bold mb-1" style="color: #991b1b;">⏰ Atenção!</p>
-      <p id="texto-data-limite" class="text-base" style="color: #7f1d1d;">Por favor, confirme sua presença até <strong id="data-limite-display">--/--/----</strong></p>
-     </div><!-- Aviso Importante -->
-     <div id="aviso-container" class="bg-white rounded-xl shadow-sm p-4 mb-6 text-center fade-in border" style="animation-delay: 0.3s; border-color: #e5ddd5;">
-      <p id="aviso-criancas" class="text-base" style="color: #5d5d5d;">...</p>
-     </div><!-- Formulário de Confirmação -->
-     <div id="form-section" class="bg-white rounded-2xl shadow-sm border p-6 md:p-8 fade-in" style="animation-delay: 0.4s; border-color: #e5ddd5;">
-      <h2 class="text-2xl font-semibold text-center mb-6" style="color: #6f0000;">Confirme sua Presença</h2>
-      <form id="confirmation-form" class="space-y-5">
-       <div><label for="nome-convidado" class="block text-sm font-semibold mb-2" style="color: #5d5d5d;"> Seu Nome Completo * </label> <input type="text" id="nome-convidado" required class="w-full px-4 py-3 border rounded-lg text-base focus:outline-none focus:ring-2 transition-all" style="border-color: #d4c4b0; background-color: #ffffff;" placeholder="Digite seu nome completo">
-       </div>
-       <div id="acompanhante-field" style="display: none;"><label for="nome-acompanhante" class="block text-sm font-semibold mb-2" style="color: #5d5d5d;"> Nome do Acompanhante </label> <input type="text" id="nome-acompanhante" class="w-full px-4 py-3 border rounded-lg text-base focus:outline-none focus:ring-2 transition-all" style="border-color: #d4c4b0; background-color: #ffffff;" placeholder="Digite o nome do acompanhante">
-       </div>
-       <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><button type="submit" id="submit-button-confirmar" class="py-4 rounded-xl text-white text-lg font-bold transition-all hover:opacity-90 shadow-lg" style="background-color: #10b981;"> Eu Vou Sim! </button> <button type="button" id="submit-button-declinar" class="py-4 rounded-xl text-white text-lg font-bold transition-all hover:opacity-90 shadow-lg" style="background-color: #ef4444;"> Não Poderei Ir </button>
-       </div>
-      </form><!-- Estado de Loading -->
-      <div id="loading-state" style="display: none;" class="text-center py-10">
-       <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-t-transparent mb-3" style="border-color: #6f0000;"></div>
-       <p class="text-base font-semibold" style="color: #6f0000;">Enviando...</p>
-      </div><!-- Estado de Sucesso Confirmação -->
-      <div id="success-state" style="display: none;" class="text-center py-10">
-       <div class="text-6xl mb-4">
-        🎉
-       </div>
-       <h3 class="text-3xl font-bold mb-4" style="color: #10b981;">Confirmado!</h3>
-       <p class="text-xl mb-3" style="color: #5d5d5d;">Obrigada por confirmar sua presença!</p>
-       <p class="text-base mb-8" style="color: #999;">Aguardamos você com muito carinho!</p><button id="editar-resposta-btn" class="px-8 py-4 rounded-xl text-white text-lg font-bold transition-all hover:opacity-90 shadow-lg" style="background-color: #6f0000;"> Mudar Resposta </button>
-      </div><!-- Estado de Sucesso Declínio -->
-      <div id="decline-state" style="display: none;" class="text-center py-10">
-       <div class="text-6xl mb-4">
-        💔
-       </div>
-       <h3 class="text-3xl font-bold mb-4" style="color: #6f0000;">Resposta Registrada</h3>
-       <p class="text-xl mb-3" style="color: #5d5d5d;">Agradecemos por nos informar!</p>
-       <p class="text-base mb-8" style="color: #999;">Sentiremos sua falta!</p><button id="editar-resposta-btn2" class="px-8 py-4 rounded-xl text-white text-lg font-bold transition-all hover:opacity-90 shadow-lg" style="background-color: #6f0000;"> Mudar Resposta </button>
-      </div><!-- Mensagem de Erro -->
-      <div id="error-message" style="display: none;" class="mt-4 p-3 bg-red-50 border border-red-300 rounded-lg text-center">
-       <p class="text-red-700 text-sm font-semibold">Erro ao processar resposta. Tente novamente.</p>
-      </div>
-     </div><!-- Seção de Recados -->
-     <div id="recados-section" class="mt-6" style="display: none;">
-      <div class="bg-white rounded-2xl shadow-sm border p-6 md:p-8 fade-in" style="animation-delay: 0.5s; border-color: #e5ddd5;">
-       <div class="text-center mb-6" id="recado-header">
-        <h2 class="text-2xl font-semibold mb-2" style="color: #6f0000;">Deixe um Recado</h2>
-        <p class="text-base text-gray-600">Envie uma mensagem carinhosa para a aniversariante!</p>
-       </div>
-       <form id="recado-form" class="mb-8">
-        <div class="space-y-4">
-         <div><label for="mensagem-recado" class="block text-base font-semibold mb-2" style="color: #5d5d5d;"> Sua Mensagem * </label> <textarea id="mensagem-recado" required rows="4" maxlength="500" class="w-full px-4 py-3 border rounded-lg text-base focus:outline-none focus:ring-2 transition-all resize-none" style="border-color: #d4c4b0; background-color: #ffffff;" placeholder="Escreva sua mensagem de carinho..."></textarea>
-          <p class="text-sm text-gray-400 mt-1 text-right" id="char-count">0/500 caracteres</p>
-         </div><button type="submit" id="recado-button" class="w-full py-4 rounded-xl text-white text-lg font-bold transition-all hover:opacity-90 shadow-lg" style="background-color: #6f0000;"> Enviar Recado </button>
-        </div>
-       </form>
-       <div id="recado-loading" style="display: none;" class="text-center py-6">
-        <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-t-transparent mb-3" style="border-color: #6f0000;"></div>
-        <p class="text-base font-semibold" style="color: #6f0000;">Enviando recado...</p>
-       </div>
-       <div id="recado-success" style="display: none;" class="text-center py-6 bg-green-50 rounded-xl border-2 border-green-300">
-        <p class="text-lg font-bold text-green-700">Recado enviado com sucesso!</p>
-       </div>
-       <div id="recado-error" style="display: none;" class="mt-4 p-4 bg-red-50 border-2 border-red-300 rounded-xl text-center">
-        <p class="text-red-700 text-base font-semibold">Erro ao enviar recado. Tente novamente.</p>
-       </div>
-       <div class="mt-8 border-t-2 pt-6" style="border-color: #e5ddd5;">
-        <h3 class="text-xl font-semibold text-center mb-5" style="color: #6f0000;">Recados dos Convidados</h3>
-        <div id="lista-recados" class="space-y-3">
-         <p class="text-gray-400 text-center py-6 text-base">Nenhum recado ainda. Seja o primeiro!</p>
-        </div>
-       </div>
-      </div>
-     </div><!-- Link para Admin -->
-     <div id="admin-link" class="text-center mt-6"><button type="button" id="ir-login-btn" class="text-xs opacity-30 hover:opacity-70 transition-opacity cursor-pointer" style="color: #6f0000;"> Área do organizador </button>
-     </div>
-    </div>
-   </div><!-- PÁGINA DE LOGIN ADMIN -->
-   <div id="login-page" style="display: none;" class="min-h-full flex items-center justify-center px-4">
-    <div class="bg-white rounded-3xl shadow-2xl p-10 max-w-md w-full">
+ <body class="h-full" style="margin:0; font-family: 'Poppins', sans-serif;">
+  <div id="app" class="h-full w-full overflow-auto" style="background: #ffffff; color: #1a1a1a;">
+   <!-- Toast container -->
+   <div id="toast-container" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 items-center pointer-events-none"></div><!-- LOGIN VIEW -->
+   <div id="login-view" class="h-full w-full flex flex-col items-center justify-center px-4">
+    <div class="w-full max-w-sm">
      <div class="text-center mb-8">
-      <h2 class="text-3xl font-bold elegant-font" style="color: #8B0000;">Área do Organizador</h2>
+      <div style="width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:#2563eb;color:#fff;margin:0 auto 20px;">
+       <i data-lucide="lock" style="width:32px;height:32px;"></i>
+      </div>
+      <h1 style="font-family:'Poppins',sans-serif;font-size:28px;font-weight:700;margin:0 0 8px 0;">UploadAO</h1>
+      <p style="font-size:14px;opacity:0.5;margin:0;">Painel de Administrador</p>
      </div>
-     <form id="login-form" class="space-y-5">
-      <div><label for="admin-username" class="block text-sm font-semibold mb-2" style="color: #8B0000;"> Usuário </label> <input type="text" id="admin-username" required autocomplete="off" class="w-full px-4 py-3 border-2 rounded-xl focus:outline-none" style="border-color: #8B0000;">
-      </div>
-      <div><label for="admin-password" class="block text-sm font-semibold mb-2" style="color: #8B0000;"> Senha </label> <input type="password" id="admin-password" required autocomplete="new-password" class="w-full px-4 py-3 border-2 rounded-xl focus:outline-none" style="border-color: #8B0000;">
-      </div>
-      <div id="login-error" style="display: none;" class="text-sm text-center p-3 bg-red-100 border border-red-400 rounded-xl text-red-800">
-       Usuário ou senha incorretos
-      </div><button type="submit" class="w-full py-4 rounded-xl text-white font-bold text-lg hover:opacity-90 transition-all" style="background-color: #8B0000;"> Entrar </button>
-     </form><button id="voltar-button" class="w-full mt-5 py-3 text-sm font-semibold hover:underline" style="color: #8B0000; display: none;"> Voltar para página de convidado </button>
+     <div class="space-y-4">
+      <div>
+       <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Senha</label> <input type="password" id="admin-password" placeholder="Digite sua senha" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;transition:all 0.3s;" onkeypress="if(event.key==='Enter') adminLogin();">
+      </div><button onclick="adminLogin()" style="width:100%;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> Entrar no Painel </button>
+     </div>
     </div>
-   </div><!-- PÁGINA ADMIN -->
-   <div id="admin-page" style="display: none;" class="min-h-full py-10 px-4">
-    <div class="max-w-7xl mx-auto"><!-- Cabeçalho Admin -->
-     <div class="mb-10">
-      <div class="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-3xl p-8 mb-6 border-4" style="border-color: #FFD700;">
-       <h1 class="text-4xl font-bold elegant-font text-center mb-3" style="color: #8B0000;">Painel do Organizador</h1>
-       <p class="text-center text-gray-600 text-lg">Aqui você gerencia todas as confirmações do seu evento</p>
-      </div>
-      <div class="flex flex-wrap justify-center gap-4"><button id="mostrar-ajuda-btn" class="px-8 py-4 rounded-xl text-white font-bold shadow-lg hover:opacity-90 transition-all text-lg" style="background-color: #4299e1;"> Como Usar Este Painel </button> <button id="exportar-pdf-btn" class="px-8 py-4 rounded-xl text-white font-bold shadow-lg hover:opacity-90 transition-all text-lg" style="background-color: #FFD700; color: #8B0000;"> Baixar Lista em PDF </button> <button id="logout-btn" class="px-8 py-4 rounded-xl text-white font-bold shadow-lg hover:opacity-90 transition-all text-lg" style="background-color: #8B0000;"> Sair </button>
-      </div>
-     </div><!-- Estatísticas -->
-     <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-10">
-      <div class="bg-white rounded-2xl p-8 shadow-xl text-center">
-       <div class="text-5xl font-bold mb-2" style="color: #8B0000;" id="stat-confirmados">
-        0
+   </div><!-- ADMIN VIEW -->
+   <div id="admin-view" style="display:none;" class="h-full w-full overflow-auto">
+    <!-- Admin Header -->
+    <header style="background:#f5f5f5;border-bottom:1px solid rgba(26,26,26,0.1);padding:16px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;">
+     <div style="display:flex;align-items:center;gap:12px;">
+      <i data-lucide="settings" style="width:20px;height:20px;"></i> <span style="font-weight:600;">Painel de Administração</span>
+     </div><button onclick="adminLogout()" style="background:none;border:none;cursor:pointer;display:flex;gap:6px;align-items:center;opacity:0.6;font-family:'Poppins',sans-serif;font-size:13px;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'"> <i data-lucide="log-out" style="width:18px;height:18px;"></i> <span>Sair</span> </button>
+    </header>
+    <div style="padding:24px;max-width:900px;margin:0 auto;">
+     <!-- Create Event Section -->
+     <div style="background:#fff;border:1px solid rgba(26,26,26,0.1);border-radius:16px;padding:24px;margin-bottom:24px;">
+      <h2 style="font-size:18px;font-weight:600;margin:0 0 20px 0;">Criar Novo Evento</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+       <div>
+        <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Nome do Evento</label> <input type="text" id="new-event-title" placeholder="Ex: João &amp; Maria" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;">
        </div>
-       <div class="text-gray-600 text-lg font-semibold">
-        Confirmados
-       </div>
-      </div>
-      <div class="bg-white rounded-2xl p-8 shadow-xl text-center">
-       <div class="text-5xl font-bold mb-2" style="color: #666;" id="stat-declinados">
-        0
-       </div>
-       <div class="text-gray-600 text-lg font-semibold">
-        Declinaram
+       <div>
+        <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Data do Evento</label> <input type="date" id="new-event-date" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;">
        </div>
       </div>
-      <div class="bg-white rounded-2xl p-8 shadow-xl text-center">
-       <div class="text-5xl font-bold mb-2" style="color: #8B0000;" id="stat-acompanhantes">
-        0
-       </div>
-       <div class="text-gray-600 text-lg font-semibold">
-        Com Acompanhante
-       </div>
-      </div>
-      <div class="bg-white rounded-2xl p-8 shadow-xl text-center">
-       <div class="text-5xl font-bold mb-2" style="color: #8B0000;" id="stat-pessoas">
-        0
-       </div>
-       <div class="text-gray-600 text-lg font-semibold">
-        Total de Pessoas
-       </div>
-      </div>
-      <div class="bg-white rounded-2xl p-8 shadow-xl text-center">
-       <div class="text-5xl font-bold mb-2" style="color: #8B0000;" id="stat-recados">
-        0
-       </div>
-       <div class="text-gray-600 text-lg font-semibold">
-        Recados
-       </div>
-      </div>
-     </div><!-- Tabs -->
-     <div class="mb-6">
-      <div class="bg-white rounded-2xl shadow-lg p-4 mb-4">
-       <p class="text-center text-gray-600 text-base"><strong>Clique nas abas abaixo</strong> para ver diferentes informações</p>
-      </div>
-      <div class="flex flex-wrap gap-4 justify-center"><button id="tab-confirmados" class="px-8 py-4 rounded-xl font-bold text-white shadow-lg text-lg" style="background-color: #8B0000;"> Confirmados </button> <button id="tab-declinados" class="px-8 py-4 rounded-xl font-bold shadow-lg text-lg" style="background-color: #e5e7eb; color: #666;"> Declinaram </button> <button id="tab-recados" class="px-8 py-4 rounded-xl font-bold shadow-lg text-lg" style="background-color: #e5e7eb; color: #666;"> Recados </button> <button id="tab-links" class="px-8 py-4 rounded-xl font-bold shadow-lg text-lg" style="background-color: #e5e7eb; color: #666;"> Enviar Convites </button>
-      </div>
-     </div><!-- Conteúdo das Tabs -->
-     <div id="content-confirmados" class="bg-white rounded-3xl shadow-2xl p-8">
-      <h2 class="text-3xl font-bold mb-6 elegant-font" style="color: #8B0000;">Confirmações Recebidas</h2>
-      <div id="confirmations-list" class="space-y-4">
-       <p class="text-gray-400 text-center py-12 text-lg">Nenhuma confirmação ainda</p>
-      </div>
-     </div>
-     <div id="content-declinados" class="bg-white rounded-3xl shadow-2xl p-8" style="display: none;">
-      <h2 class="text-3xl font-bold mb-6 elegant-font" style="color: #8B0000;">Pessoas que Declinaram</h2>
-      <div id="declines-list" class="space-y-4">
-       <p class="text-gray-400 text-center py-12 text-lg">Ninguém declinou ainda</p>
-      </div>
-     </div>
-     <div id="content-recados" class="bg-white rounded-3xl shadow-2xl p-8" style="display: none;">
-      <h2 class="text-3xl font-bold mb-6 elegant-font" style="color: #8B0000;">Recados Recebidos</h2>
-      <div id="admin-recados-list" class="space-y-4">
-       <p class="text-gray-400 text-center py-12 text-lg">Nenhum recado ainda</p>
-      </div>
-     </div><!-- Aba Links -->
-     <div id="content-links" class="bg-white rounded-3xl shadow-2xl p-8" style="display: none;">
-      <div class="text-center mb-8">
-       <h2 class="text-3xl font-bold mb-3 elegant-font" style="color: #8B0000;">Como Enviar os Convites</h2>
-       <p class="text-lg text-gray-600">Siga os passos abaixo para convidar as pessoas</p>
-      </div><!-- Tutorial Visual -->
-      <div class="bg-blue-50 rounded-2xl p-6 mb-8 border-2 border-blue-300">
-       <h3 class="text-xl font-bold mb-4 text-blue-900">Tutorial Passo a Passo:</h3>
-       <div class="space-y-3 text-gray-700">
-        <div class="flex items-start gap-3">
-         <div class="bg-blue-600 text-white font-bold w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-          1
-         </div>
-         <p class="text-base"><strong>Escolha o link correto</strong> (com ou sem acompanhante)</p>
-        </div>
-        <div class="flex items-start gap-3">
-         <div class="bg-blue-600 text-white font-bold w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-          2
-         </div>
-         <p class="text-base"><strong>Clique no botão "Copiar"</strong> - o link será copiado automaticamente</p>
-        </div>
-        <div class="flex items-start gap-3">
-         <div class="bg-blue-600 text-white font-bold w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-          3
-         </div>
-         <p class="text-base"><strong>Cole no WhatsApp, SMS ou Email</strong> e envie para seus convidados</p>
-        </div>
-       </div>
-      </div><!-- Links -->
-      <div class="space-y-6 mb-8">
-       <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border-2" style="border-color: #10b981;">
-        <div class="flex items-center gap-3 mb-4">
-         <div>
-          <h4 class="text-xl font-bold" style="color: #047857;">Link para Pessoa SOZINHA</h4>
-          <p class="text-sm text-gray-600">Use este link para quem vai sozinho (sem acompanhante)</p>
-         </div>
-        </div>
-        <div class="flex gap-3"><input type="text" id="link-sem" readonly class="flex-1 px-4 py-3 rounded-xl text-base border-2 bg-white" style="border-color: #10b981;"> <button id="copiar-sem-btn" class="px-8 py-3 rounded-xl text-white font-bold text-lg whitespace-nowrap hover:opacity-90 transition-all" style="background-color: #10b981;"> Copiar </button>
-        </div>
-       </div>
-       <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 border-2" style="border-color: #a855f7;">
-        <div class="flex items-center gap-3 mb-4">
-         <div>
-          <h4 class="text-xl font-bold" style="color: #7c3aed;">Link para Pessoa COM ACOMPANHANTE</h4>
-          <p class="text-sm text-gray-600">Use este link para quem pode levar 1 acompanhante</p>
-         </div>
-        </div>
-        <div class="flex gap-3"><input type="text" id="link-com" readonly class="flex-1 px-4 py-3 rounded-xl text-base border-2 bg-white" style="border-color: #a855f7;"> <button id="copiar-com-btn" class="px-8 py-3 rounded-xl text-white font-bold text-lg whitespace-nowrap hover:opacity-90 transition-all" style="background-color: #a855f7;"> Copiar </button>
-        </div>
-       </div>
-      </div>
-      <div id="copy-success" style="display: none;" class="text-center p-4 bg-green-100 border-2 border-green-400 rounded-xl mb-6">
-       <p class="text-green-800 font-bold text-lg">Link copiado! Agora é só colar no WhatsApp ou outro app</p>
-      </div><!-- Personalização -->
-      <div class="border-t-4 pt-8 mt-8" style="border-color: #e5ddd5;">
-       <h3 class="text-2xl font-bold mb-6 elegant-font text-center" style="color: #8B0000;">Personalizar Convite</h3>
-       <div class="space-y-6">
-        <div class="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl p-6 border-2" style="border-color: #f59e0b;"><label class="block text-lg font-bold mb-3" style="color: #92400e;"> Nome da Aniversariante: </label> <input type="text" id="edit-nome" class="w-full px-4 py-3 rounded-xl text-lg border-2 bg-white mb-4" style="border-color: #f59e0b;"> <button id="salvar-config-btn" class="w-full py-3 rounded-xl text-white font-bold text-lg hover:opacity-90 transition-all" style="background-color: #8B0000;"> Salvar Alterações </button>
-        </div>
-        <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl p-6 border-2" style="border-color: #3b82f6;"><label class="block text-lg font-bold mb-3" style="color: #1e40af;"> Data do Evento (texto que aparece no convite): </label> <input type="text" id="edit-data" class="w-full px-4 py-3 rounded-xl text-lg border-2 bg-white mb-6" style="border-color: #3b82f6;" placeholder="Ex: 15 de Janeiro de 2026, às 20:00"> <label class="block text-lg font-bold mb-3" style="color: #1e40af;"> 📅 Data e Hora EXATA do Evento (para contagem regressiva): </label>
-         <div class="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-4 mb-3">
-          <p class="text-sm text-yellow-900 font-bold mb-2">⚠️ IMPORTANTE:</p>
-          <p class="text-sm text-yellow-800">Coloque aqui a data e hora EXATA do aniversário para a contagem regressiva funcionar!</p>
-         </div><input type="datetime-local" id="edit-data-evento-timestamp" class="w-full px-4 py-3 rounded-xl text-lg border-2 bg-white mb-6" style="border-color: #3b82f6;"> <label class="block text-lg font-bold mb-3" style="color: #1e40af;"> Data Limite para Confirmação: </label> <input type="date" id="edit-data-limite" class="w-full px-4 py-3 rounded-xl text-lg border-2 bg-white" style="border-color: #3b82f6;">
-         <p class="text-sm text-gray-600 mt-2">Após esta data, os convidados não poderão mais confirmar presença</p>
-        </div>
-        <div class="bg-gradient-to-r from-red-50 to-pink-50 rounded-2xl p-6 border-2" style="border-color: #ef4444;"><label class="block text-lg font-bold mb-3" style="color: #991b1b;"> Texto do Aviso: </label> <input type="text" id="edit-aviso" class="w-full px-4 py-3 rounded-xl text-lg border-2 bg-white mb-4" style="border-color: #ef4444;">
-         <div class="flex items-center justify-between">
-          <div class="flex-1"><label class="block text-base font-bold" style="color: #991b1b;"> Mostrar aviso </label>
-           <p class="text-sm text-gray-600 mt-1">Clique no botão ao lado para ligar/desligar</p>
-          </div>
-          <div class="relative ml-4"><input type="checkbox" id="toggle-aviso-criancas" class="sr-only" checked>
-           <div id="toggle-bg" class="block w-16 h-9 rounded-full transition-colors cursor-pointer" style="background-color: #6f0000;"></div>
-           <div id="toggle-dot" class="dot absolute left-1 top-1 bg-white w-7 h-7 rounded-full transition-transform pointer-events-none"></div>
-          </div>
-         </div>
-        </div>
-        <div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-6 border-2" style="border-color: #6366f1;"><label class="block text-lg font-bold mb-3" style="color: #4338ca;"> Usuário Admin: </label> <input type="text" id="edit-username" class="w-full px-4 py-3 rounded-xl text-lg border-2 bg-white mb-3" style="border-color: #6366f1;"> <label class="block text-lg font-bold mb-3 mt-4" style="color: #4338ca;"> Senha Admin: </label> <input type="password" id="edit-password" class="w-full px-4 py-3 rounded-xl text-lg border-2 bg-white" style="border-color: #6366f1;">
-        </div>
-       </div>
+      <div>
+       <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Mensagem Personalizada</label> <input type="text" id="new-event-message" placeholder="Ex: Partilha as tuas fotos!" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;margin-bottom:16px;">
+      </div><button onclick="addNewEvent()" style="background:#2563eb;color:#fff;border:none;padding:12px 24px;border-radius:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;width:100%;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> <i data-lucide="plus" style="width:16px;height:16px;display:inline;margin-right:8px;vertical-align:-2px;"></i> Criar Evento </button>
+     </div><!-- Events List -->
+     <div style="background:#fff;border:1px solid rgba(26,26,26,0.1);border-radius:16px;padding:24px;">
+      <h2 style="font-size:18px;font-weight:600;margin:0 0 20px 0;">Meus Eventos (<span id="event-count">0</span>)</h2>
+      <div id="events-list" style="display:flex;flex-direction:column;gap:12px;"></div>
+      <div id="no-events-message" style="text-align:center;padding:24px;opacity:0.5;">
+       <i data-lucide="inbox" style="width:32px;height:32px;margin:0 auto 8px;display:block;opacity:0.3;"></i>
+       <p style="font-size:14px;margin:0;">Nenhum evento criado ainda</p>
       </div>
      </div>
     </div>
+   </div><!-- GUEST VIEW (Upload) -->
+   <div id="guest-view" style="display:none;" class="h-full w-full overflow-auto">
+    <!-- Header -->
+    <header class="text-center pt-10 pb-4 px-4 fade-in stagger-1">
+     <div class="inline-flex items-center gap-2 mb-3">
+      <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;" id="logo-box">
+       <i data-lucide="camera" style="width:20px;height:20px;"></i>
+      </div><span id="brand-name" style="font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;letter-spacing:0.5px;">UploadAO</span>
+     </div>
+    </header><!-- Event Info -->
+    <section class="text-center px-4 pb-6 fade-in stagger-2">
+     <h1 id="event-title" style="font-family:'Poppins',sans-serif;font-size:32px;font-weight:600;line-height:1.2;margin:0 0 8px 0;"></h1>
+     <p id="event-date" style="font-size:14px;opacity:0.5;margin:0;letter-spacing:2px;text-transform:uppercase;"></p>
+    </section><!-- Mensagem Personalizada -->
+    <section id="event-message-box" class="px-4 max-w-lg mx-auto pb-6 fade-in stagger-2" style="display:none;">
+     <div id="event-message-content" style="background:rgba(37,99,235,0.1);border-left:4px solid #2563eb;padding:12px 16px;border-radius:8px;text-align:center;">
+      <p id="event-message" style="font-size:14px;margin:0;font-weight:500;color:#2563eb;"></p>
+     </div>
+    </section><!-- Upload Area -->
+    <section class="px-4 max-w-lg mx-auto pb-6 fade-in stagger-3">
+     <div id="drop-zone" class="drop-zone relative rounded-2xl border-2 border-dashed p-8 text-center cursor-pointer transition-all" style="border-color: rgba(26,26,26,0.15); background: rgba(26,26,26,0.03);" onclick="document.getElementById('fileInput').click()">
+      <input type="file" id="fileInput" multiple accept="image/*,video/*" class="hidden">
+      <div class="mb-4">
+       <div class="inline-flex items-center justify-center w-16 h-16 rounded-full" id="upload-icon-circle" style="background: rgba(26,26,26,0.08);">
+        <i data-lucide="upload-cloud" id="upload-icon" style="width:28px;height:28px;"></i>
+       </div>
+      </div>
+      <p style="font-size:16px;font-weight:500;margin:0 0 4px 0;">Toque para selecionar</p>
+      <p style="font-size:13px;opacity:0.4;margin:0;">ou arraste fotos e vídeos aqui</p>
+     </div><!-- File list com miniaturas e eliminar -->
+     <div id="file-list" class="mt-4 flex flex-col gap-2"></div><!-- Upload button --> <button id="upload-btn" class="w-full mt-5 py-4 rounded-xl font-semibold text-base tracking-wide transition-all duration-300 hidden" style="border:none;cursor:pointer;" onclick="startUpload()"> <span id="upload-btn-text" class="flex items-center justify-center gap-2"> <i data-lucide="send" style="width:18px;height:18px;"></i> <span id="btn-label">Enviar Fotos</span> </span> </button> <!-- Config notice -->
+     <div id="config-notice" class="mt-5 rounded-xl p-4 text-center" style="background:rgba(26,26,26,0.08);border:1px solid rgba(26,26,26,0.15);display:none;">
+      <p style="font-size:13px;margin:0;opacity:0.7;"><i data-lucide="info" style="width:14px;height:14px;display:inline;vertical-align:-2px;margin-right:4px;"></i> Configura o URL do Google Apps Script para ativar o envio</p>
+     </div>
+    </section><!-- Minhas fotos - Lista para eliminação (se houver acesso) -->
+    <section id="my-files-section" class="px-4 max-w-lg mx-auto pb-10 fade-in stagger-4" style="display:none;">
+     <h3 style="font-size:14px;font-weight:600;margin:0 0 12px 0;opacity:0.7;">As minhas fotos</h3>
+     <div id="my-uploaded-files" class="flex flex-col gap-2"></div>
+    </section><!-- How it works -->
+    <section class="px-4 max-w-lg mx-auto pb-10 fade-in stagger-4">
+     <div class="grid grid-cols-3 gap-3 text-center" style="font-size:12px;opacity:0.35;">
+      <div>
+       <i data-lucide="smartphone" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Abre o link
+      </div>
+      <div>
+       <i data-lucide="image-plus" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Escolhe fotos
+      </div>
+      <div>
+       <i data-lucide="cloud-lightning" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Enviado!
+      </div>
+     </div>
+    </section><!-- Footer -->
+    <footer class="text-center pb-8 px-4" style="font-size:11px;opacity:0.25;">
+     Created by <strong>Invites</strong>
+    </footer>
    </div>
   </div>
   <script>
-        // ==================== CONFIGURAÇÃO SUPABASE ====================
-        const CONFIG = {
-            supabaseUrl: 'https://ybbhynfttwogkdsnqmvu.supabase.co',
-            supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InliYmh5bmZ0dHdvZ2tkc25xbXZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU2NzY3MDIsImV4cCI6MjA3MTI1MjcwMn0.LPMGW_OPKiwTEKhyzl_v2Snb9nVeZg0wP4Ot6zKrCn0'
-        };
+  // --- Supabase Config ---
+  const SUPABASE_URL = "https://gysvyobbjetlhpakwatc.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5c3Z5b2JiamV0bGhwYWt3YXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNzYzMjksImV4cCI6MjA5MDc1MjMyOX0.3FLSilwG7-hI1ZPZQwa-HHXsxPR4t1XYrUpP24yPg7c";
+  let supabaseClient = null;
 
-        let supabaseClient;
-        
-        if (window.supabase && window.supabase.createClient) {
-            supabaseClient = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
+  // --- Config & State ---
+  const ADMIN_PASSWORD = "adkira2026invites!!@";
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwSzJ2XGvzpQtsggyHJqanOUYcXnke4rxT6A-nfqB6_IDQDn_G3MMxPI01SmwDxvjc4Og/exec";
+  const DELETE_WINDOW_MS = 60 * 60 * 1000; // 1 hora (para guests apagarem suas fotos)
+  const AUTO_DELETE_DAYS = 30; // Apaga automaticamente após 30 dias da data do evento
+
+  // Initialize Supabase after all scripts load
+  if (window.supabase) {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+
+  let selectedFiles = [];
+  let isUploading = false;
+  let currentEventId = null;
+  let allEvents = [];
+  let currentGuestId = null;
+
+  const defaultConfig = {
+    background_color: "#ffffff",
+    surface_color: "#f5f5f5",
+    text_color: "#1a1a1a",
+    primary_action: "#2563eb",
+    secondary_action: "#6b7280",
+    font_family: "Poppins",
+    font_size: 16,
+    upload_button_text: "Enviar Fotos",
+    thank_you_message: "Obrigado por partilhar! 🎉",
+    event_message: "Partilha as tuas fotos e vídeos do evento!"
+  };
+
+  // --- Element SDK ---
+  function applyConfig(config) {
+    const bg = config.background_color || defaultConfig.background_color;
+    const surface = config.surface_color || defaultConfig.surface_color;
+    const text = config.text_color || defaultConfig.text_color;
+    const primary = config.primary_action || defaultConfig.primary_action;
+    const secondary = config.secondary_action || defaultConfig.secondary_action;
+    const font = config.font_family || defaultConfig.font_family;
+    const baseSize = config.font_size || defaultConfig.font_size;
+
+    const app = document.getElementById('app');
+    app.style.background = bg;
+    app.style.color = text;
+
+    document.getElementById('btn-label').textContent = config.upload_button_text || defaultConfig.upload_button_text;
+
+    // Logo
+    const logoBox = document.getElementById('logo-box');
+    logoBox.style.background = primary;
+    logoBox.style.color = bg;
+
+    // Brand
+    const brand = document.getElementById('brand-name');
+    brand.style.fontFamily = `${font}, serif`;
+    brand.style.fontSize = `${baseSize * 1.375}px`;
+
+    // Title
+    const title = document.getElementById('event-title');
+    title.style.fontFamily = `${font}, serif`;
+    title.style.fontSize = `${baseSize * 2}px`;
+    title.style.color = text;
+
+    // Date
+    const dateEl = document.getElementById('event-date');
+    dateEl.style.fontSize = `${baseSize * 0.875}px`;
+    dateEl.style.color = secondary;
+
+    // Mensagem
+    const msgBox = document.getElementById('event-message-content');
+    msgBox.style.background = `${primary}1f`;
+    msgBox.style.borderLeftColor = primary;
+
+    // Upload btn
+    const btn = document.getElementById('upload-btn');
+    btn.style.background = primary;
+    btn.style.color = bg;
+    btn.style.fontSize = `${baseSize}px`;
+
+    // Upload icon
+    const uploadIcon = document.getElementById('upload-icon');
+    if (uploadIcon) uploadIcon.style.color = primary;
+
+    // Drop zone
+    const dz = document.getElementById('drop-zone');
+    dz.style.borderColor = `${secondary}33`;
+
+    // Upload icon circle
+    const circle = document.getElementById('upload-icon-circle');
+    if (circle) circle.style.background = `${primary}1f`;
+
+    document.querySelectorAll('.file-item-bg').forEach(el => {
+      el.style.background = surface;
+    });
+    document.querySelectorAll('.file-item-remove').forEach(el => {
+      el.style.color = secondary;
+    });
+    document.querySelectorAll('.progress-bar-bg').forEach(el => {
+      el.style.background = `${secondary}33`;
+    });
+    document.querySelectorAll('.progress-bar-fill').forEach(el => {
+      el.style.background = primary;
+    });
+  }
+
+  function makeRecolorable(key) {
+    return {
+      get: () => (window.elementSdk?.config?.[key]) || defaultConfig[key],
+      set: (v) => { window.elementSdk.setConfig({ [key]: v }); }
+    };
+  }
+
+  if (window.elementSdk) {
+    window.elementSdk.init({
+      defaultConfig,
+      onConfigChange: async (config) => { applyConfig(config); },
+      mapToCapabilities: (config) => ({
+        recolorables: [
+          makeRecolorable('background_color'),
+          makeRecolorable('surface_color'),
+          makeRecolorable('text_color'),
+          makeRecolorable('primary_action'),
+          makeRecolorable('secondary_action')
+        ],
+        borderables: [],
+        fontEditable: {
+          get: () => config.font_family || defaultConfig.font_family,
+          set: (v) => { window.elementSdk.setConfig({ font_family: v }); }
+        },
+        fontSizeable: {
+          get: () => config.font_size || defaultConfig.font_size,
+          set: (v) => { window.elementSdk.setConfig({ font_size: v }); }
+        }
+      }),
+      mapToEditPanelValues: (config) => new Map([
+        ["upload_button_text", config.upload_button_text || defaultConfig.upload_button_text],
+        ["thank_you_message", config.thank_you_message || defaultConfig.thank_you_message],
+        ["event_message", config.event_message || defaultConfig.event_message]
+      ])
+    });
+  }
+
+  applyConfig(defaultConfig);
+
+  // --- Admin Functions ---
+  async function adminLogin() {
+    const password = document.getElementById('admin-password').value;
+    
+    if (!supabaseClient) {
+      showToast('Supabase não inicializou', 'error');
+      return;
+    }
+
+    if (!password.trim()) {
+      showToast('Digite a senha', 'warning');
+      return;
+    }
+
+    const loginBtn = document.querySelector('button[onclick="adminLogin()"]');
+    const originalText = loginBtn.textContent;
+    loginBtn.disabled = true;
+    loginBtn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;"><svg class="animate-spin" style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25"></circle><path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path></svg> Entrando...</span>';
+
+    // Simple password check (stored as constant)
+    if (password === ADMIN_PASSWORD) {
+      showToast('✅ Bem-vindo!', 'success');
+      document.getElementById('login-view').style.display = 'none';
+      document.getElementById('admin-view').style.display = 'block';
+      document.getElementById('admin-password').value = '';
+      loginBtn.disabled = false;
+      loginBtn.textContent = originalText;
+      loadEvents();
+      lucide.createIcons();
+    } else {
+      showToast('❌ Senha incorreta', 'error');
+      document.getElementById('admin-password').value = '';
+      loginBtn.disabled = false;
+      loginBtn.textContent = originalText;
+    }
+  }
+
+  function adminLogout() {
+    if (supabaseClient) {
+      supabaseClient.auth.signOut();
+    }
+    document.getElementById('admin-view').style.display = 'none';
+    document.getElementById('guest-view').style.display = 'none';
+    document.getElementById('login-view').style.display = 'flex';
+    currentEventId = null;
+    currentGuestId = null;
+    selectedFiles = [];
+    renderFileList();
+  }
+
+  // Initialize app on load
+  window.addEventListener('load', async () => {
+    await loadEvents();
+    checkGuestMode();
+  });
+
+  async function addNewEvent() {
+    if (!supabaseClient) {
+      showToast('Supabase não inicializou', 'error');
+      return;
+    }
+
+    const title = document.getElementById('new-event-title').value.trim();
+    const dateInput = document.getElementById('new-event-date').value.trim();
+    const message = document.getElementById('new-event-message').value.trim();
+
+    if (!title || !dateInput) {
+      showToast('Preencha nome e data do evento', 'warning');
+      return;
+    }
+
+    // Formata a data: 2025-06-30 → 30.06.2025
+    const [year, month, day] = dateInput.split('-');
+    const formattedDate = `${day}.${month}.${year}`;
+
+    const eventId = 'evt_' + Date.now();
+    const uploadUrl = generateShareLink(eventId);
+    
+    const { data, error } = await supabaseClient
+      .from('events')
+      .insert([{
+        id: eventId,
+        event_title: title,
+        event_date: formattedDate,
+        event_message: message || "Partilha as tuas fotos!",
+        upload_url: uploadUrl,
+        created_at: new Date().toISOString()
+      }]);
+
+    if (error) {
+      showToast('Erro ao criar evento: ' + error.message, 'error');
+      return;
+    }
+
+    document.getElementById('new-event-title').value = '';
+    document.getElementById('new-event-date').value = '';
+    document.getElementById('new-event-message').value = '';
+    
+    loadEvents();
+    showToast('Evento criado com sucesso!', 'success');
+  }
+
+  async function loadEvents() {
+    const { data, error } = await supabaseClient
+      .from('events')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Erro ao carregar eventos:', error);
+      return;
+    }
+
+    allEvents = data || [];
+    renderEventsList();
+  }
+
+  function generateShareLink(eventId) {
+    const baseUrl = window.location.origin + window.location.pathname;
+    return baseUrl + '?event=' + eventId;
+  }
+
+  // Calcula o status de apagamento (apenas avisa, não elimina)
+  function getDeleteStatusBadge(event) {
+    const eventDate = parseEventDate(event.event_date); // 30.06.2025 → Date
+    const deleteDeadline = new Date(eventDate);
+    deleteDeadline.setDate(deleteDeadline.getDate() + AUTO_DELETE_DAYS);
+
+    // Se tem extensão guardada, usa essa data
+    if (event.delete_deadline_extended) {
+      const extendedDate = new Date(event.delete_deadline_extended);
+      if (extendedDate > deleteDeadline) {
+        deleteDeadline.setTime(extendedDate.getTime());
+      }
+    }
+
+    const now = new Date();
+    const daysLeft = Math.ceil((deleteDeadline - now) / (1000 * 60 * 60 * 24));
+
+    let badgeColor = '#27ae60'; // Verde
+    let badgeText = `✅ ${daysLeft} dias restantes`;
+
+    if (daysLeft <= 0) {
+      badgeColor = '#e74c3c';
+      badgeText = '🗑️ Lembrete: Elimina as fotos no Google Drive';
+    } else if (daysLeft <= 7) {
+      badgeColor = '#f39c12';
+      badgeText = `⚠️ ${daysLeft} dias - em breve eliminar no Drive`;
+    }
+
+    return `<p style="font-size:12px;color:${badgeColor};margin:0 0 8px 0;font-weight:500;">${badgeText}</p>`;
+  }
+
+  // Parse data do evento: "30.06.2025" → Date object
+  function parseEventDate(dateStr) {
+    const [day, month, year] = dateStr.split('.');
+    return new Date(year, month - 1, day);
+  }
+
+  function extendDeleteDeadline(eventId) {
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:1000;';
+    modal.innerHTML = `
+      <div style="background:#fff;border-radius:16px;padding:24px;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <h3 style="margin:0 0 12px 0;font-size:16px;font-weight:600;">Estender Prazo de Apagamento</h3>
+        <p style="margin:0 0 16px 0;font-size:14px;opacity:0.7;font-family:'Poppins',sans-serif;">
+          As fotos deste evento serão apagadas automaticamente. Quantos dias extra quer adicionar?
+        </p>
+        <div style="margin-bottom:16px;">
+          <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Dias extra</label>
+          <input type="number" id="extend-days" value="30" min="1" max="365" style="width:100%;padding:10px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:14px;">
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button onclick="this.parentElement.parentElement.remove()" style="background:none;border:1px solid #ccc;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif;">Cancelar</button>
+          <button onclick="confirmExtendDeadline('${eventId}'); this.parentElement.parentElement.remove();" style="background:#27ae60;color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Estender</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+    document.getElementById('extend-days').focus();
+  }
+
+  function confirmExtendDeadline(eventId) {
+    const extraDays = parseInt(document.getElementById('extend-days')?.value) || 30;
+    if (extraDays < 1 || extraDays > 365) {
+      showToast('Dias inválidos (1-365)', 'warning');
+      return;
+    }
+
+    const event = allEvents.find(e => e.id === eventId);
+    if (!event) return;
+
+    const newDeadline = new Date();
+    newDeadline.setDate(newDeadline.getDate() + extraDays);
+
+    supabaseClient
+      .from('events')
+      .update({ delete_deadline_extended: newDeadline.toISOString() })
+      .eq('id', eventId)
+      .then(({ error }) => {
+        if (error) {
+          showToast('Erro ao estender prazo', 'error');
+        } else {
+          event.delete_deadline_extended = newDeadline.toISOString();
+          renderEventsList();
+          showToast(`✅ Prazo estendido por ${extraDays} dias!`, 'success');
+        }
+      });
+  }
+
+  function renderEventsList() {
+    const list = document.getElementById('events-list');
+    const noMsg = document.getElementById('no-events-message');
+    const count = document.getElementById('event-count');
+
+    count.textContent = allEvents.length;
+
+    if (allEvents.length === 0) {
+      list.innerHTML = '';
+      noMsg.style.display = 'block';
+      return;
+    }
+
+    noMsg.style.display = 'none';
+    list.innerHTML = allEvents.map((event, idx) => `
+      <div style="display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;padding:16px;background:#f9f9f9;border-radius:12px;border:1px solid rgba(26,26,26,0.08);">
+        <div>
+          <h3 style="font-weight:600;margin:0 0 4px 0;font-size:15px;">${event.event_title}</h3>
+          <p style="font-size:13px;opacity:0.6;margin:0 0 8px 0;">📅 ${event.event_date}</p>
+          ${getDeleteStatusBadge(event)}
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+            <button onclick="copyLink('${event.upload_url}')" style="background:none;border:1px solid #2563eb;color:#2563eb;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;" onmouseover="this.style.background='#2563eb1f'" onmouseout="this.style.background='none'">
+              <i data-lucide="copy" style="width:12px;height:12px;display:inline;margin-right:4px;vertical-align:-1px;"></i> Copiar Link
+            </button>
+            <button onclick="generateQRCode('${event.upload_url}')" style="background:none;border:1px solid #2563eb;color:#2563eb;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;" onmouseover="this.style.background='#2563eb1f'" onmouseout="this.style.background='none'">
+              <i data-lucide="qr-code" style="width:12px;height:12px;display:inline;margin-right:4px;vertical-align:-1px;"></i> QR Code
+            </button>
+            <button onclick="extendDeleteDeadline('${event.id}')" style="background:none;border:1px solid #27ae60;color:#27ae60;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;" onmouseover="this.style.background='#27ae601f'" onmouseout="this.style.background='none'">
+              <i data-lucide="calendar-plus" style="width:12px;height:12px;display:inline;margin-right:4px;vertical-align:-1px;"></i> Estender
+            </button>
+            <button onclick="deleteEventConfirm(${idx}, '${event.event_title}')" style="background:none;border:1px solid #e74c3c;color:#e74c3c;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;" onmouseover="this.style.background='#e74c3c1f'" onmouseout="this.style.background='none'">
+              <i data-lucide="trash-2" style="width:12px;height:12px;display:inline;margin-right:4px;vertical-align:-1px;"></i> Apagar
+            </button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+    lucide.createIcons();
+  }
+
+  function copyLink(url) {
+    navigator.clipboard.writeText(url).then(() => {
+      showToast('Link copiado! 📋', 'success');
+    }).catch(() => {
+      showToast('Erro ao copiar', 'error');
+    });
+  }
+
+  function generateQRCode(url) {
+    const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(url);
+    
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:1000;';
+    modal.innerHTML = `
+      <div style="background:#fff;border-radius:16px;padding:24px;text-align:center;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <h3 style="margin:0 0 16px 0;font-size:18px;font-weight:600;">QR Code do Evento</h3>
+        <img src="${qrUrl}" alt="QR Code" style="width:280px;height:280px;border:1px solid rgba(26,26,26,0.1);border-radius:12px;margin-bottom:16px;">
+        <p style="font-size:12px;opacity:0.6;margin:0 0 16px 0;word-break:break-all;font-family:'Poppins',sans-serif;">${url}</p>
+        <button onclick="this.parentElement.parentElement.remove()" style="background:#2563eb;color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+          Fechar
+        </button>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+  }
+
+  function deleteEventConfirm(eventIndex, title) {
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:1000;';
+    modal.innerHTML = `
+      <div style="background:#fff;border-radius:16px;padding:24px;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <h3 style="margin:0 0 12px 0;font-size:16px;font-weight:600;">Apagar evento?</h3>
+        <p style="margin:0 0 20px 0;font-size:14px;opacity:0.7;font-family:'Poppins',sans-serif;">Tem certeza que quer apagar "<strong>${title}</strong>"?</p>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button onclick="this.parentElement.parentElement.remove()" style="background:none;border:1px solid #ccc;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif;">Cancelar</button>
+          <button onclick="deleteEvent(${eventIndex}); this.parentElement.parentElement.remove();" style="background:#e74c3c;color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Apagar</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+  }
+
+  function deleteEvent(eventIndex) {
+    const event = allEvents[eventIndex];
+    if (!event) return;
+
+    supabaseClient
+      .from('events')
+      .delete()
+      .eq('id', event.id)
+      .then(({ error }) => {
+        if (error) {
+          showToast('Erro ao apagar evento', 'error');
+        } else {
+          allEvents.splice(eventIndex, 1);
+          renderEventsList();
+          showToast('Evento apagado', 'success');
+        }
+      });
+  }
+
+  function checkGuestMode() {
+    const params = new URLSearchParams(window.location.search);
+    const eventId = params.get('event');
+    
+    if (eventId && allEvents.length > 0) {
+      const event = allEvents.find(e => e.id === eventId);
+      if (event) {
+        currentEventId = eventId;
+        if (!currentGuestId) {
+          currentGuestId = 'guest_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+          sessionStorage.setItem('guestId_' + eventId, currentGuestId);
+        }
+        showGuestView(event);
+      } else if (document.getElementById('guest-view').style.display === 'none') {
+        showToast('Evento não encontrado', 'error');
+      }
+    }
+  }
+
+  function showGuestView(event) {
+    document.getElementById('login-view').style.display = 'none';
+    document.getElementById('admin-view').style.display = 'none';
+    document.getElementById('guest-view').style.display = 'block';
+    
+    const config = window.elementSdk?.config || defaultConfig;
+    document.getElementById('event-title').textContent = event.event_title;
+    document.getElementById('event-date').textContent = event.event_date;
+    
+    const msgBox = document.getElementById('event-message-box');
+    const msgEl = document.getElementById('event-message');
+    if (event.event_message) {
+      msgEl.textContent = event.event_message;
+      msgBox.style.display = 'block';
+    } else {
+      msgBox.style.display = 'none';
+    }
+    
+    applyConfig(config);
+    renderMyUploadedFiles();
+    
+    // Atualiza a lista de ficheiros a cada 30 segundos
+    setInterval(() => {
+      if (document.getElementById('guest-view').style.display !== 'none') {
+        renderMyUploadedFiles();
+      }
+    }, 30000);
+  }
+
+  // --- Miniaturas e Preview ---
+  const fileInput = document.getElementById('fileInput');
+  const dropZone = document.getElementById('drop-zone');
+  const fileList = document.getElementById('file-list');
+  const uploadBtn = document.getElementById('upload-btn');
+
+  fileInput.addEventListener('change', (e) => {
+    addFiles(Array.from(e.target.files));
+    fileInput.value = '';
+  });
+
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('dragover'); });
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    addFiles(Array.from(e.dataTransfer.files));
+  });
+
+  function addFiles(files) {
+    const mediaFiles = files.filter(f => f.type.startsWith('image/') || f.type.startsWith('video/'));
+    if (!mediaFiles.length) { showToast('Seleciona fotos ou vídeos', 'warning'); return; }
+
+    mediaFiles.forEach(f => {
+      if (!selectedFiles.find(s => s.name === f.name && s.size === f.size)) {
+        selectedFiles.push(f);
+      }
+    });
+    renderFileList();
+  }
+
+  function renderFileList() {
+    const config = window.elementSdk?.config || defaultConfig;
+    const surface = config.surface_color || defaultConfig.surface_color;
+    const secondary = config.secondary_action || defaultConfig.secondary_action;
+    const primary = config.primary_action || defaultConfig.primary_action;
+    const baseSize = config.font_size || defaultConfig.font_size;
+
+    fileList.innerHTML = '';
+    selectedFiles.forEach((f, i) => {
+      const isVideo = f.type.startsWith('video/');
+      const sizeMB = (f.size / 1024 / 1024).toFixed(1);
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const div = document.querySelector(`[data-file-index="${i}"]`);
+        if (div) {
+          const preview = div.querySelector('[data-preview]');
+          preview.style.backgroundImage = `url(${e.target.result})`;
+          preview.style.backgroundSize = 'cover';
+          preview.style.backgroundPosition = 'center';
+        }
+      };
+      reader.readAsDataURL(f);
+
+      const div = document.createElement('div');
+      div.setAttribute('data-file-index', i);
+      div.className = 'file-item-bg';
+      div.style.cssText = `background:${surface};border-radius:12px;overflow:hidden;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:8px;`;
+      
+      div.innerHTML = `
+        <div data-preview style="width:60px;height:60px;border-radius:8px;background:${secondary}1f;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+          <i data-lucide="${isVideo ? 'film' : 'image'}" style="width:24px;height:24px;opacity:0.3;"></i>
+        </div>
+        <div style="min-w-0;">
+          <p style="font-size:${baseSize * 0.85}px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:${config.text_color};">${f.name}</p>
+          <p style="font-size:${baseSize * 0.7}px;opacity:0.35;margin:2px 0 0 0;color:${config.text_color};">${sizeMB} MB</p>
+          <div data-progress-bar="${i}" style="height:3px;background:${secondary}33;border-radius:4px;overflow:hidden;margin-top:4px;display:none;">
+            <div class="progress-bar-fill upload-progress" style="height:100%;width:0%;background:${primary};border-radius:4px;"></div>
+          </div>
+        </div>
+        <button onclick="removeFile(${i})" style="background:none;border:none;cursor:pointer;color:${secondary};padding:4px;flex-shrink:0;font-family:'Poppins',sans-serif;font-size:${baseSize * 0.85}px;" class="file-item-remove" ${isUploading ? 'disabled' : ''}>
+          <i data-lucide="x" style="width:18px;height:18px;"></i>
+        </button>
+      `;
+      fileList.appendChild(div);
+    });
+
+    uploadBtn.classList.toggle('hidden', selectedFiles.length === 0);
+    if (selectedFiles.length > 0 && !isUploading) uploadBtn.classList.add('btn-pulse');
+    else uploadBtn.classList.remove('btn-pulse');
+
+    lucide.createIcons();
+  }
+
+  function removeFile(index) {
+    if (isUploading) return;
+    selectedFiles.splice(index, 1);
+    renderFileList();
+  }
+
+  // --- Upload ---
+  async function startUpload() {
+    if (isUploading || !selectedFiles.length) return;
+
+    if (!APPS_SCRIPT_URL) {
+      showToast('URL do Apps Script não configurado', 'warning');
+      document.getElementById('config-notice').style.display = 'block';
+      return;
+    }
+
+    isUploading = true;
+    uploadBtn.classList.remove('btn-pulse');
+    uploadBtn.disabled = true;
+    const config = window.elementSdk?.config || defaultConfig;
+    const bg = config.background_color || defaultConfig.background_color;
+    uploadBtn.style.opacity = '0.7';
+    document.getElementById('upload-btn-text').innerHTML = `
+      <svg class="animate-spin" style="width:18px;height:18px;" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25"></circle>
+        <path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>
+      </svg>
+      A enviar...
+    `;
+
+    document.querySelectorAll('[data-progress-bar]').forEach(el => el.style.display = 'block');
+
+    let successCount = 0;
+    for (let i = 0; i < selectedFiles.length; i++) {
+      try {
+        await uploadFile(selectedFiles[i], i);
+        successCount++;
+      } catch (err) {
+        console.error('Upload failed:', selectedFiles[i].name, err);
+      }
+    }
+
+    isUploading = false;
+    uploadBtn.disabled = false;
+    uploadBtn.style.opacity = '1';
+
+    if (successCount > 0) {
+      const msg = config.thank_you_message || defaultConfig.thank_you_message;
+      showToast(`${msg} (${successCount}/${selectedFiles.length})`, 'success');
+      selectedFiles = [];
+      renderFileList();
+      setTimeout(() => {
+        document.getElementById('fileInput').value = '';
+      }, 500);
+    } else {
+      showToast('Erro no envio. Tenta novamente.', 'error');
+    }
+
+    const btnLabel = config.upload_button_text || defaultConfig.upload_button_text;
+    document.getElementById('upload-btn-text').innerHTML = `
+      <i data-lucide="send" style="width:18px;height:18px;"></i>
+      <span id="btn-label">${btnLabel}</span>
+    `;
+    lucide.createIcons();
+  }
+
+  function uploadFile(file, index) {
+    return new Promise((resolve, reject) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('name', file.name);
+      formData.append('type', file.type);
+      formData.append('eventId', currentEventId);
+      formData.append('guestId', currentGuestId);
+
+      console.log('📤 Enviando para Google Drive:', {
+        fileName: file.name,
+        fileSize: file.size,
+        eventId: currentEventId,
+        guestId: currentGuestId
+      });
+
+      // ÚNICO ENVIO: Google Drive (OBRIGATÓRIO)
+      fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        body: formData
+      })
+      .then(response => response.text())
+      .then(async (result) => {
+        console.log('✅ Ficheiro enviado para Google Drive:', result);
+
+        // DEPOIS: Guarda apenas os METADADOS no Supabase
+        try {
+          if (!supabaseClient) {
+            throw new Error('Supabase client não inicializado');
+          }
+
+          const fileId = 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+          
+          console.log('📝 Guardando metadados no Supabase:', {
+            fileId,
+            fileName: file.name,
+            fileSize: file.size
+          });
+
+          const { data, error: insertError } = await supabaseClient
+            .from('uploads')
+            .insert([{
+              id: fileId,
+              event_id: currentEventId,
+              guest_id: currentGuestId,
+              file_name: file.name,
+              file_size: (file.size / 1024 / 1024).toFixed(1) + ' MB',
+              file_upload_time: new Date().toISOString()
+            }]);
+
+          if (insertError) {
+            console.warn('⚠️ Aviso: Metadados no Supabase falharam (mas ficheiro está seguro no Google Drive):', insertError.message);
+            // Não rejeita - o ficheiro está seguro no Drive
+          } else {
+            console.log('✅ Metadados guardados no Supabase:', fileId);
+          }
+        } catch (err) {
+          console.warn('⚠️ Aviso: Erro ao guardar metadados (mas ficheiro está seguro no Google Drive):', err.message);
+          // Não rejeita - o ficheiro está seguro no Drive
         }
 
-        // ==================== VARIÁVEIS GLOBAIS ====================
-        let todasConfirmacoes = [];
-        let todosRecados = [];
-        let permitirAcompanhante = false;
-        let isAdminLogado = false;
-        let usuarioRespondeu = false;
-        let nomeConvidadoAtual = '';
-        let temLinkValido = false;
-        let configuracaoEvento = {
-            nome_aniversariante: 'Catarina Bastos Pires',
-            data_evento: '15 de Janeiro de 2026',
-            aviso_criancas: 'Por favor, não levar crianças',
-            mostrar_aviso: true,
-            admin_username: 'catarina',
-            admin_password: 'catarina2026',
-            data_evento_timestamp: new Date('2026-01-15T20:00:00').getTime(),
-            data_limite_confirmacao: null
-        };
-
-        // ==================== CARREGAR CONFIGURAÇÃO ====================
-        async function carregarConfiguracao() {
-            if (!supabaseClient) return;
-            
-            try {
-                const { data, error } = await supabaseClient
-                    .from('configuracao')
-                    .select('*')
-                    .limit(1)
-                    .single();
-
-                if (data) {
-                    configuracaoEvento = {
-                        nome_aniversariante: data.nome_aniversariante || configuracaoEvento.nome_aniversariante,
-                        data_evento: data.data_evento || configuracaoEvento.data_evento,
-                        aviso_criancas: data.aviso_criancas || configuracaoEvento.aviso_criancas,
-                        mostrar_aviso: data.mostrar_aviso !== undefined ? data.mostrar_aviso : configuracaoEvento.mostrar_aviso,
-                        admin_username: data.admin_username || configuracaoEvento.admin_username,
-                        admin_password: data.admin_password || configuracaoEvento.admin_password,
-                        data_evento_timestamp: data.data_evento_timestamp || configuracaoEvento.data_evento_timestamp,
-                        data_limite_confirmacao: data.data_limite_confirmacao || null
-                    };
-                }
-            } catch (err) {
-                console.error('Erro ao carregar configuração:', err);
-            }
-
-            atualizarInterfaceConvidado();
-            verificarDataLimite();
-        }
-
-        function atualizarInterfaceConvidado() {
-            document.getElementById('nome-aniversariante').textContent = configuracaoEvento.nome_aniversariante;
-            document.getElementById('data-evento').textContent = configuracaoEvento.data_evento;
-            document.getElementById('aviso-criancas').textContent = configuracaoEvento.aviso_criancas;
-            
-            const avisoContainer = document.getElementById('aviso-container');
-            avisoContainer.style.display = configuracaoEvento.mostrar_aviso ? 'block' : 'none';
-
-            // Renderizar recados sempre
-            renderizarRecados();
-
-            // Atualizar aviso de data limite - SEMPRE mostra se existir data
-            const avisoDataLimite = document.getElementById('aviso-data-limite');
-            const dataLimiteDisplay = document.getElementById('data-limite-display');
-            
-            if (configuracaoEvento.data_limite_confirmacao && configuracaoEvento.data_limite_confirmacao.trim() !== '') {
-                try {
-                    const dataLimite = new Date(configuracaoEvento.data_limite_confirmacao + 'T23:59:59');
-                    const dataFormatada = dataLimite.toLocaleDateString('pt-BR', { 
-                        day: '2-digit', 
-                        month: 'long', 
-                        year: 'numeric' 
-                    });
-                    
-                    if (dataLimiteDisplay) {
-                        dataLimiteDisplay.textContent = dataFormatada;
-                    }
-                    if (avisoDataLimite) {
-                        avisoDataLimite.style.display = 'block';
-                    }
-                } catch (err) {
-                    console.error('Erro ao processar data limite:', err);
-                    if (avisoDataLimite) {
-                        avisoDataLimite.style.display = 'none';
-                    }
-                }
-            } else {
-                if (avisoDataLimite) {
-                    avisoDataLimite.style.display = 'none';
-                }
-            }
-        }
-
-        // ==================== VERIFICAR DATA LIMITE ====================
-        function verificarDataLimite() {
-            if (!configuracaoEvento.data_limite_confirmacao) return;
-            
-            const dataLimite = new Date(configuracaoEvento.data_limite_confirmacao);
-            dataLimite.setHours(23, 59, 59, 999);
-            const agora = new Date();
-            
-            if (agora > dataLimite) {
-                const formSection = document.getElementById('form-section');
-                formSection.innerHTML = `
-                    <div class="text-center py-10">
-                        <div class="text-6xl mb-4">⏰</div>
-                        <h3 class="text-2xl font-bold mb-4" style="color: #6f0000;">
-                            Prazo Encerrado
-                        </h3>
-                        <p class="text-lg text-gray-600 mb-2">
-                            O prazo para confirmação de presença encerrou em:
-                        </p>
-                        <p class="text-xl font-bold" style="color: #6f0000;">
-                            ${dataLimite.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
-                        </p>
-                    </div>
-                `;
-                
-                const avisoDataLimite = document.getElementById('aviso-data-limite');
-                if (avisoDataLimite) {
-                    avisoDataLimite.style.display = 'none';
-                }
-            }
-        }
-
-        // ==================== SALVAR CONFIGURAÇÃO ====================
-        async function salvarConfiguracao() {
-            if (!supabaseClient) return;
-            
-            const novoNome = document.getElementById('edit-nome').value.trim();
-            const novaData = document.getElementById('edit-data').value.trim();
-            const novoAviso = document.getElementById('edit-aviso').value.trim();
-            const novoUsername = document.getElementById('edit-username').value.trim();
-            const novoPassword = document.getElementById('edit-password').value.trim();
-            const novaDataLimite = document.getElementById('edit-data-limite').value;
-            const novaDataEventoTimestamp = document.getElementById('edit-data-evento-timestamp').value;
-
-            if (novoNome) configuracaoEvento.nome_aniversariante = novoNome;
-            if (novaData) configuracaoEvento.data_evento = novaData;
-            if (novoAviso) configuracaoEvento.aviso_criancas = novoAviso;
-            if (novoUsername) configuracaoEvento.admin_username = novoUsername;
-            if (novoPassword) configuracaoEvento.admin_password = novoPassword;
-            
-            configuracaoEvento.data_limite_confirmacao = novaDataLimite || null;
-            
-            // Atualizar timestamp da data do evento
-            if (novaDataEventoTimestamp) {
-                configuracaoEvento.data_evento_timestamp = new Date(novaDataEventoTimestamp).getTime();
-            }
-
-            try {
-                const { data: existing, error: selectError } = await supabaseClient
-                    .from('configuracao')
-                    .select('*')
-                    .limit(1)
-                    .single();
-
-                if (selectError && selectError.code !== 'PGRST116') {
-                    throw selectError;
-                }
-
-                let resultado;
-                if (existing) {
-                    resultado = await supabaseClient
-                        .from('configuracao')
-                        .update({
-                            nome_aniversariante: configuracaoEvento.nome_aniversariante,
-                            data_evento: configuracaoEvento.data_evento,
-                            aviso_criancas: configuracaoEvento.aviso_criancas,
-                            mostrar_aviso: configuracaoEvento.mostrar_aviso,
-                            admin_username: configuracaoEvento.admin_username,
-                            admin_password: configuracaoEvento.admin_password,
-                            data_evento_timestamp: configuracaoEvento.data_evento_timestamp,
-                            data_limite_confirmacao: configuracaoEvento.data_limite_confirmacao
-                        })
-                        .eq('id', existing.id)
-                        .select();
-                } else {
-                    resultado = await supabaseClient
-                        .from('configuracao')
-                        .insert([{
-                            nome_aniversariante: configuracaoEvento.nome_aniversariante,
-                            data_evento: configuracaoEvento.data_evento,
-                            aviso_criancas: configuracaoEvento.aviso_criancas,
-                            mostrar_aviso: configuracaoEvento.mostrar_aviso,
-                            admin_username: configuracaoEvento.admin_username,
-                            admin_password: configuracaoEvento.admin_password,
-                            data_evento_timestamp: configuracaoEvento.data_evento_timestamp,
-                            data_limite_confirmacao: configuracaoEvento.data_limite_confirmacao
-                        }])
-                        .select();
-                }
-
-                if (resultado.error) {
-                    throw resultado.error;
-                }
-
-                atualizarInterfaceConvidado();
-                verificarDataLimite();
-
-                const sucesso = document.createElement('div');
-                sucesso.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-100 border-2 border-green-400 px-6 py-3 rounded-xl shadow-lg z-50';
-                sucesso.innerHTML = '<p class="text-green-800 font-bold">✅ Configurações salvas com sucesso!</p>';
-                document.body.appendChild(sucesso);
-                setTimeout(() => sucesso.remove(), 3000);
-            } catch (err) {
-                console.error('Erro ao salvar:', err);
-                
-                const erro = document.createElement('div');
-                erro.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-100 border-2 border-red-400 px-6 py-3 rounded-xl shadow-lg z-50';
-                erro.innerHTML = `<p class="text-red-800 font-bold">❌ Erro: ${err.message}</p>`;
-                document.body.appendChild(erro);
-                setTimeout(() => erro.remove(), 5000);
-            }
-        }
-
-        // ==================== TOGGLE AVISO ====================
-        async function toggleAvisoCriancas(mostrar) {
-            if (!supabaseClient) return;
-            
-            configuracaoEvento.mostrar_aviso = mostrar;
-            
-            try {
-                const { data: existing } = await supabaseClient
-                    .from('configuracao')
-                    .select('id')
-                    .limit(1)
-                    .single();
-
-                if (existing) {
-                    await supabaseClient
-                        .from('configuracao')
-                        .update({ mostrar_aviso: mostrar })
-                        .eq('id', existing.id);
-                }
-            } catch (err) {
-                console.error('Erro ao atualizar aviso:', err);
-            }
-
-            atualizarInterfaceConvidado();
-            
-            const toggleBg = document.getElementById('toggle-bg');
-            const toggleDot = document.getElementById('toggle-dot');
-            
-            if (mostrar) {
-                toggleBg.style.backgroundColor = '#6f0000';
-                toggleDot.style.transform = 'translateX(24px)';
-            } else {
-                toggleBg.style.backgroundColor = '#d1d5db';
-                toggleDot.style.transform = 'translateX(0)';
-            }
-        }
-
-        // ==================== NAVEGAÇÃO ====================
-        function irParaLogin() {
-            document.getElementById('guest-page').style.display = 'none';
-            document.getElementById('login-page').style.display = 'flex';
-            document.getElementById('admin-page').style.display = 'none';
-            
-            if (temLinkValido) {
-                document.getElementById('voltar-button').style.display = 'block';
-            }
-        }
-
-        function voltarParaConvidado() {
-            if (temLinkValido) {
-                document.getElementById('guest-page').style.display = 'block';
-                document.getElementById('login-page').style.display = 'none';
-                document.getElementById('admin-page').style.display = 'none';
-            }
-        }
-
-        function logout() {
-            isAdminLogado = false;
-            localStorage.removeItem('adminLogado');
-            
-            if (temLinkValido) {
-                voltarParaConvidado();
-            } else {
-                document.getElementById('guest-page').style.display = 'none';
-                document.getElementById('login-page').style.display = 'flex';
-                document.getElementById('admin-page').style.display = 'none';
-            }
-        }
-
-        // ==================== TAB NAVIGATION ====================
-        function mostrarTab(tab) {
-            document.getElementById('tab-confirmados').style.backgroundColor = '#e5e7eb';
-            document.getElementById('tab-confirmados').style.color = '#666';
-            document.getElementById('tab-declinados').style.backgroundColor = '#e5e7eb';
-            document.getElementById('tab-declinados').style.color = '#666';
-            document.getElementById('tab-recados').style.backgroundColor = '#e5e7eb';
-            document.getElementById('tab-recados').style.color = '#666';
-            document.getElementById('tab-links').style.backgroundColor = '#e5e7eb';
-            document.getElementById('tab-links').style.color = '#666';
-
-            document.getElementById('content-confirmados').style.display = 'none';
-            document.getElementById('content-declinados').style.display = 'none';
-            document.getElementById('content-recados').style.display = 'none';
-            document.getElementById('content-links').style.display = 'none';
-
-            if (tab === 'confirmados') {
-                document.getElementById('tab-confirmados').style.backgroundColor = '#8B0000';
-                document.getElementById('tab-confirmados').style.color = '#ffffff';
-                document.getElementById('content-confirmados').style.display = 'block';
-            } else if (tab === 'declinados') {
-                document.getElementById('tab-declinados').style.backgroundColor = '#8B0000';
-                document.getElementById('tab-declinados').style.color = '#ffffff';
-                document.getElementById('content-declinados').style.display = 'block';
-            } else if (tab === 'recados') {
-                document.getElementById('tab-recados').style.backgroundColor = '#8B0000';
-                document.getElementById('tab-recados').style.color = '#ffffff';
-                document.getElementById('content-recados').style.display = 'block';
-            } else if (tab === 'links') {
-                document.getElementById('tab-links').style.backgroundColor = '#8B0000';
-                document.getElementById('tab-links').style.color = '#ffffff';
-                document.getElementById('content-links').style.display = 'block';
-            }
-        }
-
-        // ==================== AJUDA ====================
-        function mostrarAjuda() {
-            const ajudaModal = document.createElement('div');
-            ajudaModal.className = 'fixed inset-0 flex items-center justify-center z-50 px-4';
-            ajudaModal.style.background = 'rgba(0,0,0,0.7)';
-            ajudaModal.innerHTML = `
-                <div class="bg-white rounded-3xl p-8 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
-                    <h3 class="text-3xl font-bold mb-6 text-center" style="color: #8B0000;">Guia de Uso do Painel</h3>
-                    
-                    <div class="space-y-6 text-gray-700">
-                        <div class="bg-blue-50 rounded-xl p-5 border-2 border-blue-300">
-                            <h4 class="font-bold text-xl mb-3 text-blue-900">1. Como Ver Quem Confirmou</h4>
-                            <p class="text-base leading-relaxed">
-                                Clique na aba <strong>"Confirmados"</strong> para ver todos que confirmaram presença.
-                            </p>
-                        </div>
-
-                        <div class="bg-purple-50 rounded-xl p-5 border-2 border-purple-300">
-                            <h4 class="font-bold text-xl mb-3 text-purple-900">2. Como Enviar os Convites</h4>
-                            <p class="text-base leading-relaxed mb-3">
-                                Clique na aba <strong>"Enviar Convites"</strong>. Copie o link e cole no WhatsApp!
-                            </p>
-                        </div>
-
-                        <div class="bg-green-50 rounded-xl p-5 border-2 border-green-300">
-                            <h4 class="font-bold text-xl mb-3 text-green-900">3. Como Baixar a Lista</h4>
-                            <p class="text-base leading-relaxed">
-                                Clique no botão <strong>"Baixar Lista em PDF"</strong> no topo da página.
-                            </p>
-                        </div>
-
-                        <div class="bg-amber-50 rounded-xl p-5 border-2 border-amber-300">
-                            <h4 class="font-bold text-xl mb-3 text-amber-900">4. Como Personalizar</h4>
-                            <p class="text-base leading-relaxed">
-                                Na aba <strong>"Enviar Convites"</strong>, role até o final para editar nome, data e avisos.
-                            </p>
-                        </div>
-                    </div>
-
-                    <button 
-                        class="w-full mt-8 py-4 rounded-xl text-white font-bold text-lg fechar-modal-btn" 
-                        style="background-color: #8B0000;"
-                    >
-                        Entendi!
-                    </button>
-                </div>
-            `;
-            document.body.appendChild(ajudaModal);
-            
-            ajudaModal.querySelector('.fechar-modal-btn').addEventListener('click', function() {
-                ajudaModal.remove();
-            });
-        }
-
-        // ==================== CONTAGEM REGRESSIVA ====================
-        function atualizarContador() {
-            const countdownElement = document.getElementById('countdown');
-            if (!countdownElement) return;
-            
-            // Aguardar configuração carregar
-            if (!configuracaoEvento.data_evento_timestamp || configuracaoEvento.data_evento_timestamp === new Date('2026-01-15T20:00:00').getTime()) {
-                countdownElement.innerHTML = `
-                    <div class="col-span-4 text-center">
-                        <p class="text-lg text-gray-500">Carregando contagem regressiva...</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            // Usar a data do evento configurada
-            const dataEvento = new Date(configuracaoEvento.data_evento_timestamp);
-            const agora = new Date();
-            const diferenca = dataEvento - agora;
-
-            if (diferenca <= 0) {
-                countdownElement.innerHTML = `
-                    <div class="col-span-4 text-center">
-                        <p class="text-2xl font-bold" style="color: #6f0000;">🎉 O grande dia chegou! 🎉</p>
-                    </div>
-                `;
-                return;
-            }
-
-            const dias = Math.floor(diferenca / (1000 * 60 * 60 * 24));
-            const horas = Math.floor((diferenca % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutos = Math.floor((diferenca % (1000 * 60 * 60)) / (1000 * 60));
-            const segundos = Math.floor((diferenca % (1000 * 60)) / 1000);
-
-            countdownElement.innerHTML = `
-                <div class="text-center">
-                    <div class="bg-white bg-opacity-80 rounded-xl p-4">
-                        <div class="text-3xl font-bold mb-1" style="color: #6f0000;">${dias}</div>
-                        <div class="text-xs uppercase tracking-wide" style="color: #5d5d5d;">Dias</div>
-                    </div>
-                </div>
-                <div class="text-center">
-                    <div class="bg-white bg-opacity-80 rounded-xl p-4">
-                        <div class="text-3xl font-bold mb-1" style="color: #6f0000;">${horas}</div>
-                        <div class="text-xs uppercase tracking-wide" style="color: #5d5d5d;">Horas</div>
-                    </div>
-                </div>
-                <div class="text-center">
-                    <div class="bg-white bg-opacity-80 rounded-xl p-4">
-                        <div class="text-3xl font-bold mb-1" style="color: #6f0000;">${minutos}</div>
-                        <div class="text-xs uppercase tracking-wide" style="color: #5d5d5d;">Minutos</div>
-                    </div>
-                </div>
-                <div class="text-center">
-                    <div class="bg-white bg-opacity-80 rounded-xl p-4">
-                        <div class="text-3xl font-bold mb-1" style="color: #6f0000;">${segundos}</div>
-                        <div class="text-xs uppercase tracking-wide" style="color: #5d5d5d;">Segundos</div>
-                    </div>
-                </div>
-            `;
-        }
-
-        // ==================== VERIFICAR TIPO DE CONVITE ====================
-        function verificarTipoConvite() {
-            const params = new URLSearchParams(window.location.search);
-            const tipo = params.get('tipo');
-            
-            if (tipo === 'com') {
-                permitirAcompanhante = true;
-                temLinkValido = true;
-                document.getElementById('acompanhante-field').style.display = 'block';
-            } else if (tipo === 'sem') {
-                temLinkValido = true;
-            }
-
-            const baseUrl = window.location.origin + window.location.pathname;
-            document.getElementById('link-sem').value = baseUrl + '?tipo=sem';
-            document.getElementById('link-com').value = baseUrl + '?tipo=com';
-        }
-
-        // ==================== COPIAR LINK ====================
-        function copiarLink(tipo) {
-            const input = document.getElementById(`link-${tipo}`);
-            input.select();
-            input.setSelectionRange(0, 99999);
-            
-            try {
-                document.execCommand('copy');
-                const feedback = document.getElementById('copy-success');
-                feedback.style.display = 'block';
-                setTimeout(() => {
-                    feedback.style.display = 'none';
-                }, 3000);
-            } catch (err) {
-                // Silencioso
-            }
-        }
-
-        // ==================== CARREGAR DADOS ====================
-        async function carregarDados() {
-            if (!supabaseClient) return;
-            
-            try {
-                const { data: confirmacoes, error: errorConf } = await supabaseClient
-                    .from('confirmacoes')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                const { data: recados, error: errorRec } = await supabaseClient
-                    .from('recados')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (confirmacoes) todasConfirmacoes = confirmacoes;
-                if (recados) todosRecados = recados;
-
-                renderizarRecados();
-                if (isAdminLogado) {
-                    atualizarPainelAdmin();
-                }
-            } catch (err) {
-                console.error('Erro ao carregar dados:', err);
-            }
-        }
-
-        // ==================== CONFIRMAR PRESENÇA ====================
-        async function confirmarPresenca(e) {
-            if (e) e.preventDefault();
-            
-            if (!supabaseClient) {
-                document.getElementById('error-message').style.display = 'block';
-                document.getElementById('error-message').querySelector('p').textContent = 'Erro: Sistema de banco de dados não disponível';
-                return;
-            }
-            
-            const nomeConvidado = document.getElementById('nome-convidado').value.trim();
-            const nomeAcompanhante = document.getElementById('nome-acompanhante').value.trim();
-            
-            if (!nomeConvidado) {
-                document.getElementById('error-message').style.display = 'block';
-                document.getElementById('error-message').querySelector('p').textContent = 'Por favor, preencha seu nome.';
-                setTimeout(() => {
-                    document.getElementById('error-message').style.display = 'none';
-                }, 3000);
-                return;
-            }
-
-            const confirmacaoExistente = todasConfirmacoes.find(c => 
-                c.nome_convidado.toLowerCase() === nomeConvidado.toLowerCase()
-            );
-
-            document.getElementById('confirmation-form').style.display = 'none';
-            document.getElementById('loading-state').style.display = 'block';
-            document.getElementById('error-message').style.display = 'none';
-
-            try {
-                if (confirmacaoExistente) {
-                    const { error } = await supabaseClient
-                        .from('confirmacoes')
-                        .update({
-                            confirmou_presenca: true,
-                            nome_acompanhante: permitirAcompanhante ? nomeAcompanhante : '',
-                            tem_acompanhante: permitirAcompanhante && nomeAcompanhante.length > 0
-                        })
-                        .eq('id', confirmacaoExistente.id);
-
-                    if (error) {
-                        console.error('Erro Supabase:', error);
-                        throw error;
-                    }
-                } else {
-                    const { error } = await supabaseClient
-                        .from('confirmacoes')
-                        .insert([{
-                            nome_convidado: nomeConvidado,
-                            nome_acompanhante: permitirAcompanhante ? nomeAcompanhante : '',
-                            tem_acompanhante: permitirAcompanhante && nomeAcompanhante.length > 0,
-                            confirmou_presenca: true
-                        }]);
-
-                    if (error) {
-                        console.error('Erro Supabase:', error);
-                        throw error;
-                    }
-                }
-
-                document.getElementById('loading-state').style.display = 'none';
-                document.getElementById('success-state').style.display = 'block';
-                usuarioRespondeu = true;
-                nomeConvidadoAtual = nomeConvidado;
-                localStorage.setItem('nomeConvidado', nomeConvidado);
-                
-                // Mostra seção de recados
-                document.getElementById('recados-section').style.display = 'block';
-
-                await carregarDados();
-            } catch (err) {
-                console.error('Erro completo:', err);
-                document.getElementById('loading-state').style.display = 'none';
-                document.getElementById('error-message').style.display = 'block';
-                document.getElementById('error-message').querySelector('p').textContent = 'Erro: ' + (err.message || 'Tente novamente');
-                document.getElementById('confirmation-form').style.display = 'block';
-                setTimeout(() => {
-                    document.getElementById('error-message').style.display = 'none';
-                }, 5000);
-            }
-        }
-
-        // ==================== DECLINAR PRESENÇA ====================
-        async function declinarPresenca(e) {
-            if (e) e.preventDefault();
-            
-            if (!supabaseClient) {
-                document.getElementById('error-message').style.display = 'block';
-                document.getElementById('error-message').querySelector('p').textContent = 'Erro: Sistema de banco de dados não disponível';
-                return;
-            }
-            
-            const nomeConvidado = document.getElementById('nome-convidado').value.trim();
-            
-            if (!nomeConvidado) {
-                document.getElementById('error-message').style.display = 'block';
-                document.getElementById('error-message').querySelector('p').textContent = 'Por favor, preencha seu nome.';
-                setTimeout(() => {
-                    document.getElementById('error-message').style.display = 'none';
-                }, 3000);
-                return;
-            }
-
-            const confirmacaoExistente = todasConfirmacoes.find(c => 
-                c.nome_convidado.toLowerCase() === nomeConvidado.toLowerCase()
-            );
-
-            document.getElementById('confirmation-form').style.display = 'none';
-            document.getElementById('loading-state').style.display = 'block';
-            document.getElementById('error-message').style.display = 'none';
-
-            try {
-                if (confirmacaoExistente) {
-                    const { error } = await supabaseClient
-                        .from('confirmacoes')
-                        .update({
-                            confirmou_presenca: false,
-                            nome_acompanhante: '',
-                            tem_acompanhante: false
-                        })
-                        .eq('id', confirmacaoExistente.id);
-
-                    if (error) {
-                        console.error('Erro Supabase:', error);
-                        throw error;
-                    }
-                } else {
-                    const { error } = await supabaseClient
-                        .from('confirmacoes')
-                        .insert([{
-                            nome_convidado: nomeConvidado,
-                            nome_acompanhante: '',
-                            tem_acompanhante: false,
-                            confirmou_presenca: false
-                        }]);
-
-                    if (error) {
-                        console.error('Erro Supabase:', error);
-                        throw error;
-                    }
-                }
-
-                document.getElementById('loading-state').style.display = 'none';
-                document.getElementById('decline-state').style.display = 'block';
-                usuarioRespondeu = true;
-                nomeConvidadoAtual = nomeConvidado;
-                localStorage.setItem('nomeConvidado', nomeConvidado);
-                
-                // Mostra seção de recados
-                document.getElementById('recados-section').style.display = 'block';
-
-                await carregarDados();
-            } catch (err) {
-                console.error('Erro completo:', err);
-                document.getElementById('loading-state').style.display = 'none';
-                document.getElementById('error-message').style.display = 'block';
-                document.getElementById('error-message').querySelector('p').textContent = 'Erro: ' + (err.message || 'Tente novamente');
-                document.getElementById('confirmation-form').style.display = 'block';
-                setTimeout(() => {
-                    document.getElementById('error-message').style.display = 'none';
-                }, 5000);
-            }
-        }
-
-        // ==================== EDITAR RESPOSTA ====================
-        function editarResposta() {
-            document.getElementById('success-state').style.display = 'none';
-            document.getElementById('decline-state').style.display = 'none';
-            document.getElementById('confirmation-form').style.display = 'block';
-            
-            // Esconde recados ao editar resposta
-            document.getElementById('recados-section').style.display = 'none';
-            
-            const respostaAtual = todasConfirmacoes.find(c => 
-                c.nome_convidado.toLowerCase() === nomeConvidadoAtual.toLowerCase()
-            );
-            
-            if (respostaAtual) {
-                document.getElementById('nome-convidado').value = respostaAtual.nome_convidado;
-                if (respostaAtual.tem_acompanhante) {
-                    document.getElementById('nome-acompanhante').value = respostaAtual.nome_acompanhante;
-                }
-            }
-        }
-
-        // ==================== ENVIAR RECADO ====================
-        async function enviarRecado(e) {
-            e.preventDefault();
-            
-            if (!supabaseClient) return;
-            
-            const mensagem = document.getElementById('mensagem-recado').value.trim();
-            
-            if (!mensagem || !nomeConvidadoAtual) return;
-
-            document.getElementById('recado-form').style.display = 'none';
-            document.getElementById('recado-loading').style.display = 'block';
-            document.getElementById('recado-error').style.display = 'none';
-
-            try {
-                const { error } = await supabaseClient
-                    .from('recados')
-                    .insert([{
-                        nome_convidado: nomeConvidadoAtual,
-                        mensagem: mensagem
-                    }]);
-
-                if (error) throw error;
-
-                document.getElementById('recado-loading').style.display = 'none';
-                document.getElementById('recado-success').style.display = 'block';
-                document.getElementById('mensagem-recado').value = '';
-                document.getElementById('char-count').textContent = '0/500 caracteres';
-                
-                await carregarDados();
-
-                setTimeout(() => {
-                    document.getElementById('recado-success').style.display = 'none';
-                    document.getElementById('recado-form').style.display = 'block';
-                }, 3000);
-            } catch (err) {
-                console.error('Erro:', err);
-                document.getElementById('recado-loading').style.display = 'none';
-                document.getElementById('recado-error').style.display = 'block';
-                document.getElementById('recado-form').style.display = 'block';
-                setTimeout(() => {
-                    document.getElementById('recado-error').style.display = 'none';
-                }, 3000);
-            }
-        }
-
-        // ==================== RENDERIZAR RECADOS ====================
-        function renderizarRecados() {
-            const lista = document.getElementById('lista-recados');
-            
-            // APENAS ADMIN PODE VER RECADOS - Convidados não veem
-            lista.innerHTML = '<p class="text-gray-400 text-center py-6 text-base">Apenas o organizador pode visualizar os recados.</p>';
-        }
-
-        // ==================== PAINEL ADMIN ====================
-        function atualizarPainelAdmin() {
-            const confirmados = todasConfirmacoes.filter(c => c.confirmou_presenca);
-            const declinados = todasConfirmacoes.filter(c => !c.confirmou_presenca);
-            
-            const comAcompanhante = confirmados.filter(c => c.tem_acompanhante).length;
-            const totalPessoas = confirmados.reduce((acc, c) => {
-                return acc + 1 + (c.tem_acompanhante ? 1 : 0);
-            }, 0);
-
-            document.getElementById('stat-confirmados').textContent = totalPessoas;
-            document.getElementById('stat-declinados').textContent = declinados.length;
-            document.getElementById('stat-acompanhantes').textContent = comAcompanhante;
-            document.getElementById('stat-pessoas').textContent = totalPessoas;
-            document.getElementById('stat-recados').textContent = todosRecados.length;
-
-            const listaConfirmados = document.getElementById('confirmations-list');
-            if (confirmados.length === 0) {
-                listaConfirmados.innerHTML = '<p class="text-gray-400 text-center py-12 text-lg">Nenhuma confirmação ainda</p>';
-            } else {
-                listaConfirmados.innerHTML = confirmados.map(c => {
-                    const dataObj = new Date(c.created_at);
-                    const dataFormatada = dataObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + 
-                                        ' às ' + dataObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-                    
-                    return `
-                        <div class="border-2 rounded-2xl p-5 flex justify-between items-center hover:shadow-lg transition-shadow" style="border-color: #8B0000;">
-                            <div class="flex-1">
-                                <div class="font-bold text-xl mb-1" style="color: #8B0000;">${c.nome_convidado}</div>
-                                ${c.tem_acompanhante ? `<div class="text-sm mb-1" style="color: #666;">Acompanhante: ${c.nome_acompanhante}</div>` : ''}
-                                <div class="text-xs" style="color: #999;">Confirmado em ${dataFormatada}</div>
-                            </div>
-                            <button 
-                                class="excluir-btn px-4 py-2 rounded-xl text-white text-sm font-bold hover:opacity-80 transition-opacity" 
-                                style="background-color: #dc2626;"
-                                data-id="${c.id}"
-                            >
-                                Excluir
-                            </button>
-                        </div>
-                    `;
-                }).join('');
-                
-                document.querySelectorAll('.excluir-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        excluirConfirmacao(parseInt(this.getAttribute('data-id')));
-                    });
-                });
-            }
-
-            const listaDeclinados = document.getElementById('declines-list');
-            if (declinados.length === 0) {
-                listaDeclinados.innerHTML = '<p class="text-gray-400 text-center py-12 text-lg">Ninguém declinou ainda</p>';
-            } else {
-                listaDeclinados.innerHTML = declinados.map(c => {
-                    const dataObj = new Date(c.created_at);
-                    const dataFormatada = dataObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + 
-                                        ' às ' + dataObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-                    
-                    return `
-                        <div class="border-2 rounded-2xl p-5 flex justify-between items-center hover:shadow-lg transition-shadow" style="border-color: #666; background-color: #f9fafb;">
-                            <div class="flex-1">
-                                <div class="font-bold text-xl mb-1" style="color: #666;">${c.nome_convidado}</div>
-                                <div class="text-xs" style="color: #999;">Declinou em ${dataFormatada}</div>
-                            </div>
-                            <button 
-                                class="excluir-decline-btn px-4 py-2 rounded-xl text-white text-sm font-bold hover:opacity-80 transition-opacity" 
-                                style="background-color: #dc2626;"
-                                data-id="${c.id}"
-                            >
-                                Excluir
-                            </button>
-                        </div>
-                    `;
-                }).join('');
-                
-                document.querySelectorAll('.excluir-decline-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        excluirConfirmacao(parseInt(this.getAttribute('data-id')));
-                    });
-                });
-            }
-
-            const listaRecados = document.getElementById('admin-recados-list');
-            if (todosRecados.length === 0) {
-                listaRecados.innerHTML = '<p class="text-gray-400 text-center py-12 text-lg">Nenhum recado ainda</p>';
-            } else {
-                listaRecados.innerHTML = todosRecados.map(r => {
-                    const dataObj = new Date(r.created_at);
-                    const dataFormatada = dataObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + 
-                                        ' às ' + dataObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-                    
-                    return `
-                        <div class="border-2 rounded-2xl p-5 hover:shadow-lg transition-shadow" style="border-color: #FFD700; background: linear-gradient(to right, #fff9e6, #ffffff);">
-                            <div class="flex justify-between items-start mb-3">
-                                <div class="flex-1">
-                                    <div class="font-bold text-xl mb-2" style="color: #8B0000;">${r.nome_convidado}</div>
-                                    <div class="text-gray-700 text-base mb-2 leading-relaxed">${r.mensagem}</div>
-                                    <div class="text-xs" style="color: #999;">Enviado em ${dataFormatada}</div>
-                                </div>
-                                <button 
-                                    class="excluir-recado-btn ml-4 px-4 py-2 rounded-xl text-white text-sm font-bold hover:opacity-80 transition-opacity" 
-                                    style="background-color: #dc2626;"
-                                    data-id="${r.id}"
-                                >
-                                    Excluir
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-                
-                document.querySelectorAll('.excluir-recado-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        excluirRecado(parseInt(this.getAttribute('data-id')));
-                    });
-                });
-            }
-        }
-
-        // ==================== EXCLUIR CONFIRMAÇÃO ====================
-        async function excluirConfirmacao(id) {
-            if (!supabaseClient) return;
-            
-            const confirmacao = todasConfirmacoes.find(c => c.id === id);
-            if (!confirmacao) return;
-
-            const tipoTexto = confirmacao.confirmou_presenca ? 'confirmação' : 'declínio';
-            
-            const confirmarExclusao = document.createElement('div');
-            confirmarExclusao.className = 'fixed inset-0 flex items-center justify-center z-50 px-4';
-            confirmarExclusao.style.background = 'rgba(0,0,0,0.5)';
-            confirmarExclusao.innerHTML = `
-                <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
-                    <h3 class="text-2xl font-bold mb-4" style="color: #8B0000;">Confirmar Exclusão</h3>
-                    <p class="mb-6 text-gray-700">Deseja realmente excluir a ${tipoTexto} de <strong>${confirmacao.nome_convidado}</strong>?</p>
-                    <div class="flex gap-3">
-                        <button 
-                            class="cancelar-exclusao flex-1 py-3 rounded-xl border-2 font-bold" 
-                            style="border-color: #8B0000; color: #8B0000;"
-                        >
-                            Cancelar
-                        </button>
-                        <button 
-                            class="confirmar-exclusao-btn flex-1 py-3 rounded-xl text-white font-bold" 
-                            style="background-color: #dc2626;"
-                            data-id="${id}"
-                        >
-                            Excluir
-                        </button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(confirmarExclusao);
-            
-            confirmarExclusao.querySelector('.cancelar-exclusao').addEventListener('click', function() {
-                confirmarExclusao.remove();
-            });
-            
-            confirmarExclusao.querySelector('.confirmar-exclusao-btn').addEventListener('click', async function() {
-                const modal = confirmarExclusao;
-                modal.remove();
-
-                try {
-                    const { error } = await supabaseClient
-                        .from('confirmacoes')
-                        .delete()
-                        .eq('id', id);
-
-                    if (error) throw error;
-
-                    await carregarDados();
-                } catch (err) {
-                    console.error('Erro ao excluir:', err);
-                    const errorDiv = document.createElement('div');
-                    errorDiv.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-100 border-2 border-red-400 px-6 py-3 rounded-xl shadow-lg z-50';
-                    errorDiv.innerHTML = '<p class="text-red-800 font-bold">Erro ao excluir. Tente novamente.</p>';
-                    document.body.appendChild(errorDiv);
-                    setTimeout(() => errorDiv.remove(), 3000);
-                }
-            });
-        }
-
-        // ==================== EXCLUIR RECADO ====================
-        async function excluirRecado(id) {
-            if (!supabaseClient) return;
-            
-            const recado = todosRecados.find(r => r.id === id);
-            if (!recado) return;
-
-            const confirmarExclusao = document.createElement('div');
-            confirmarExclusao.className = 'fixed inset-0 flex items-center justify-center z-50 px-4';
-            confirmarExclusao.style.background = 'rgba(0,0,0,0.5)';
-            confirmarExclusao.innerHTML = `
-                <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
-                    <h3 class="text-2xl font-bold mb-4" style="color: #8B0000;">Confirmar Exclusão</h3>
-                    <p class="mb-6 text-gray-700">Deseja realmente excluir o recado de <strong>${recado.nome_convidado}</strong>?</p>
-                    <div class="flex gap-3">
-                        <button 
-                            class="cancelar-exclusao-recado flex-1 py-3 rounded-xl border-2 font-bold" 
-                            style="border-color: #8B0000; color: #8B0000;"
-                        >
-                            Cancelar
-                        </button>
-                        <button 
-                            class="confirmar-exclusao-recado-btn flex-1 py-3 rounded-xl text-white font-bold" 
-                            style="background-color: #dc2626;"
-                            data-id="${id}"
-                        >
-                            Excluir
-                        </button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(confirmarExclusao);
-            
-            confirmarExclusao.querySelector('.cancelar-exclusao-recado').addEventListener('click', function() {
-                confirmarExclusao.remove();
-            });
-            
-            confirmarExclusao.querySelector('.confirmar-exclusao-recado-btn').addEventListener('click', async function() {
-                const modal = confirmarExclusao;
-                modal.remove();
-
-                try {
-                    const { error } = await supabaseClient
-                        .from('recados')
-                        .delete()
-                        .eq('id', id);
-
-                    if (error) throw error;
-
-                    await carregarDados();
-                } catch (err) {
-                    console.error('Erro ao excluir:', err);
-                    const errorDiv = document.createElement('div');
-                    errorDiv.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-100 border-2 border-red-400 px-6 py-3 rounded-xl shadow-lg z-50';
-                    errorDiv.innerHTML = '<p class="text-red-800 font-bold">Erro ao excluir. Tente novamente.</p>';
-                    document.body.appendChild(errorDiv);
-                    setTimeout(() => errorDiv.remove(), 3000);
-                }
-            });
-        }
-
-        // ==================== EXPORTAR PDF ====================
-        function exportarPDF() {
-            const confirmados = todasConfirmacoes.filter(c => c.confirmou_presenca);
-            const declinados = todasConfirmacoes.filter(c => !c.confirmou_presenca);
-            
-            if (todasConfirmacoes.length === 0 && todosRecados.length === 0) {
-                const aviso = document.createElement('div');
-                aviso.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-yellow-100 border-2 border-yellow-400 px-6 py-3 rounded-xl shadow-lg z-50';
-                aviso.innerHTML = '<p class="text-yellow-800 font-bold">Nenhuma informação para exportar</p>';
-                document.body.appendChild(aviso);
-                setTimeout(() => aviso.remove(), 3000);
-                return;
-            }
-
-            const comAcompanhante = confirmados.filter(c => c.tem_acompanhante).length;
-            const totalPessoas = confirmados.reduce((acc, c) => acc + 1 + (c.tem_acompanhante ? 1 : 0), 0);
-
-            const printWindow = window.open('', '_blank');
-            
-            const html = `
-                <!DOCTYPE html>
-                <html lang="pt-BR">
-                <head>
-                    <meta charset="UTF-8">
-                    <title>Lista de Confirmações</title>
-                    <style>
-                        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
-                        
-                        body {
-                            font-family: 'Quicksand', sans-serif;
-                            padding: 40px;
-                            max-width: 900px;
-                            margin: 0 auto;
-                            color: #333;
-                        }
-                        
-                        .header {
-                            text-align: center;
-                            margin-bottom: 40px;
-                            padding-bottom: 20px;
-                            border-bottom: 4px solid #8B0000;
-                        }
-                        
-                        .header h1 {
-                            font-weight: 700;
-                            color: #8B0000;
-                            font-size: 42px;
-                            margin: 0 0 10px 0;
-                        }
-                        
-                        .header p {
-                            color: #666;
-                            margin: 12px 0 0 0;
-                            font-size: 18px;
-                        }
-                        
-                        .stats {
-                            display: grid;
-                            grid-template-columns: repeat(3, 1fr);
-                            gap: 20px;
-                            margin-bottom: 40px;
-                        }
-                        
-                        .stat-box {
-                            background: #f5f5f5;
-                            padding: 25px;
-                            border-radius: 12px;
-                            text-align: center;
-                            border: 3px solid #8B0000;
-                        }
-                        
-                        .stat-box .number {
-                            font-size: 40px;
-                            font-weight: bold;
-                            color: #8B0000;
-                            margin-bottom: 8px;
-                        }
-                        
-                        .stat-box .label {
-                            color: #666;
-                            font-size: 16px;
-                            font-weight: 600;
-                        }
-                        
-                        .guest-list h3 {
-                            color: #8B0000;
-                            font-size: 24px;
-                            margin-bottom: 25px;
-                            padding-bottom: 12px;
-                            border-bottom: 3px solid #FFD700;
-                        }
-                        
-                        .guest-item {
-                            background: #ffffff;
-                            border: 2px solid #ddd;
-                            border-radius: 12px;
-                            padding: 20px;
-                            margin-bottom: 15px;
-                            page-break-inside: avoid;
-                        }
-                        
-                        .guest-name {
-                            font-size: 20px;
-                            font-weight: bold;
-                            color: #8B0000;
-                            margin-bottom: 8px;
-                        }
-                        
-                        .guest-companion {
-                            color: #666;
-                            font-size: 16px;
-                            margin-left: 24px;
-                            margin-bottom: 6px;
-                        }
-                        
-                        .guest-date {
-                            color: #999;
-                            font-size: 13px;
-                            margin-top: 8px;
-                        }
-                        
-                        .decline-item {
-                            background: #f9fafb;
-                            border: 2px solid #999;
-                        }
-                        
-                        .decline-item .guest-name {
-                            color: #666;
-                        }
-                        
-                        .footer {
-                            margin-top: 50px;
-                            text-align: center;
-                            color: #999;
-                            font-size: 13px;
-                            padding-top: 20px;
-                            border-top: 2px solid #ddd;
-                        }
-                        
-                        @media print {
-                            body { padding: 20px; }
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <h1>${configuracaoEvento.nome_aniversariante}</h1>
-                        <p>${configuracaoEvento.data_evento}</p>
-                    </div>
-                    
-                    <div class="stats">
-                        <div class="stat-box">
-                            <div class="number">${totalPessoas}</div>
-                            <div class="label">Confirmados</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="number">${comAcompanhante}</div>
-                            <div class="label">Com Acompanhante</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="number">${totalPessoas}</div>
-                            <div class="label">Total de Pessoas</div>
-                        </div>
-                    </div>
-                    
-                    <div class="guest-list">
-                        <h3>Convidados Confirmados</h3>
-                        ${confirmados.length === 0 ? '<p style="text-align: center; color: #999;">Nenhuma confirmação ainda</p>' : confirmados.map((c, index) => {
-                            const dataObj = new Date(c.created_at);
-                            const dataFormatada = dataObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + 
-                                                ' às ' + dataObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-                            
-                            return `
-                                <div class="guest-item">
-                                    <div class="guest-name">${index + 1}. ${c.nome_convidado}</div>
-                                    ${c.tem_acompanhante ? `<div class="guest-companion">Acompanhante: ${c.nome_acompanhante}</div>` : ''}
-                                    <div class="guest-date">Confirmado em: ${dataFormatada}</div>
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
-                    
-                    ${declinados.length > 0 ? `
-                    <div class="guest-list" style="margin-top: 50px;">
-                        <h3>Convidados que Declinaram</h3>
-                        ${declinados.map((c, index) => {
-                            const dataObj = new Date(c.created_at);
-                            const dataFormatada = dataObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + 
-                                                ' às ' + dataObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-                            
-                            return `
-                                <div class="guest-item decline-item">
-                                    <div class="guest-name">${index + 1}. ${c.nome_convidado}</div>
-                                    <div class="guest-date">Declinou em: ${dataFormatada}</div>
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
-                    ` : ''}
-                    
-                    ${todosRecados.length > 0 ? `
-                    <div class="guest-list" style="margin-top: 50px;">
-                        <h3>Recados dos Convidados</h3>
-                        ${todosRecados.map((r, index) => {
-                            const dataObj = new Date(r.created_at);
-                            const dataFormatada = dataObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                            
-                            return `
-                                <div class="guest-item" style="background: linear-gradient(to right, #fff9e6, #ffffff);">
-                                    <div class="guest-name">${index + 1}. ${r.nome_convidado}</div>
-                                    <div style="color: #333; font-size: 16px; line-height: 1.6; margin: 12px 0;">${r.mensagem}</div>
-                                    <div class="guest-date">Enviado em: ${dataFormatada}</div>
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
-                    ` : ''}
-                    
-                    <div class="footer">
-                        <p>Documento gerado em ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })} às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
-                    </div>
-                    
-                    <script>
-                        window.onload = function() {
-                            setTimeout(function() {
-                                window.print();
-                            }, 500);
-                        }
-                    <\/script>
-                </body>
-                </html>
-            `;
-            
-            printWindow.document.write(html);
-            printWindow.document.close();
-        }
-
-        // ==================== VERIFICAR ESTADO INICIAL ====================
-        function verificarEstadoInicial() {
-            const params = new URLSearchParams(window.location.search);
-            const tipo = params.get('tipo');
-            const nomeConvidadoSalvo = localStorage.getItem('nomeConvidado');
-            const adminLogado = localStorage.getItem('adminLogado');
-
-            // SE EXISTE ?tipo= NA URL, SEMPRE MOSTRA PÁGINA DO CONVIDADO
-            if (tipo === 'sem' || tipo === 'com') {
-                // Limpar login admin se existir
-                localStorage.removeItem('adminLogado');
-                isAdminLogado = false;
-                
-                document.getElementById('guest-page').style.display = 'block';
-                document.getElementById('login-page').style.display = 'none';
-                document.getElementById('admin-page').style.display = 'none';
-                document.getElementById('admin-link').style.display = 'block';
-
-                if (nomeConvidadoSalvo) {
-                    setTimeout(() => {
-                        const resposta = todasConfirmacoes.find(c => 
-                            c.nome_convidado.toLowerCase() === nomeConvidadoSalvo.toLowerCase()
-                        );
-
-                        if (resposta) {
-                            usuarioRespondeu = true;
-                            nomeConvidadoAtual = nomeConvidadoSalvo;
-                            
-                            document.getElementById('confirmation-form').style.display = 'none';
-                            
-                            // SEMPRE mostra a seção de recados (para visualizar)
-                            document.getElementById('recados-section').style.display = 'block';
-                            
-                            // Mas o FORMULÁRIO de envio só fica visível se confirmou
-                            const recadoForm = document.getElementById('recado-form');
-                            const recadoHeader = document.getElementById('recado-header');
-                            
-                            if (resposta.confirmou_presenca) {
-                                recadoForm.style.display = 'block';
-                                recadoHeader.innerHTML = `
-                                    <h2 class="text-2xl font-semibold mb-2" style="color: #6f0000;">
-                                        Deixe um Recado
-                                    </h2>
-                                    <p class="text-base text-gray-600">
-                                        Envie uma mensagem carinhosa para a aniversariante!
-                                    </p>
-                                `;
-                            } else {
-                                recadoForm.style.display = 'none';
-                                recadoHeader.innerHTML = `
-                                    <h2 class="text-2xl font-semibold mb-2" style="color: #6f0000;">
-                                        Recados dos Convidados
-                                    </h2>
-                                    <p class="text-base text-gray-600">
-                                        Veja as mensagens carinhosas enviadas para a aniversariante!
-                                    </p>
-                                `;
-                            }
-
-                            if (resposta.confirmou_presenca) {
-                                document.getElementById('success-state').style.display = 'block';
-                            } else {
-                                document.getElementById('decline-state').style.display = 'block';
-                            }
-                        }
-                    }, 500);
-                }
-                
-                return;
-            }
-
-            // SE NÃO TEM ?tipo= NA URL
-            if (adminLogado === 'true') {
-                isAdminLogado = true;
-                document.getElementById('guest-page').style.display = 'none';
-                document.getElementById('login-page').style.display = 'none';
-                document.getElementById('admin-page').style.display = 'block';
-                
-                document.getElementById('edit-nome').value = configuracaoEvento.nome_aniversariante;
-                document.getElementById('edit-data').value = configuracaoEvento.data_evento;
-                document.getElementById('edit-aviso').value = configuracaoEvento.aviso_criancas;
-                document.getElementById('edit-username').value = configuracaoEvento.admin_username;
-                
-                if (configuracaoEvento.data_limite_confirmacao) {
-                    document.getElementById('edit-data-limite').value = configuracaoEvento.data_limite_confirmacao;
-                }
-                
-                // Preencher data e hora do evento
-                if (configuracaoEvento.data_evento_timestamp) {
-                    const dataEvento = new Date(configuracaoEvento.data_evento_timestamp);
-                    const ano = dataEvento.getFullYear();
-                    const mes = String(dataEvento.getMonth() + 1).padStart(2, '0');
-                    const dia = String(dataEvento.getDate()).padStart(2, '0');
-                    const hora = String(dataEvento.getHours()).padStart(2, '0');
-                    const minuto = String(dataEvento.getMinutes()).padStart(2, '0');
-                    document.getElementById('edit-data-evento-timestamp').value = `${ano}-${mes}-${dia}T${hora}:${minuto}`;
-                }
-                
-                carregarDados();
-                return;
-            }
-
-            // Caso padrão: mostrar login
-            document.getElementById('guest-page').style.display = 'none';
-            document.getElementById('login-page').style.display = 'flex';
-            document.getElementById('admin-page').style.display = 'none';
-            document.getElementById('voltar-button').style.display = 'none';
-        }
-
-        // ==================== BLOQUEAR COPIAR/COLAR ====================
-        document.addEventListener('copy', function(e) {
-            e.preventDefault();
-            return false;
-        });
-        
-        document.addEventListener('cut', function(e) {
-            e.preventDefault();
-            return false;
-        });
-        
-        document.addEventListener('paste', function(e) {
-            e.preventDefault();
-            return false;
-        });
-        
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            return false;
-        });
-
-        // ==================== INICIALIZAÇÃO ====================
-        document.addEventListener('DOMContentLoaded', function() {
-            verificarTipoConvite();
-            atualizarContador();
-            setInterval(atualizarContador, 1000);
-            carregarConfiguracao();
-            carregarDados();
-            verificarEstadoInicial();
-            
-            // Event Listeners
-            document.getElementById('confirmation-form').addEventListener('submit', confirmarPresenca);
-            document.getElementById('submit-button-declinar').addEventListener('click', declinarPresenca);
-            document.getElementById('editar-resposta-btn').addEventListener('click', editarResposta);
-            document.getElementById('editar-resposta-btn2').addEventListener('click', editarResposta);
-            document.getElementById('ir-login-btn').addEventListener('click', irParaLogin);
-            document.getElementById('voltar-button').addEventListener('click', voltarParaConvidado);
-            document.getElementById('logout-btn').addEventListener('click', logout);
-            document.getElementById('login-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const username = document.getElementById('admin-username').value;
-                const password = document.getElementById('admin-password').value;
-
-                if (username === configuracaoEvento.admin_username && password === configuracaoEvento.admin_password) {
-                    isAdminLogado = true;
-                    localStorage.setItem('adminLogado', 'true');
-                    document.getElementById('login-page').style.display = 'none';
-                    document.getElementById('admin-page').style.display = 'block';
-                    document.getElementById('login-error').style.display = 'none';
-                    
-                    document.getElementById('edit-nome').value = configuracaoEvento.nome_aniversariante;
-                    document.getElementById('edit-data').value = configuracaoEvento.data_evento;
-                    document.getElementById('edit-aviso').value = configuracaoEvento.aviso_criancas;
-                    document.getElementById('edit-username').value = configuracaoEvento.admin_username;
-                    document.getElementById('edit-password').value = '';
-                    
-                    if (configuracaoEvento.data_limite_confirmacao) {
-                        document.getElementById('edit-data-limite').value = configuracaoEvento.data_limite_confirmacao;
-                    }
-                    
-                    // Preencher data e hora do evento
-                    if (configuracaoEvento.data_evento_timestamp) {
-                        const dataEvento = new Date(configuracaoEvento.data_evento_timestamp);
-                        const ano = dataEvento.getFullYear();
-                        const mes = String(dataEvento.getMonth() + 1).padStart(2, '0');
-                        const dia = String(dataEvento.getDate()).padStart(2, '0');
-                        const hora = String(dataEvento.getHours()).padStart(2, '0');
-                        const minuto = String(dataEvento.getMinutes()).padStart(2, '0');
-                        document.getElementById('edit-data-evento-timestamp').value = `${ano}-${mes}-${dia}T${hora}:${minuto}`;
-                    }
-                    
-                    carregarDados();
-                } else {
-                    document.getElementById('login-error').style.display = 'block';
-                }
-            });
-            
-            document.getElementById('tab-confirmados').addEventListener('click', () => mostrarTab('confirmados'));
-            document.getElementById('tab-declinados').addEventListener('click', () => mostrarTab('declinados'));
-            document.getElementById('tab-recados').addEventListener('click', () => mostrarTab('recados'));
-            document.getElementById('tab-links').addEventListener('click', () => mostrarTab('links'));
-            document.getElementById('mostrar-ajuda-btn').addEventListener('click', mostrarAjuda);
-            document.getElementById('exportar-pdf-btn').addEventListener('click', exportarPDF);
-            document.getElementById('copiar-sem-btn').addEventListener('click', () => copiarLink('sem'));
-            document.getElementById('copiar-com-btn').addEventListener('click', () => copiarLink('com'));
-            document.getElementById('salvar-config-btn').addEventListener('click', salvarConfiguracao);
-            document.getElementById('toggle-bg').addEventListener('click', function() {
-                const checkbox = document.getElementById('toggle-aviso-criancas');
-                checkbox.checked = !checkbox.checked;
-                toggleAvisoCriancas(checkbox.checked);
-            });
-            document.getElementById('mensagem-recado').addEventListener('input', function(e) {
-                const count = e.target.value.length;
-                document.getElementById('char-count').textContent = `${count}/500 caracteres`;
-            });
-            document.getElementById('recado-form').addEventListener('submit', enviarRecado);
-        });
-    </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9b782f04a26dc13d',t:'MTc2NzMzNTE3NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+        // Atualiza a barra de progresso
+        const bar = document.querySelector(`[data-progress-bar="${index}"] .upload-progress`);
+        if (bar) bar.style.width = '100%';
+
+        console.log('✅ Upload concluído com sucesso');
+        resolve();
+      })
+      .catch(err => {
+        console.error('❌ Upload FALHOU - Google Drive error:', err.message);
+        reject(new Error('Falha ao enviar para Google Drive: ' + err.message));
+      });
+
+      // Barra de progresso simulada
+      const bar = document.querySelector(`[data-progress-bar="${index}"] .upload-progress`);
+      if (bar) {
+        let p = 0;
+        const interval = setInterval(() => {
+          p = Math.min(p + Math.random() * 20, 85);
+          bar.style.width = p + '%';
+          if (p >= 85) clearInterval(interval);
+        }, 200);
+      }
+    });
+  }
+
+  // --- Minhas fotos (eliminação com limite de 1h) ---
+  async function renderMyUploadedFiles() {
+    const config = window.elementSdk?.config || defaultConfig;
+    const surface = config.surface_color || defaultConfig.surface_color;
+    const secondary = config.secondary_action || defaultConfig.secondary_action;
+    const baseSize = config.font_size || defaultConfig.font_size;
+
+    // Carrega ficheiros do Supabase para este convidado
+    const { data: uploads, error } = await supabaseClient
+      .from('uploads')
+      .select('*')
+      .eq('event_id', currentEventId)
+      .eq('guest_id', currentGuestId)
+      .order('file_upload_time', { ascending: false });
+
+    if (error || !uploads || uploads.length === 0) {
+      document.getElementById('my-files-section').style.display = 'none';
+      return;
+    }
+
+    document.getElementById('my-files-section').style.display = 'block';
+    const container = document.getElementById('my-uploaded-files');
+    container.innerHTML = '';
+
+    uploads.forEach((file, fileIdx) => {
+      const uploadTime = new Date(file.file_upload_time);
+      const now = new Date();
+      const elapsedMs = now - uploadTime;
+      const canDelete = elapsedMs < DELETE_WINDOW_MS;
+      const minutesLeft = Math.ceil((DELETE_WINDOW_MS - elapsedMs) / 1000 / 60);
+
+      const div = document.createElement('div');
+      div.style.cssText = `background:${surface};border-radius:12px;padding:12px;display:flex;justify-content:space-between;align-items:center;`;
+      
+      let statusText = canDelete ? `<span style="font-size:${baseSize * 0.75}px;opacity:0.5;">⏱️ ${minutesLeft}m para apagar</span>` : `<span style="font-size:${baseSize * 0.75}px;opacity:0.3;">❌ Prazo expirado</span>`;
+
+      div.innerHTML = `
+        <div style="min-w:0;">
+          <p style="font-size:${baseSize * 0.85}px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:${config.text_color};">${file.file_name}</p>
+          <p style="font-size:${baseSize * 0.75}px;opacity:0.5;margin:4px 0 0 0;color:${config.text_color};">${file.file_size}</p>
+          ${statusText}
+        </div>
+        <button onclick="deleteMyFile('${file.id}')" style="background:none;border:none;cursor:pointer;color:${canDelete ? '#e74c3c' : '#ccc'};padding:4px;flex-shrink:0;font-family:'Poppins',sans-serif;" ${canDelete ? '' : 'disabled'}>
+          <i data-lucide="trash-2" style="width:18px;height:18px;"></i>
+        </button>
+      `;
+      container.appendChild(div);
+    });
+
+    lucide.createIcons();
+  }
+
+  async function deleteMyFile(fileId) {
+    // Busca o ficheiro no Supabase
+    const { data: file, error: fetchError } = await supabaseClient
+      .from('uploads')
+      .select('*')
+      .eq('id', fileId)
+      .single();
+
+    if (fetchError || !file) {
+      showToast('Ficheiro não encontrado', 'error');
+      return;
+    }
+
+    // Verifica se ainda está no prazo
+    const uploadTime = new Date(file.file_upload_time);
+    const now = new Date();
+    if (now - uploadTime > DELETE_WINDOW_MS) {
+      showToast('O prazo para eliminar expirou', 'error');
+      return;
+    }
+
+    // Apaga do Supabase
+    const { error: deleteError } = await supabaseClient
+      .from('uploads')
+      .delete()
+      .eq('id', fileId);
+
+    if (deleteError) {
+      showToast('Erro ao eliminar ficheiro', 'error');
+      return;
+    }
+
+    renderMyUploadedFiles();
+    showToast('Foto eliminada com sucesso', 'success');
+  }
+
+  // --- Toast ---
+  function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    const colors = { success: '#2d6a4f', warning: '#b08930', error: '#922', info: '#555' };
+    const toast = document.createElement('div');
+    toast.className = 'toast pointer-events-auto';
+    toast.style.cssText = `background:${colors[type]};color:#fff;padding:12px 24px;border-radius:12px;font-size:14px;max-width:320px;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,0.4);font-family:'Poppins',sans-serif;`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.classList.add('toast-out');
+      setTimeout(() => toast.remove(), 300);
+    }, 3500);
+  }
+
+  lucide.createIcons();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e6563fc84d23e9a',t:'MTc3NTE5MTE3OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
