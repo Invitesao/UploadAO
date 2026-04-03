@@ -1640,7 +1640,9 @@
             timestamp: new Date().toISOString()
           };
 
-          const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkKxR49A8njWzv1PUZtJbeR6yr2wmnKsrOhjTD7s6nGpS0JtgLuiNoEOSDBPtq88M2/exec";
+          console.log('[Upload] Enviando:', { eventId: currentEventId, eventName: eventName, guestName: currentGuestName });
+
+          const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx3veLqUbw2meYAwIIkaJDaoxcMFS1qO6nl-cFvTKshIAuhgnAFLZJblCup80IV5tkp/exec";
           
           // Timeout de 45 segundos para cada upload
           const controller = new AbortController();
@@ -1855,5 +1857,5 @@
 
   lucide.createIcons();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e66b29377033e9a',t:'MTc3NTIwNDg4Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e66bf6615ec3e9a',t:'MTc3NTIwNTQwOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
