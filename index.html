@@ -849,9 +849,9 @@
       if (bar) {
         let p = 0;
         const interval = setInterval(() => {
-          p = Math.min(p + Math.random() * 25, 90);
+          p = Math.min(p + Math.random() * 25, 85);
           bar.style.width = p + '%';
-          if (p >= 90) clearInterval(interval);
+          if (p >= 85) clearInterval(interval);
         }, 150);
       }
 
@@ -865,60 +865,91 @@
           const fileId = 'file_' + timestamp + '_' + randomStr;
 
           // Converte para base64 (sem o prefixo data:)
-          const base64 = reader.result.split(',')[1];
+          const base64Data = reader.result.split(',')[1];
 
-          // 🔥 ENVIA VIA FETCH + CORS-SAFE (usa FormData para bypass CORS no deploy sheet!)
-          const formData = new FormData();
-          formData.append("file", base64);
+          // 🔥 ENVIA VIA FETCH + FormData (com validação JSON real)
+          const formData = new URLSearchParams();
+          formData.append("file", base64Data);
           formData.append("fileName", file.name);
           formData.append("fileType", file.type);
           formData.append("eventId", currentEventId);
           formData.append("guestId", currentGuestId);
+          formData.append("fileSize", file.size);
           formData.append("timestamp", new Date().toISOString());
 
-          // Usa fetch com CORS mode 'no-cors' (envia sem esperar resposta visível)
-          fetch("https://script.google.com/macros/s/AKfycbzXUcw0uWrYdjkNFZ2deuIphx68z6ZH1R1AUJJUFZj9Ag73tRXtrzsWrA2km1adTASTww/exec", {
+          // 🔥 URL DO APPS SCRIPT - ATUALIZA ISTO COM O TEU URL!
+          const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxSNCBRkdQYBKAxDsD2At-7yGKF0j8Ypkj0zqSIu5r2-bVXV06QsA9agUpd9Y8huaHLuA/exec";
+          
+          console.log('🌐 URL configurado:', APPS_SCRIPT_URL);
+          console.log('📦 A enviar FormData com', formData.toString().length, 'bytes');
+
+          fetch(APPS_SCRIPT_URL, {
             method: "POST",
-            body: formData,
-            mode: 'no-cors'  // ✅ Permite envio sem CORS headers
+            body: formData
           })
-          .then(() => {
-            console.log('✅ Ficheiro enviado para Google Drive:', file.name);
-            // Atualiza a barra de progresso para 100%
-            if (bar) bar.style.width = '100%';
+          .then(res => {
+            console.log('📡 Status da resposta:', res.status);
+            return res.text().then(text => ({ status: res.status, text }));
+          })
+          .then(({ status, text }) => {
+            console.log('📥 Resposta bruta:', text.substring(0, 500));
+            
+            // Tenta fazer parse como JSON
+            let data;
+            try {
+              data = JSON.parse(text);
+            } catch (e) {
+              console.error('❌ Resposta não é JSON válido:', text);
+              throw new Error('Servidor retornou resposta inválida');
+            }
+
+            console.log('✅ JSON parseado:', data);
+
+            // Verifica resposta real
+            if (data.success === true) {
+              console.log('✅ Ficheiro enviado com sucesso:', file.name);
+              
+              // Atualiza a barra de progresso para 100%
+              if (bar) bar.style.width = '100%';
+
+              // Guarda metadados NO SUPABASE
+              if (supabaseClient) {
+                supabaseClient
+                  .from('uploads')
+                  .insert([{
+                    id: fileId,
+                    event_id: currentEventId,
+                    guest_id: currentGuestId,
+                    file_name: file.name,
+                    file_size_mb: parseFloat((file.size / 1024 / 1024).toFixed(1)),
+                    file_type: file.type,
+                    uploaded_at: new Date().toISOString()
+                  }])
+                  .then(() => {
+                    console.log('✅ Metadados guardados no Supabase:', file.name);
+                    renderMyUploadedFiles();
+                  })
+                  .catch(err => {
+                    console.warn('⚠️ Metadados não guardados (ficheiro foi enviado):', err.message);
+                  });
+              }
+
+              resolve();
+            } else {
+              // Erro do Apps Script
+              const errorMsg = data.message || data.error || 'Erro desconhecido no servidor';
+              console.error('❌ Apps Script retornou erro:', errorMsg);
+              reject(new Error(errorMsg));
+            }
           })
           .catch(err => {
-            console.warn('⚠️ Aviso de fetch (comum com no-cors):', err.message);
-            // Mesmo com erro, considera como enviado (no-cors não retorna resposta)
-            if (bar) bar.style.width = '100%';
+            console.error('❌ Erro ao comunicar com Apps Script:', err.message);
+            console.error('💡 Dica: Verifica se o URL do Apps Script está correto');
+            reject(new Error('Erro na comunicação com servidor: ' + err.message));
           });
 
-          // Guarda metadados NO SUPABASE em background (não bloqueia)
-          if (supabaseClient) {
-            supabaseClient
-              .from('uploads')
-              .insert([{
-                id: fileId,
-                event_id: currentEventId,
-                guest_id: currentGuestId,
-                file_name: file.name,
-                file_size: (file.size / 1024 / 1024).toFixed(1) + ' MB',
-                file_path: fileId,
-                file_upload_time: new Date().toISOString()
-              }])
-              .then(() => {
-                console.log('✅ Metadados guardados no Supabase para:', file.name);
-              })
-              .catch(err => {
-                console.error('⚠️ Erro ao guardar metadados (não bloqueia upload):', err.message);
-              });
-          }
-
-          // Resolve após um delay (fetch enviou, metadados em background)
-          setTimeout(() => { resolve(); }, 1000);
-
         } catch (err) {
-          console.error('❌ Erro ao processar upload:', err.message);
+          console.error('❌ Erro ao processar ficheiro:', err.message);
           reject(err);
         }
       };
@@ -933,11 +964,12 @@
     });
   }
 
-  // --- Minhas fotos (eliminação com limite de 1h) ---
+  // --- Galeria de Fotos com Download ---
   async function renderMyUploadedFiles() {
     const config = window.elementSdk?.config || defaultConfig;
     const surface = config.surface_color || defaultConfig.surface_color;
     const secondary = config.secondary_action || defaultConfig.secondary_action;
+    const primary = config.primary_action || defaultConfig.primary_action;
     const baseSize = config.font_size || defaultConfig.font_size;
 
     // Carrega ficheiros do Supabase para este convidado
@@ -946,7 +978,7 @@
       .select('*')
       .eq('event_id', currentEventId)
       .eq('guest_id', currentGuestId)
-      .order('file_upload_time', { ascending: false });
+      .order('uploaded_at', { ascending: false });
 
     if (error || !uploads || uploads.length === 0) {
       document.getElementById('my-files-section').style.display = 'none';
@@ -958,31 +990,70 @@
     container.innerHTML = '';
 
     uploads.forEach((file, fileIdx) => {
-      const uploadTime = new Date(file.file_upload_time);
+      const uploadTime = new Date(file.uploaded_at);
       const now = new Date();
       const elapsedMs = now - uploadTime;
       const canDelete = elapsedMs < DELETE_WINDOW_MS;
       const minutesLeft = Math.ceil((DELETE_WINDOW_MS - elapsedMs) / 1000 / 60);
+      const isImage = file.file_type?.startsWith('image/');
 
       const div = document.createElement('div');
-      div.style.cssText = `background:${surface};border-radius:12px;padding:12px;display:flex;justify-content:space-between;align-items:center;`;
+      div.style.cssText = `background:${surface};border-radius:12px;padding:12px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;`;
       
-      let statusText = canDelete ? `<span style="font-size:${baseSize * 0.75}px;opacity:0.5;">⏱️ ${minutesLeft}m para apagar</span>` : `<span style="font-size:${baseSize * 0.75}px;opacity:0.3;">❌ Prazo expirado</span>`;
+      let statusText = canDelete ? `<span style="font-size:${baseSize * 0.7}px;opacity:0.5;">⏱️ ${minutesLeft}m para apagar</span>` : `<span style="font-size:${baseSize * 0.7}px;opacity:0.3;">❌ Prazo expirado</span>`;
 
       div.innerHTML = `
+        <div style="width:50px;height:50px;border-radius:8px;background:${primary}1f;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i data-lucide="${isImage ? 'image' : 'film'}" style="width:24px;height:24px;color:${primary};"></i>
+        </div>
         <div style="min-w:0;">
-          <p style="font-size:${baseSize * 0.85}px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:${config.text_color};">${file.file_name}</p>
-          <p style="font-size:${baseSize * 0.75}px;opacity:0.5;margin:4px 0 0 0;color:${config.text_color};">${file.file_size}</p>
+          <p style="font-size:${baseSize * 0.85}px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:${config.text_color};font-weight:500;">${file.file_name}</p>
+          <p style="font-size:${baseSize * 0.7}px;opacity:0.5;margin:2px 0 0 0;color:${config.text_color};">${file.file_size_mb} MB</p>
           ${statusText}
         </div>
-        <button onclick="deleteMyFile('${file.id}')" style="background:none;border:none;cursor:pointer;color:${canDelete ? '#e74c3c' : '#ccc'};padding:4px;flex-shrink:0;font-family:'Poppins',sans-serif;" ${canDelete ? '' : 'disabled'}>
-          <i data-lucide="trash-2" style="width:18px;height:18px;"></i>
-        </button>
+        <div style="display:flex;gap:8px;flex-shrink:0;">
+          <button onclick="downloadFile('${file.id}', '${file.file_name}')" style="background:${primary};color:#fff;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif;font-size:${baseSize * 0.8}px;font-weight:500;" title="Descarregar">
+            <i data-lucide="download" style="width:16px;height:16px;display:inline;vertical-align:-2px;"></i>
+          </button>
+          <button onclick="deleteMyFile('${file.id}')" style="background:none;border:1px solid #e74c3c;color:${canDelete ? '#e74c3c' : '#ccc'};padding:6px 12px;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif;font-size:${baseSize * 0.8}px;" ${canDelete ? '' : 'disabled'} title="Apagar">
+            <i data-lucide="trash-2" style="width:16px;height:16px;display:inline;vertical-align:-2px;"></i>
+          </button>
+        </div>
       `;
       container.appendChild(div);
     });
 
     lucide.createIcons();
+  }
+
+  // Download de ficheiro
+  async function downloadFile(fileId, fileName) {
+    try {
+      showToast('⏳ A preparar descarregamento...', 'info');
+      
+      // Fetch do ficheiro base64 do Apps Script
+      const response = await fetch("https://script.google.com/macros/s/AKfycbzXUcw0uWrYdjkNFZ2deuIphx68z6ZH1R1AUJJUFZj9Ag73tRXtrzsWrA2km1adTASTww/exec?action=downloadFile&fileId=" + fileId + "&eventId=" + currentEventId + "&guestId=" + currentGuestId);
+      
+      if (!response.ok) {
+        showToast('Erro ao descarregar ficheiro', 'error');
+        return;
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      window.URL.revokeObjectURL(url);
+      link.remove();
+      
+      showToast('✅ Ficheiro descarregado!', 'success');
+    } catch (err) {
+      console.error('Erro ao descarregar:', err);
+      showToast('Erro ao descarregar ficheiro', 'error');
+    }
   }
 
   async function deleteMyFile(fileId) {
@@ -1038,5 +1109,5 @@
 
   lucide.createIcons();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e65d782f0763e9a',t:'MTc3NTE5NTkwOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e65fb2993753e9a',t:'MTc3NTE5NzM3MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
