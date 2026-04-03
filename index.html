@@ -250,6 +250,120 @@
   let editingEventId = null;
   let galleryPhotosLoaded = false;
 
+  // --- CACHE CONFIG ---
+  const CACHE_CONFIG = {
+    PREFIX: 'uploadao_url_cache_',
+    EXPIRATION_MS: 3600000, // 1 hora (mesma validade da URL assinada)
+    MAX_CACHE_SIZE_KB: 5000 // 5MB máximo de cache
+  };
+
+  // --- CACHE FUNCTIONS ---
+  function getCacheKey(fileId) {
+    return CACHE_CONFIG.PREFIX + fileId;
+  }
+
+  function saveUrlToCache(fileId, signedUrl) {
+    try {
+      const cacheData = {
+        url: signedUrl,
+        timestamp: Date.now(),
+        expires: Date.now() + CACHE_CONFIG.EXPIRATION_MS
+      };
+      localStorage.setItem(getCacheKey(fileId), JSON.stringify(cacheData));
+    } catch (err) {
+      // localStorage cheio - limpar cache antigo
+      if (err.name === 'QuotaExceededError') {
+        cleanOldCache();
+        try {
+          localStorage.setItem(getCacheKey(fileId), JSON.stringify(cacheData));
+        } catch (e) {
+          console.warn('Não foi possível guardar em cache:', e);
+        }
+      }
+    }
+  }
+
+  function getUrlFromCache(fileId) {
+    try {
+      const cached = localStorage.getItem(getCacheKey(fileId));
+      if (!cached) return null;
+
+      const data = JSON.parse(cached);
+      
+      // Verificar se ainda é válido
+      if (Date.now() > data.expires) {
+        localStorage.removeItem(getCacheKey(fileId));
+        return null;
+      }
+
+      return data.url;
+    } catch (err) {
+      console.warn('Erro ao ler cache:', err);
+      return null;
+    }
+  }
+
+  function cleanOldCache() {
+    try {
+      const now = Date.now();
+      let totalSize = 0;
+      const entries = [];
+
+      // Recolher todas as entradas de cache
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith(CACHE_CONFIG.PREFIX)) {
+          try {
+            const data = JSON.parse(localStorage.getItem(key));
+            entries.push({
+              key,
+              timestamp: data.timestamp,
+              size: key.length + data.url.length
+            });
+            totalSize += entries[entries.length - 1].size;
+          } catch (e) {
+            localStorage.removeItem(key);
+          }
+        }
+      }
+
+      // Se passou do limite, remover os mais antigos
+      if (totalSize > CACHE_CONFIG.MAX_CACHE_SIZE_KB * 1024) {
+        entries.sort((a, b) => a.timestamp - b.timestamp);
+        let removed = 0;
+        for (const entry of entries) {
+          localStorage.removeItem(entry.key);
+          removed++;
+          totalSize -= entry.size;
+          if (totalSize <= CACHE_CONFIG.MAX_CACHE_SIZE_KB * 1024 * 0.8) break;
+        }
+        console.log(`Cache: removidos ${removed} items antigos`);
+      }
+
+      // Remover expirados
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith(CACHE_CONFIG.PREFIX)) {
+          try {
+            const data = JSON.parse(localStorage.getItem(key));
+            if (now > data.expires) {
+              localStorage.removeItem(key);
+            }
+          } catch (e) {
+            localStorage.removeItem(key);
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Erro ao limpar cache:', err);
+    }
+  }
+
+  // Limpar cache expirado ao iniciar
+  window.addEventListener('load', () => {
+    setTimeout(cleanOldCache, 1000);
+  });
+
   const CONCURRENT_UPLOADS = 8;
   let uploadQueue = [];
   let activeUploads = 0;
@@ -839,15 +953,16 @@
   async function openPhotoViewer(fileId, index) {
     currentPhotoIndex = index;
     
-    // Verificar se já está em cache
-    if (galleryPhotosCache.has(fileId)) {
-      const cachedUrl = galleryPhotosCache.get(fileId);
+    // Verificar cache localStorage primeiro (NOVO!)
+    const cachedUrl = getUrlFromCache(fileId);
+    if (cachedUrl) {
       document.getElementById('photo-viewer-image').src = cachedUrl;
+      document.getElementById('photo-viewer-image').dataset.fileId = fileId;
       updatePhotoCounter();
       return;
     }
 
-    // Carregar e guardar em cache
+    // Se não tem cache, carregar do Supabase e guardar
     const { data: file } = await supabaseClient
       .from('uploads')
       .select('storage_path, file_name')
@@ -862,6 +977,8 @@
       .createSignedUrl(file.storage_path, 3600);
 
     if (signedData?.signedUrl) {
+      // Guardar em cache localStorage (NOVO!)
+      saveUrlToCache(fileId, signedData.signedUrl);
       galleryPhotosCache.set(fileId, signedData.signedUrl);
       document.getElementById('photo-viewer-image').src = signedData.signedUrl;
       document.getElementById('photo-viewer-image').dataset.fileId = fileId;
@@ -1096,13 +1213,14 @@
       if (card.querySelector('img') === null && !card.dataset.loadingStarted) {
         card.dataset.loadingStarted = 'true';
         
-        // Carregar URL assinada (cachear automaticamente)
+        // Carregar URL assinada (cachear automaticamente em localStorage)
         supabaseClient.storage
           .from(STORAGE_BUCKET)
           .createSignedUrl(file.storage_path, 3600)
           .then(({ data: signedData }) => {
             if (signedData?.signedUrl && card.querySelector('img') === null) {
-              // Guardar em cache
+              // Guardar em cache localStorage (NOVO!)
+              saveUrlToCache(file.id, signedData.signedUrl);
               galleryPhotosCache.set(file.id, signedData.signedUrl);
               
               const imgContainer = document.createElement('div');
@@ -1343,6 +1461,86 @@
     lucide.createIcons();
   }
 
+  // --- PERCEPTUAL HASH FUNCTIONS (Detecção de duplicatas) ---
+  async function generateImageHash(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          // Redimensionar para 8x8 (rápido e suficiente para comparação perceptual)
+          const canvas = document.createElement('canvas');
+          canvas.width = 8;
+          canvas.height = 8;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, 8, 8);
+          
+          // Extrair dados de pixels em escala de cinzento
+          const imageData = ctx.getImageData(0, 0, 8, 8);
+          const data = imageData.data;
+          let hash = '';
+          
+          for (let i = 0; i < data.length; i += 4) {
+            // Calcular luminância (escala de cinzento)
+            const gray = (data[i] * 0.299 + data[i+1] * 0.587 + data[i+2] * 0.114);
+            hash += gray > 127 ? '1' : '0';
+          }
+          
+          resolve(hash);
+        };
+        img.onerror = () => reject(new Error('Erro ao processar imagem para hash'));
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  // Calcular distância de Hamming entre dois hashes (quantos bits diferentes)
+  function hammingDistance(hash1, hash2) {
+    let distance = 0;
+    for (let i = 0; i < hash1.length; i++) {
+      if (hash1[i] !== hash2[i]) distance++;
+    }
+    return distance;
+  }
+
+  // Verificar se a foto já existe no evento (com tolerância a pequenas diferenças)
+  async function checkForDuplicates(blob, eventId) {
+    try {
+      const newHash = await generateImageHash(blob);
+      
+      // Carregar todos os hashes do evento
+      const { data: existingUploads } = await supabaseClient
+        .from('uploads')
+        .select('image_hash')
+        .eq('event_id', eventId);
+
+      if (!existingUploads) return { isDuplicate: false, similarity: 0 };
+
+      // Comparar com hashes existentes
+      let maxSimilarity = 0;
+      for (const upload of existingUploads) {
+        if (upload.image_hash) {
+          const distance = hammingDistance(newHash, upload.image_hash);
+          // Distância máxima é 64 (8x8=64 bits)
+          // Se distância < 5, é praticamente a mesma foto (tolerância ~8%)
+          const similarity = ((64 - distance) / 64) * 100;
+          maxSimilarity = Math.max(maxSimilarity, similarity);
+
+          if (distance < 5) {
+            return { isDuplicate: true, similarity: similarity.toFixed(1), newHash };
+          }
+        }
+      }
+
+      return { isDuplicate: false, similarity: maxSimilarity.toFixed(1), newHash };
+    } catch (err) {
+      console.warn('Erro ao verificar duplicatas:', err);
+      // Se der erro no hash, deixar continuar (não bloquear upload)
+      return { isDuplicate: false, similarity: 0, newHash: null };
+    }
+  }
+
   async function uploadFile(file, index) {
     if (!file.type.startsWith('image/')) {
       showToast(`❌ ${file.name} não é uma imagem válida`, 'error');
@@ -1371,6 +1569,14 @@
     }
 
     const { blob } = await compressImage(file);
+
+    // --- VERIFICAR DUPLICATAS (NOVO!) ---
+    const { isDuplicate, similarity, newHash } = await checkForDuplicates(blob, currentEventId);
+    
+    if (isDuplicate) {
+      showToast(`⚠️ Esta foto já foi enviada! (${similarity}% semelhante)`, 'warning');
+      throw new Error('Duplicate photo detected');
+    }
 
     const { data: allUploads } = await supabaseClient
       .from('uploads')
@@ -1409,7 +1615,8 @@
         file_size_mb: parseFloat(fileSizeMB),
         file_type: 'image/jpeg',
         uploaded_at: new Date().toISOString(),
-        storage_path: fileName
+        storage_path: fileName,
+        image_hash: newHash
       }]);
   }
 
@@ -1506,5 +1713,5 @@
 
   lucide.createIcons();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e6a1cab36a43e9a',t:'MTc3NTI0MDY4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e6a2b2ed79a3e9a',t:'MTc3NTI0MTI4MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
