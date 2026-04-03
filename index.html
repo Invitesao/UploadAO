@@ -12,53 +12,35 @@
   <style>
     * { box-sizing: border-box; }
 
-    .drop-zone {
-      transition: all 0.3s ease;
-    }
-    .drop-zone.dragover {
-      transform: scale(1.02);
-      border-color: var(--primary-action);
-      background: rgba(255,255,255,0.08);
-    }
+    .drop-zone { transition: all 0.3s ease; }
+    .drop-zone.dragover { transform: scale(1.02); border-color: var(--primary-action); background: rgba(255,255,255,0.08); }
 
-    .file-item {
-      animation: slideIn 0.3s ease forwards;
-    }
+    .file-item { animation: slideIn 0.3s ease forwards; }
     @keyframes slideIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .upload-progress {
-      transition: width 0.4s ease;
-    }
+    .upload-progress { transition: width 0.4s ease; }
 
-    .toast {
-      animation: toastIn 0.4s ease forwards;
-    }
+    .toast { animation: toastIn 0.4s ease forwards; }
     @keyframes toastIn {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    .toast-out {
-      animation: toastOut 0.3s ease forwards;
-    }
+    .toast-out { animation: toastOut 0.3s ease forwards; }
     @keyframes toastOut {
       from { opacity: 1; transform: translateY(0); }
       to { opacity: 0; transform: translateY(20px); }
     }
 
-    .btn-pulse {
-      animation: pulse 2s infinite;
-    }
+    .btn-pulse { animation: pulse 2s infinite; }
     @keyframes pulse {
       0%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
       50% { box-shadow: 0 0 0 12px rgba(37, 99, 235, 0); }
     }
 
-    .fade-in {
-      animation: fadeIn 0.6s ease forwards;
-    }
+    .fade-in { animation: fadeIn 0.6s ease forwards; }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(15px); }
       to { opacity: 1; transform: translateY(0); }
@@ -78,7 +60,15 @@
  </head>
  <body class="h-full" style="margin:0; font-family: 'Poppins', sans-serif;">
   <div id="app" class="h-full w-full overflow-auto" style="background: #ffffff; color: #1a1a1a;">
-   <div id="toast-container" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 items-center pointer-events-none"></div><!-- LOGIN VIEW -->
+   <div id="toast-container" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 items-center pointer-events-none"></div><!-- PHOTO VIEWER MODAL -->
+   <div id="photo-viewer-modal" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:1000;flex-direction:column;align-items:center;justify-content:center;display:none;">
+    <header style="position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:16px;background:rgba(0,0,0,0.5);"><span id="photo-counter" style="color:#fff;font-size:14px;font-weight:600;">1 / 10</span> <button onclick="closePhotoViewer()" style="background:none;border:none;color:#fff;cursor:pointer;padding:8px;"> <i data-lucide="x" style="width:24px;height:24px;"></i> </button>
+    </header>
+    <div style="display:flex;align-items:center;justify-content:center;gap:16px;width:100%;height:100%;padding:80px 16px 16px;"><button onclick="previousPhoto()" style="background:rgba(255,255,255,0.1);border:none;color:#fff;width:48px;height:48px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s;flex-shrink:0;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'"> <i data-lucide="chevron-left" style="width:28px;height:28px;"></i> </button> <img id="photo-viewer-image" src="" style="max-width:90%;max-height:70vh;border-radius:12px;object-fit:contain;"> <button onclick="nextPhoto()" style="background:rgba(255,255,255,0.1);border:none;color:#fff;width:48px;height:48px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s;flex-shrink:0;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'"> <i data-lucide="chevron-right" style="width:28px;height:28px;"></i> </button>
+    </div>
+    <footer style="position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:center;gap:12px;padding:16px;background:rgba(0,0,0,0.5);"><button onclick="downloadCurrentPhoto()" style="background:#2563eb;color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;display:flex;gap:6px;align-items:center;font-size:13px;"> <i data-lucide="download" style="width:16px;height:16px;"></i> Descarregar </button>
+    </footer>
+   </div><!-- LOGIN VIEW -->
    <div id="login-view" class="h-full w-full flex flex-col items-center justify-center px-4">
     <div class="w-full max-w-sm">
      <div class="text-center mb-8">
@@ -158,8 +148,7 @@
      </div>
     </section>
     <section class="px-4 max-w-lg mx-auto pb-6 fade-in stagger-3">
-     <div id="drop-zone" class="drop-zone relative rounded-2xl border-2 border-dashed p-8 text-center cursor-pointer transition-all" style="border-color: rgba(26,26,26,0.15); background: rgba(26,26,26,0.03);" onclick="document.getElementById('fileInput').click()">
-      <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
+     <div id="drop-zone" class="drop-zone relative rounded-2xl border-2 border-dashed p-8 text-center cursor-pointer transition-all" style="border-color: rgba(26,26,26,0.15); background: rgba(26,26,26,0.03);" onclick="document.getElementById('fileInput').click();"><input type="file" id="fileInput" multiple accept="image/*" class="hidden">
       <div class="mb-4">
        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full" id="upload-icon-circle" style="background: rgba(26,26,26,0.08);"><i data-lucide="upload-cloud" id="upload-icon" style="width:28px;height:28px;"></i>
        </div>
@@ -169,20 +158,14 @@
      </div>
      <div id="file-list" class="mt-4 flex flex-col gap-2"></div><button id="upload-btn" class="w-full mt-5 py-4 rounded-xl font-semibold text-base tracking-wide transition-all duration-300 hidden" style="border:none;cursor:pointer;" onclick="startUpload()"> <span id="upload-btn-text" class="flex items-center justify-center gap-2"> <i data-lucide="send" style="width:18px;height:18px;"></i> <span id="btn-label">Enviar Fotos</span> </span> </button>
     </section>
-    <section id="my-files-section" class="px-4 max-w-lg mx-auto pb-10 fade-in stagger-4" style="display:none;">
-     <h3 style="font-size:14px;font-weight:600;margin:0 0 12px 0;opacity:0.7;">As minhas fotos</h3>
-     <div id="my-uploaded-files" class="flex flex-col gap-2"></div>
-    </section>
-    <section class="px-4 max-w-lg mx-auto pb-10 fade-in stagger-4">
-     <div class="grid grid-cols-3 gap-3 text-center" style="font-size:12px;opacity:0.35;">
-      <div><i data-lucide="smartphone" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Abre o link
-      </div>
-      <div><i data-lucide="image-plus" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Escolhe fotos
-      </div>
-      <div><i data-lucide="cloud-lightning" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Enviado!
-      </div>
+    <div class="grid grid-cols-3 gap-3 text-center" style="font-size:12px;opacity:0.35;">
+     <div><i data-lucide="smartphone" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Abre o link
      </div>
-    </section>
+     <div><i data-lucide="image-plus" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Escolhe fotos
+     </div>
+     <div><i data-lucide="cloud-lightning" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Enviado!
+     </div>
+    </div>
     <footer class="text-center pb-8 px-4" style="font-size:11px;opacity:0.25;">
      Created by <strong>Invites</strong>
     </footer>
@@ -204,32 +187,32 @@
       <p style="font-size:16px;margin:0;">Nenhuma foto foi partilhada ainda 📷</p>
      </div>
     </section>
+    <section class="px-4 max-w-3xl mx-auto pb-10 text-center"><button id="download-all-btn" onclick="downloadAllPhotosGallery()" style="background:#27ae60;color:#fff;border:none;padding:12px 24px;border-radius:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;display:flex;gap:8px;align-items:center;justify-content:center;margin:0 auto;transition:all 0.3s;" onmouseover="this.style.background='#229954'" onmouseout="this.style.background='#27ae60'"> <i data-lucide="download" style="width:18px;height:18px;"></i> <span>Descarregar Todas</span> </button>
+    </section>
     <footer class="text-center pb-8 px-4" style="font-size:11px;opacity:0.25;">
      Created by <strong>Invites</strong>
     </footer>
    </div>
   </div>
   <script>
-  // --- SUPABASE & COMPRESSION CONFIG (ÚNICO BACKEND) ---
+  // --- SUPABASE & COMPRESSION CONFIG ---
   const SUPABASE_URL = "https://gysvyobbjetlhpakwatc.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5c3Z5b2JiamV0bGhwYWt3YXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNzYzMjksImV4cCI6MjA5MDc1MjMyOX0.3FLSilwG7-hI1ZPZQwa-HHXsxPR4t1XYrUpP24yPg7c";
   const STORAGE_BUCKET = "upload-ao-photos";
-  
-  // 🛡️ NOTA: Google Apps Script removido - usando apenas Supabase
+  const ADMIN_PASSWORD = "adkira2026invites!!@";
 
-  // 🛡️ LIMITES DE SEGURANÇA
   const STORAGE_LIMITS = {
     MAX_STORAGE_GB: 1,
-    MAX_STORAGE_BYTES: 1 * 1024 * 1024 * 1024, // 1GB
-    MAX_FILE_SIZE_MB: 100, // Máx por foto (antes de compressão)
-    MAX_FILES_PER_GUEST: 50, // Máx fotos por convidado
-    WARNING_THRESHOLD: 0.85 // Aviso em 85% de uso
+    MAX_STORAGE_BYTES: 1 * 1024 * 1024 * 1024,
+    MAX_FILE_SIZE_MB: 100,
+    MAX_FILES_PER_GUEST: 50,
+    WARNING_THRESHOLD: 0.85
   };
 
   const COMPRESSION_CONFIG = {
-    quality: 0.65,
-    maxWidth: 1920,
-    maxHeight: 1920,
+    quality: 0.55,
+    maxWidth: 1440,
+    maxHeight: 1440,
     mimeType: 'image/jpeg'
   };
 
@@ -238,66 +221,21 @@
     supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
 
-  // 🔥 COMPRESSÃO AUTOMÁTICA DE IMAGENS
-  async function compressImage(file, onProgress) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-          if (onProgress) onProgress('📐 Redimensionando...');
-          
-          const canvas = document.createElement('canvas');
-          let { width, height } = img;
-
-          if (width > COMPRESSION_CONFIG.maxWidth || height > COMPRESSION_CONFIG.maxHeight) {
-            const ratio = Math.min(
-              COMPRESSION_CONFIG.maxWidth / width,
-              COMPRESSION_CONFIG.maxHeight / height
-            );
-            width *= ratio;
-            height *= ratio;
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d', { alpha: false });
-          ctx.drawImage(img, 0, 0, width, height);
-
-          if (onProgress) onProgress('🗜️ Comprimindo...');
-
-          canvas.toBlob(
-            (blob) => {
-              const savings = (100 * (1 - blob.size / file.size)).toFixed(0);
-              console.log(`[Compress] ✅ ${file.name}: ${(file.size/1024/1024).toFixed(2)}MB → ${(blob.size/1024/1024).toFixed(2)}MB (${savings}% economia)`);
-              if (onProgress) onProgress(`✅ ${savings}% comprimida`);
-              resolve({ blob, savings });
-            },
-            COMPRESSION_CONFIG.mimeType,
-            COMPRESSION_CONFIG.quality
-          );
-        };
-        img.onerror = () => reject(new Error('Erro ao carregar imagem'));
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    });
-  }
-
-  // --- CONFIG & STATE ---
-  const ADMIN_PASSWORD = "adkira2026invites!!@";
+  // --- STATE ---
   let selectedFiles = [];
   let isUploading = false;
   let currentEventId = null;
   let allEvents = [];
   let currentGuestId = null;
   let currentGuestName = null;
+  let allGalleryPhotos = [];
+  let currentPhotoIndex = 0;
+  let gallerySelectedFiles = new Set();
+  let editingEventId = null;
 
-  // 🚀 FILA DE UPLOADS COM CONTROLE DE CONCORRÊNCIA
-  const CONCURRENT_UPLOADS = 4; // Máximo de uploads simultâneos por cliente
+  const CONCURRENT_UPLOADS = 8;
   let uploadQueue = [];
   let activeUploads = 0;
-  const uploadProgress = new Map(); // Rastreia progresso de cada ficheiro
 
   async function processUploadQueue() {
     while (uploadQueue.length > 0 && activeUploads < CONCURRENT_UPLOADS) {
@@ -314,6 +252,7 @@
     }
   }
 
+  // --- CONFIG ---
   const defaultConfig = {
     background_color: "#ffffff",
     surface_color: "#f5f5f5",
@@ -327,7 +266,6 @@
     event_message: "Partilha as tuas fotos do evento!"
   };
 
-  // --- ELEMENT SDK ---
   function applyConfig(config) {
     const bg = config.background_color || defaultConfig.background_color;
     const surface = config.surface_color || defaultConfig.surface_color;
@@ -341,7 +279,8 @@
     app.style.background = bg;
     app.style.color = text;
 
-    document.getElementById('btn-label').textContent = config.upload_button_text || defaultConfig.upload_button_text;
+    const lblBtn = document.getElementById('btn-label');
+    if (lblBtn) lblBtn.textContent = config.upload_button_text || defaultConfig.upload_button_text;
 
     const logoBox = document.getElementById('logo-box');
     if (logoBox) {
@@ -368,34 +307,12 @@
       dateEl.style.color = secondary;
     }
 
-    const msgBox = document.getElementById('event-message-content');
-    if (msgBox) {
-      msgBox.style.background = `${primary}1f`;
-      msgBox.style.borderLeftColor = primary;
-    }
-
     const btn = document.getElementById('upload-btn');
     if (btn) {
       btn.style.background = primary;
       btn.style.color = bg;
       btn.style.fontSize = `${baseSize}px`;
     }
-
-    const uploadIcon = document.getElementById('upload-icon');
-    if (uploadIcon) uploadIcon.style.color = primary;
-
-    const dz = document.getElementById('drop-zone');
-    if (dz) dz.style.borderColor = `${secondary}33`;
-
-    const circle = document.getElementById('upload-icon-circle');
-    if (circle) circle.style.background = `${primary}1f`;
-  }
-
-  function makeRecolorable(key) {
-    return {
-      get: () => (window.elementSdk?.config?.[key]) || defaultConfig[key],
-      set: (v) => { window.elementSdk.setConfig({ [key]: v }); }
-    };
   }
 
   if (window.elementSdk) {
@@ -404,11 +321,11 @@
       onConfigChange: async (config) => { applyConfig(config); },
       mapToCapabilities: (config) => ({
         recolorables: [
-          makeRecolorable('background_color'),
-          makeRecolorable('surface_color'),
-          makeRecolorable('text_color'),
-          makeRecolorable('primary_action'),
-          makeRecolorable('secondary_action')
+          { get: () => config.background_color || defaultConfig.background_color, set: (v) => { window.elementSdk.setConfig({ background_color: v }); } },
+          { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { window.elementSdk.setConfig({ surface_color: v }); } },
+          { get: () => config.text_color || defaultConfig.text_color, set: (v) => { window.elementSdk.setConfig({ text_color: v }); } },
+          { get: () => config.primary_action || defaultConfig.primary_action, set: (v) => { window.elementSdk.setConfig({ primary_action: v }); } },
+          { get: () => config.secondary_action || defaultConfig.secondary_action, set: (v) => { window.elementSdk.setConfig({ secondary_action: v }); } }
         ],
         borderables: [],
         fontEditable: {
@@ -439,6 +356,7 @@
     }
 
     if (password === ADMIN_PASSWORD) {
+      saveAdminSession();
       showToast('✅ Bem-vindo!', 'success');
       document.getElementById('login-view').style.display = 'none';
       document.getElementById('admin-view').style.display = 'block';
@@ -452,10 +370,37 @@
   }
 
   function adminLogout() {
+    sessionStorage.removeItem('adminSession');
     document.getElementById('admin-view').style.display = 'none';
     document.getElementById('login-view').style.display = 'flex';
     currentEventId = null;
     currentGuestId = null;
+  }
+
+  function saveAdminSession() {
+    sessionStorage.setItem('adminSession', JSON.stringify({
+      timestamp: Date.now(),
+      authenticated: true
+    }));
+  }
+
+  function checkAdminSession() {
+    const session = sessionStorage.getItem('adminSession');
+    if (session) {
+      try {
+        const data = JSON.parse(session);
+        if (data.authenticated) {
+          document.getElementById('login-view').style.display = 'none';
+          document.getElementById('admin-view').style.display = 'block';
+          loadEvents();
+          lucide.createIcons();
+          return true;
+        }
+      } catch (e) {
+        console.error('Erro ao restaurar sessão:', e);
+      }
+    }
+    return false;
   }
 
   async function addNewEvent() {
@@ -535,7 +480,7 @@
           <button onclick="copyLink('${event.upload_url}')" style="background:#2563eb;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Link Upload</button>
           <button onclick="copyLink('${event.gallery_url}')" style="background:#e74c3c;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Link Galeria</button>
           <button onclick="showEventStats('${event.id}')" style="background:#f39c12;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Estatísticas</button>
-          <button onclick="startEditEvent('${event.id}', '${event.event_title}', '${event.event_date}', '${(event.event_message || '').replaceAll("'", "&#39;")}')" style="background:#8e44ad;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Editar</button>
+          <button onclick="startEditEvent('${event.id}', '${event.event_title}', '${event.event_date}', '${(event.event_message || '').replace(/'/g, "&#39;")}')" style="background:#8e44ad;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Editar</button>
           <button onclick="downloadEventPhotos('${event.id}')" style="background:#27ae60;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Download</button>
           <button onclick="deleteEvent('${event.id}')" style="background:#95a5a6;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Apagar</button>
         </div>
@@ -552,7 +497,6 @@
 
   async function showEventStats(eventId) {
     if (!supabaseClient) return;
-
     const { data: uploads } = await supabaseClient
       .from('uploads')
       .select('*')
@@ -579,8 +523,6 @@
       });
   }
 
-  // ✨ NOVAS FUNÇÕES
-
   function setupSearchEvents() {
     const searchInput = document.getElementById('search-events');
     if (!searchInput) return;
@@ -604,7 +546,6 @@
     document.getElementById('search-events').value = '';
   }
 
-  let editingEventId = null;
   function startEditEvent(eventId, title, date, message) {
     editingEventId = eventId;
     document.getElementById('edit-event-title').value = title;
@@ -659,7 +600,6 @@
   async function downloadEventPhotos(eventId) {
     if (!supabaseClient) return;
     
-    // 🔐 SEGURANÇA: Admin só pode descarregar fotos do evento específico
     const event = allEvents.find(e => e.id === eventId);
     if (!event) {
       showToast('Evento não encontrado', 'error');
@@ -668,7 +608,6 @@
 
     showToast('⏳ A preparar download em massa...', 'info');
     
-    // 🔐 Limite: Calcular espaço ocupado antes de puxar
     const { data: uploads, error } = await supabaseClient
       .from('uploads')
       .select('file_size_mb')
@@ -681,12 +620,10 @@
 
     const totalSize = uploads.reduce((sum, f) => sum + (f.file_size_mb || 0), 0);
     
-    // 🛡️ Aviso se for muita coisa
     if (totalSize > 500) {
       showToast(`⚠️ Aviso: ${totalSize.toFixed(0)}MB para descarregar`, 'warning');
     }
 
-    // 🔐 Agora puxar apenas os metadados necessários
     const { data: uploadsFull } = await supabaseClient
       .from('uploads')
       .select('id, file_name, storage_path')
@@ -707,10 +644,7 @@
           .from(STORAGE_BUCKET)
           .download(file.storage_path);
 
-        if (error) {
-          console.error('Erro a descarregar:', file.file_name);
-          continue;
-        }
+        if (error) continue;
 
         const url = window.URL.createObjectURL(data);
         const link = document.createElement('a');
@@ -731,18 +665,24 @@
     showToast(`✅ ${downloaded}/${total} fotos descarregadas!`, 'success');
   }
 
-  function backFromGallery() {
-    window.history.back();
-  }
-
-  async function downloadAllPhotos() {
-    if (!currentEventId) return;
-    await downloadEventPhotos(currentEventId);
-  }
-
   window.addEventListener('load', async () => {
-    await loadEvents();
-    checkGuestMode();
+    const params = new URLSearchParams(window.location.search);
+    const galleryId = params.get('gallery');
+    
+    if (galleryId) {
+      await loadEvents();
+      const event = allEvents.find(e => e.id === galleryId);
+      if (event) {
+        currentEventId = galleryId;
+        showGalleryView(event);
+      }
+    } else {
+      if (checkAdminSession()) {
+        // Já logado
+      } else {
+        checkGuestMode();
+      }
+    }
     setupSearchEvents();
   });
 
@@ -756,16 +696,12 @@
       if (event) {
         currentEventId = eventId || galleryId;
         if (galleryId) {
-          // 🔓 Galeria: Sem senha, acesso direto
           showGalleryView(event);
         } else {
-          // Convidados: Pede nome
           const saved = sessionStorage.getItem('guestData_' + eventId);
           if (saved) {
             const data = JSON.parse(saved);
-            // 🔐 SEGURANÇA: Valida que o guestId corresponde ao evento
             if (data.eventId !== eventId) {
-              console.error('🛡️ SEGURANÇA: Dados de sessão inválidos');
               sessionStorage.removeItem('guestData_' + eventId);
               showGuestLoginView(event);
               return;
@@ -800,11 +736,10 @@
     currentGuestId = 'guest_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     currentGuestName = name;
 
-    // 🔐 SEGURANÇA: Armazena o eventId junto com os dados do convidado
     const guestData = { 
       guestId: currentGuestId, 
       guestName: currentGuestName, 
-      eventId: currentEventId,  // ← Valida que pertence a este evento
+      eventId: currentEventId,
       createdAt: new Date().toISOString() 
     };
     sessionStorage.setItem('guestData_' + currentEventId, JSON.stringify(guestData));
@@ -838,7 +773,6 @@
 
     applyConfig(config);
     renderFileList();
-    renderMyUploadedFiles();
   }
 
   function showGalleryView(event) {
@@ -860,19 +794,74 @@
     }, 15000);
   }
 
-  let gallerySelectedFiles = new Set();
+  async function openPhotoViewer(fileId, index) {
+    currentPhotoIndex = index;
+    const { data: file } = await supabaseClient
+      .from('uploads')
+      .select('storage_path, file_name')
+      .eq('id', fileId)
+      .single();
+
+    if (!file) return;
+
+    const { data: signedData } = await supabaseClient
+      .storage
+      .from(STORAGE_BUCKET)
+      .createSignedUrl(file.storage_path, 3600);
+
+    if (signedData?.signedUrl) {
+      document.getElementById('photo-viewer-image').src = signedData.signedUrl;
+      document.getElementById('photo-viewer-image').dataset.fileId = fileId;
+      document.getElementById('photo-viewer-image').dataset.fileName = file.file_name;
+      document.getElementById('photo-viewer-modal').style.display = 'flex';
+      updatePhotoCounter();
+      lucide.createIcons();
+    }
+  }
+
+  async function nextPhoto() {
+    if (currentPhotoIndex < allGalleryPhotos.length - 1) {
+      currentPhotoIndex++;
+      const photo = allGalleryPhotos[currentPhotoIndex];
+      await openPhotoViewer(photo.id, currentPhotoIndex);
+    }
+  }
+
+  async function previousPhoto() {
+    if (currentPhotoIndex > 0) {
+      currentPhotoIndex--;
+      const photo = allGalleryPhotos[currentPhotoIndex];
+      await openPhotoViewer(photo.id, currentPhotoIndex);
+    }
+  }
+
+  function updatePhotoCounter() {
+    document.getElementById('photo-counter').textContent = `${currentPhotoIndex + 1} / ${allGalleryPhotos.length}`;
+  }
+
+  function closePhotoViewer() {
+    document.getElementById('photo-viewer-modal').style.display = 'none';
+    document.getElementById('photo-viewer-image').src = '';
+  }
+
+  async function downloadCurrentPhoto() {
+    const img = document.getElementById('photo-viewer-image');
+    const fileId = img.dataset.fileId;
+    const fileName = img.dataset.fileName;
+    if (fileId && fileName) {
+      await downloadFile(fileId, fileName);
+    }
+  }
 
   async function renderGalleryPhotos() {
     if (!supabaseClient || !currentEventId) return;
 
-    // 🔐 SEGURANÇA: Valida que o evento existe e é acessível
     const event = allEvents.find(e => e.id === currentEventId);
     if (!event) {
-      console.error('🛡️ SEGURANÇA: Evento não encontrado ou não autorizado');
+      console.error('Evento não encontrado');
       return;
     }
 
-    // 🔐 SEGURANÇA: Só mostra fotos do evento atual (sem puxar tudo)
     const { data: uploads, error } = await supabaseClient
       .from('uploads')
       .select('*')
@@ -890,24 +879,22 @@
     if (!uploads || uploads.length === 0) {
       grid.innerHTML = '';
       empty.style.display = 'block';
+      allGalleryPhotos = [];
       return;
     }
 
     empty.style.display = 'none';
-    const existing = new Set([...grid.querySelectorAll('[data-file-id]')].map(el => el.dataset.fileId));
+    allGalleryPhotos = uploads;
 
     const config = window.elementSdk?.config || defaultConfig;
     const primary = config.primary_action || defaultConfig.primary_action;
-    const surface = config.surface_color || defaultConfig.surface_color;
 
-    uploads.forEach((file) => {
-      if (existing.has(file.id)) return;
-
+    grid.innerHTML = '';
+    uploads.forEach((file, index) => {
       const card = document.createElement('div');
       card.setAttribute('data-file-id', file.id);
-      card.style.cssText = `position:relative;border-radius:12px;overflow:hidden;aspect-ratio:1;background:linear-gradient(135deg, ${primary}20, ${primary}05);display:flex;align-items:center;justify-content:center;`;
+      card.style.cssText = `position:relative;border-radius:12px;overflow:hidden;aspect-ratio:1;background:linear-gradient(135deg, ${primary}20, ${primary}05);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.2s;`;
 
-      // Obtem URL temporária da imagem
       supabaseClient.storage.from(STORAGE_BUCKET).createSignedUrl(file.storage_path, 3600).then(({ data: signedData }) => {
         if (signedData?.signedUrl) {
           const img = document.createElement('img');
@@ -923,100 +910,29 @@
         }
       });
 
-      // Checkbox overlay
-      const checkbox = document.createElement('div');
-      checkbox.style.cssText = `position:absolute;top:8px;right:8px;width:24px;height:24px;background:#fff;border:2px solid ${primary};border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;z-index:10;`;
-      card.appendChild(checkbox);
-
-      // Delete button overlay
-      const deleteBtn = document.createElement('button');
-      deleteBtn.style.cssText = `position:absolute;top:8px;left:8px;width:32px;height:32px;background:rgba(255,0,0,0.8);border:none;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;z-index:10;color:#fff;`;
-      deleteBtn.innerHTML = '<i data-lucide="trash-2" style="width:16px;height:16px;"></i>';
-      deleteBtn.onclick = (e) => { e.stopPropagation(); deletePhotoFromGallery(file.id); };
-      card.appendChild(deleteBtn);
-
-      // Hover para mostrar botões
-      card.onmouseover = () => {
-        checkbox.style.opacity = '1';
-        deleteBtn.style.opacity = '1';
-      };
-      card.onmouseout = () => {
-        checkbox.style.opacity = '0';
-        deleteBtn.style.opacity = '0';
-      };
-
-      // Toggle checkbox
-      card.onclick = (e) => {
-        if (e.target === deleteBtn || e.target.closest('i[data-lucide="trash-2"]')) return;
-        const isSelected = gallerySelectedFiles.has(file.id);
-        if (isSelected) {
-          gallerySelectedFiles.delete(file.id);
-          checkbox.style.background = '#fff';
-          checkbox.innerHTML = '';
-        } else {
-          gallerySelectedFiles.add(file.id);
-          checkbox.style.background = primary;
-          checkbox.innerHTML = '<i data-lucide="check" style="width:16px;height:16px;color:#fff;"></i>';
-          lucide.createIcons();
-        }
-        updateGalleryToolbar();
+      card.onclick = () => {
+        openPhotoViewer(file.id, index);
       };
 
       grid.appendChild(card);
     });
 
     lucide.createIcons();
-    updateGalleryToolbar();
   }
 
-  function updateGalleryToolbar() {
-    const toolbar = document.getElementById('gallery-toolbar');
-    if (!toolbar) {
-      const config = window.elementSdk?.config || defaultConfig;
-      const surface = config.surface_color || defaultConfig.surface_color;
-      const primary = config.primary_action || defaultConfig.primary_action;
-      const secondary = config.secondary_action || defaultConfig.secondary_action;
+  async function downloadAllPhotosGallery() {
+    if (!supabaseClient || !currentEventId || allGalleryPhotos.length === 0) return;
 
-      const newToolbar = document.createElement('div');
-      newToolbar.id = 'gallery-toolbar';
-      newToolbar.style.cssText = `position:sticky;bottom:0;left:0;right:0;background:${surface};border-top:1px solid rgba(26,26,26,0.1);padding:12px;display:${gallerySelectedFiles.size > 0 ? 'flex' : 'none'};gap:8px;justify-content:center;align-items:center;z-index:100;`;
-      newToolbar.innerHTML = `
-        <span style="color:${secondary};font-size:14px;font-weight:500;margin-right:8px;">${gallerySelectedFiles.size} selecionada(s)</span>
-        <button onclick="downloadSelectedPhotos()" style="background:${primary};color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;display:flex;gap:6px;align-items:center;">
-          <i data-lucide="download" style="width:18px;height:18px;"></i> Descarregar
-        </button>
-        <button onclick="clearGallerySelection()" style="background:${secondary}33;color:${secondary};border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Limpar</button>
-      `;
-      document.getElementById('gallery-view').insertBefore(newToolbar, document.getElementById('gallery-grid'));
-      lucide.createIcons();
-    } else {
-      toolbar.style.display = gallerySelectedFiles.size > 0 ? 'flex' : 'none';
-      toolbar.querySelector('span').textContent = `${gallerySelectedFiles.size} selecionada(s)`;
-    }
-  }
-
-  function clearGallerySelection() {
-    gallerySelectedFiles.clear();
-    updateGalleryToolbar();
-    document.querySelectorAll('[data-file-id]').forEach(el => {
-      el.querySelector('div[style*="border"]').style.background = '#fff';
-      el.querySelector('div[style*="border"]').innerHTML = '';
-    });
-  }
-
-  async function downloadSelectedPhotos() {
-    if (gallerySelectedFiles.size === 0) return;
-
-    showToast('⏳ A preparar descarregamento...', 'info');
+    showToast('⏳ A preparar descarregamento de todas...', 'info');
     let downloaded = 0;
-    const total = gallerySelectedFiles.size;
+    const total = allGalleryPhotos.length;
 
-    for (const fileId of gallerySelectedFiles) {
+    for (const photo of allGalleryPhotos) {
       try {
         const { data: file } = await supabaseClient
           .from('uploads')
           .select('file_name, storage_path')
-          .eq('id', fileId)
+          .eq('id', photo.id)
           .single();
 
         if (!file) continue;
@@ -1044,39 +960,7 @@
       }
     }
 
-    clearGallerySelection();
     showToast(`✅ ${downloaded}/${total} fotos descarregadas!`, 'success');
-  }
-
-  async function deletePhotoFromGallery(fileId) {
-    if (!confirm('Eliminar esta foto?')) return;
-
-    showToast('⏳ A eliminar...', 'info');
-
-    try {
-      const { data: file } = await supabaseClient
-        .from('uploads')
-        .select('storage_path')
-        .eq('id', fileId)
-        .single();
-
-      if (file) {
-        await supabaseClient.storage.from(STORAGE_BUCKET).remove([file.storage_path]);
-      }
-
-      await supabaseClient
-        .from('uploads')
-        .delete()
-        .eq('id', fileId);
-
-      gallerySelectedFiles.delete(fileId);
-      document.querySelector(`[data-file-id="${fileId}"]`).remove();
-      updateGalleryToolbar();
-      showToast('✅ Foto eliminada', 'success');
-    } catch (err) {
-      console.error('Erro:', err);
-      showToast('❌ Erro ao eliminar', 'error');
-    }
   }
 
   // --- FILE HANDLING ---
@@ -1105,7 +989,6 @@
       return;
     }
 
-    // 🔥 VALIDAÇÃO: Máximo 10 fotos POR VEZ (não total)
     const remainingSlots = 10 - selectedFiles.length;
     if (remainingSlots <= 0) {
       showToast('❌ Máximo 10 fotos por vez - enviar estas primeiro', 'error');
@@ -1140,21 +1023,16 @@
       const sizeMB = (f.size / 1024 / 1024).toFixed(1);
 
       const div = document.createElement('div');
-      div.className = 'file-item-bg';
       div.setAttribute('data-file-index', i);
       div.style.cssText = `background:${surface};border-radius:12px;padding:12px;display:grid;grid-template-columns:60px 1fr auto;gap:12px;align-items:center;`;
 
       div.innerHTML = `
-        <div data-preview style="width:60px;height:60px;border-radius:8px;background:${primary}1f;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <div style="width:60px;height:60px;border-radius:8px;background:${primary}1f;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           <i data-lucide="image" style="width:24px;height:24px;opacity:0.3;"></i>
         </div>
         <div style="min-w:0;">
-          <p style="font-size:${baseSize * 0.85}px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:${config.text_color};">${f.name}</p>
-          <p style="font-size:${baseSize * 0.7}px;opacity:0.35;margin:2px 0 0 0;color:${config.text_color};">${sizeMB} MB</p>
-          <div data-progress-bar="${i}" style="height:3px;background:${secondary}33;border-radius:4px;overflow:hidden;margin-top:4px;display:none;">
-            <div class="upload-progress" style="height:100%;width:0%;background:${primary};border-radius:4px;"></div>
-          </div>
-          <div data-compression-status="${i}" style="font-size:${baseSize * 0.65}px;opacity:0.4;margin:3px 0 0 0;color:${config.text_color};display:none;"></div>
+          <p style="font-size:${baseSize * 0.85}px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${f.name}</p>
+          <p style="font-size:${baseSize * 0.7}px;opacity:0.35;margin:2px 0 0 0;">${sizeMB} MB</p>
         </div>
         <button onclick="removeFile(${i})" style="background:none;border:none;cursor:pointer;color:${secondary};padding:4px;flex-shrink:0;" ${isUploading ? 'disabled' : ''}>
           <i data-lucide="x" style="width:18px;height:18px;"></i>
@@ -1176,7 +1054,6 @@
     renderFileList();
   }
 
-  // --- UPLOAD COM FILA E CONTROLE DE CONCORRÊNCIA ---
   async function startUpload() {
     if (isUploading || !selectedFiles.length) return;
 
@@ -1192,9 +1069,6 @@
       </svg> A processar...
     `;
 
-    document.querySelectorAll('[data-progress-bar]').forEach(el => el.style.display = 'block');
-
-    // 🚀 Adiciona todos os ficheiros à fila de upload
     const filesToUpload = [...selectedFiles];
     let successCount = 0;
 
@@ -1207,14 +1081,11 @@
           console.error('Erro ao enviar:', file.name, err);
           showToast(`❌ Erro ao enviar ${file.name}`, 'error');
         }
-        updateUploadProgress(successCount, filesToUpload.length);
       });
     });
 
-    // Inicia o processamento da fila
     processUploadQueue();
 
-    // Aguarda até todas as tarefas serem processadas
     while (uploadQueue.length > 0 || activeUploads > 0) {
       await new Promise(resolve => setTimeout(resolve, 100));
     }
@@ -1235,263 +1106,112 @@
       <span id="btn-label">${config.upload_button_text || defaultConfig.upload_button_text}</span>
     `;
     lucide.createIcons();
-
-    renderMyUploadedFiles();
-  }
-
-  function updateUploadProgress(completed, total) {
-    const progressPercent = Math.round((completed / total) * 100);
-    const bars = document.querySelectorAll('[data-progress-bar] .upload-progress');
-    if (bars.length > 0) {
-      bars.forEach((bar, i) => {
-        if (i < completed) bar.style.width = '100%';
-      });
-    }
   }
 
   async function uploadFile(file, index) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        // 🛡️ VALIDAÇÃO 1: Tipo MIME (apenas imagens)
-        if (!file.type.startsWith('image/')) {
-          showToast(`❌ ${file.name} não é uma imagem válida`, 'error');
-          reject(new Error('Invalid MIME type'));
-          return;
-        }
+    if (!file.type.startsWith('image/')) {
+      showToast(`❌ ${file.name} não é uma imagem válida`, 'error');
+      throw new Error('Invalid MIME type');
+    }
 
-        // 🛡️ VALIDAÇÃO 2: Tamanho máximo por foto
-        if (file.size > STORAGE_LIMITS.MAX_FILE_SIZE_MB * 1024 * 1024) {
-          showToast(`❌ ${file.name} ultrapassa ${STORAGE_LIMITS.MAX_FILE_SIZE_MB}MB`, 'error');
-          reject(new Error('File too large'));
-          return;
-        }
+    if (file.size > STORAGE_LIMITS.MAX_FILE_SIZE_MB * 1024 * 1024) {
+      showToast(`❌ ${file.name} ultrapassa ${STORAGE_LIMITS.MAX_FILE_SIZE_MB}MB`, 'error');
+      throw new Error('File too large');
+    }
 
-        // 🛡️ VALIDAÇÃO 3: Limite de fotos por convidado
-        if (!supabaseClient || !currentEventId || !currentGuestId) {
-          reject(new Error('Missing required data'));
-          return;
-        }
+    if (!supabaseClient || !currentEventId || !currentGuestId) {
+      throw new Error('Missing required data');
+    }
 
-        const { data: existingUploads, error: countError } = await supabaseClient
-          .from('uploads')
-          .select('id', { count: 'exact' })
-          .eq('event_id', currentEventId)
-          .eq('guest_id', currentGuestId);
+    const { data: existingUploads } = await supabaseClient
+      .from('uploads')
+      .select('id', { count: 'exact' })
+      .eq('event_id', currentEventId)
+      .eq('guest_id', currentGuestId);
 
-        if (countError) {
-          console.error('Erro ao contar uploads:', countError);
-          reject(countError);
-          return;
-        }
+    const uploadCount = existingUploads?.length || 0;
+    if (uploadCount >= STORAGE_LIMITS.MAX_FILES_PER_GUEST) {
+      showToast(`❌ Limite de ${STORAGE_LIMITS.MAX_FILES_PER_GUEST} fotos por convidado atingido`, 'error');
+      throw new Error('Guest upload limit exceeded');
+    }
 
-        const uploadCount = existingUploads?.length || 0;
-        if (uploadCount >= STORAGE_LIMITS.MAX_FILES_PER_GUEST) {
-          showToast(`❌ Limite de ${STORAGE_LIMITS.MAX_FILES_PER_GUEST} fotos por convidado atingido`, 'error');
-          reject(new Error('Guest upload limit exceeded'));
-          return;
-        }
+    const { blob } = await compressImage(file);
 
-        // 🛡️ VALIDAÇÃO 3B: CONVIDADOS SÓ VÊM SEU EVENTO (Segurança de Acesso)
-        // Se for convidado, verifica se o evento_id corresponde
-        if (currentGuestId && !window.location.search.includes('admin')) {
-          const eventId = new URLSearchParams(window.location.search).get('event');
-          if (eventId !== currentEventId) {
-            console.error('🛡️ SEGURANÇA: Tentativa de acesso não autorizado a evento diferente');
-            reject(new Error('Unauthorized access'));
-            return;
-          }
-        }
+    const { data: allUploads } = await supabaseClient
+      .from('uploads')
+      .select('file_size_mb');
 
-        // 🎯 Comprime a imagem com retry automático
-        let blob, savings;
-        let compressionRetries = 0;
-        const maxRetries = 2;
+    const currentUsage = (allUploads || []).reduce((sum, f) => sum + (f.file_size_mb || 0), 0);
+    const newFileSize = blob.size / 1024 / 1024;
+    const projectedUsage = currentUsage + newFileSize;
 
-        while (compressionRetries <= maxRetries) {
-          try {
-            const result = await compressImage(file, (status) => {
-              const statusEl = document.querySelector(`[data-compression-status="${index}"]`);
-              if (statusEl) {
-                statusEl.style.display = 'block';
-                statusEl.textContent = status;
-              }
-            });
-            blob = result.blob;
-            savings = result.savings;
-            break;
-          } catch (err) {
-            compressionRetries++;
-            if (compressionRetries > maxRetries) throw err;
-            await new Promise(r => setTimeout(r, 500 * compressionRetries));
-          }
-        }
+    if (projectedUsage > STORAGE_LIMITS.MAX_STORAGE_BYTES / (1024 * 1024)) {
+      showToast(`❌ Limite de ${STORAGE_LIMITS.MAX_STORAGE_GB}GB ultrapassado`, 'error');
+      throw new Error('Storage limit exceeded');
+    }
 
-        const progress = document.querySelector(`[data-progress-bar="${index}"] .upload-progress`);
-        if (progress) progress.style.width = '30%';
+    const ext = 'jpg';
+    const timestamp = Date.now();
+    const randomId = Math.random().toString(36).substr(2, 9);
+    const fileName = `${currentEventId}/${currentGuestId}/${timestamp}_${randomId}.${ext}`;
 
-        // 🛡️ VALIDAÇÃO 4: Verificar espaço total antes de fazer upload
-        const { data: allUploads } = await supabaseClient
-          .from('uploads')
-          .select('file_size_mb');
+    const uploadResult = await supabaseClient
+      .storage
+      .from(STORAGE_BUCKET)
+      .upload(fileName, blob, { contentType: 'image/jpeg', upsert: false });
 
-        const currentUsage = (allUploads || []).reduce((sum, f) => sum + (f.file_size_mb || 0), 0);
-        const newFileSize = blob.size / 1024 / 1024;
-        const projectedUsage = currentUsage + newFileSize;
+    if (uploadResult.error) throw uploadResult.error;
 
-        if (projectedUsage > STORAGE_LIMITS.MAX_STORAGE_BYTES / (1024 * 1024)) {
-          showToast(`❌ Limite de ${STORAGE_LIMITS.MAX_STORAGE_GB}GB ultrapassado`, 'error');
-          console.warn(`🛡️ Espaço recusado: ${currentUsage.toFixed(1)}MB + ${newFileSize.toFixed(1)}MB > 1000MB`);
-          reject(new Error('Storage limit exceeded'));
-          return;
-        }
-
-        // ⚠️ Aviso se próximo do limite
-        if (projectedUsage > STORAGE_LIMITS.MAX_STORAGE_BYTES / (1024 * 1024) * STORAGE_LIMITS.WARNING_THRESHOLD) {
-          const remaining = (STORAGE_LIMITS.MAX_STORAGE_BYTES / (1024 * 1024) - projectedUsage).toFixed(0);
-          console.warn(`⚠️ Armazenamento: ${projectedUsage.toFixed(0)}MB / 1000MB (${remaining}MB restante)`);
-        }
-
-        // 🎯 Gera nome único com timestamp
-        const ext = 'jpg';
-        const timestamp = Date.now();
-        const randomId = Math.random().toString(36).substr(2, 9);
-        const fileName = `${currentEventId}/${currentGuestId}/${timestamp}_${randomId}.${ext}`;
-
-        // 🎯 Upload para Supabase Storage com retry
-        let uploadRetries = 0;
-        const maxUploadRetries = 3;
-        let uploadError = null;
-        let uploadData = null;
-
-        while (uploadRetries <= maxUploadRetries) {
-          try {
-            const result = await supabaseClient
-              .storage
-              .from(STORAGE_BUCKET)
-              .upload(fileName, blob, { contentType: 'image/jpeg', upsert: false });
-
-            if (result.error) {
-              uploadError = result.error;
-              uploadRetries++;
-              if (uploadRetries > maxUploadRetries) throw uploadError;
-              await new Promise(r => setTimeout(r, 1000 * uploadRetries));
-            } else {
-              uploadData = result.data;
-              break;
-            }
-          } catch (err) {
-            uploadError = err;
-            uploadRetries++;
-            if (uploadRetries > maxUploadRetries) throw uploadError;
-            await new Promise(r => setTimeout(r, 1000 * uploadRetries));
-          }
-        }
-
-        if (!uploadData) throw uploadError;
-
-        if (progress) progress.style.width = '70%';
-
-        // 🎯 Registra metadados no banco com retry
-        const fileSizeMB = (blob.size / 1024 / 1024).toFixed(1);
-        let dbRetries = 0;
-        const maxDbRetries = 2;
-
-        while (dbRetries <= maxDbRetries) {
-          try {
-            const result = await supabaseClient
-              .from('uploads')
-              .insert([{
-                id: 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-                event_id: currentEventId,
-                guest_id: currentGuestId,
-                guest_name: currentGuestName,
-                file_name: file.name,
-                file_size_mb: parseFloat(fileSizeMB),
-                file_type: 'image/jpeg',
-                uploaded_at: new Date().toISOString(),
-                storage_path: fileName
-              }]);
-
-            if (result.error) {
-              console.warn(`[Retry DB ${dbRetries + 1}] Erro ao registrar:`, result.error);
-              dbRetries++;
-              if (dbRetries > maxDbRetries) {
-                console.warn('Ficheiro no Storage mas metadados não registrados (não crítico)');
-              } else {
-                await new Promise(r => setTimeout(r, 500 * (dbRetries + 1)));
-              }
-            } else {
-              break;
-            }
-          } catch (err) {
-            console.warn(`[Retry DB ${dbRetries + 1}] Erro:`, err);
-            dbRetries++;
-            if (dbRetries <= maxDbRetries) {
-              await new Promise(r => setTimeout(r, 500 * (dbRetries + 1)));
-            }
-          }
-        }
-
-        if (progress) progress.style.width = '100%';
-        const statusEl = document.querySelector(`[data-compression-status="${index}"]`);
-        if (statusEl) statusEl.style.display = 'none';
-
-        console.log(`[Upload ✅] ${file.name} (${savings}% comprimida, 4 retries ativa)`);
-        resolve();
-      } catch (err) {
-        console.error('[Upload ❌] Erro crítico:', err);
-        reject(err);
-      }
-    });
+    const fileSizeMB = (blob.size / 1024 / 1024).toFixed(1);
+    await supabaseClient
+      .from('uploads')
+      .insert([{
+        id: 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        event_id: currentEventId,
+        guest_id: currentGuestId,
+        guest_name: currentGuestName,
+        file_name: file.name,
+        file_size_mb: parseFloat(fileSizeMB),
+        file_type: 'image/jpeg',
+        uploaded_at: new Date().toISOString(),
+        storage_path: fileName
+      }]);
   }
 
-  async function renderMyUploadedFiles() {
-    if (!supabaseClient || !currentEventId || !currentGuestId) return;
+  async function compressImage(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let { width, height } = img;
 
-    // 🔐 SEGURANÇA: Convidado só vê suas próprias fotos
-    const { data: uploads, error } = await supabaseClient
-      .from('uploads')
-      .select('*')
-      .eq('event_id', currentEventId)
-      .eq('guest_id', currentGuestId)
-      .order('uploaded_at', { ascending: false });
+          if (width > COMPRESSION_CONFIG.maxWidth || height > COMPRESSION_CONFIG.maxHeight) {
+            const ratio = Math.min(
+              COMPRESSION_CONFIG.maxWidth / width,
+              COMPRESSION_CONFIG.maxHeight / height
+            );
+            width *= ratio;
+            height *= ratio;
+          }
 
-    if (error) {
-      console.error('Erro ao carregar minhas fotos:', error);
-      return;
-    }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d', { alpha: false });
+          ctx.drawImage(img, 0, 0, width, height);
 
-    const config = window.elementSdk?.config || defaultConfig;
-    const surface = config.surface_color || defaultConfig.surface_color;
-    const primary = config.primary_action || defaultConfig.primary_action;
-    const baseSize = config.font_size || defaultConfig.font_size;
-
-    if (!uploads || uploads.length === 0) {
-      document.getElementById('my-files-section').style.display = 'none';
-      return;
-    }
-
-    document.getElementById('my-files-section').style.display = 'block';
-    const container = document.getElementById('my-uploaded-files');
-    container.innerHTML = '';
-
-    uploads.forEach((file, index) => {
-      const div = document.createElement('div');
-      div.style.cssText = `background:${surface};border-radius:12px;padding:12px;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;`;
-
-      div.innerHTML = `
-        <div style="width:50px;height:50px;border-radius:8px;background:${primary}1f;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <i data-lucide="check-circle" style="width:24px;height:24px;color:${primary};"></i>
-        </div>
-        <div style="min-w:0;">
-          <p style="font-size:${baseSize * 0.85}px;margin:0;color:${config.text_color};font-weight:500;">Foto ${index + 1} enviada ✅</p>
-          <p style="font-size:${baseSize * 0.7}px;opacity:0.5;margin:2px 0 0 0;color:${config.text_color};">${new Date(file.uploaded_at).toLocaleString('pt-PT')}</p>
-        </div>
-      `;
-      container.appendChild(div);
+          canvas.toBlob(
+            (blob) => resolve({ blob }),
+            COMPRESSION_CONFIG.mimeType,
+            COMPRESSION_CONFIG.quality
+          );
+        };
+        img.onerror = () => reject(new Error('Erro ao carregar imagem'));
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
     });
-
-    lucide.createIcons();
   }
 
   async function downloadFile(fileId, fileName) {
@@ -1535,7 +1255,6 @@
     }
   }
 
-  // --- TOAST ---
   function showToast(message, type = 'info') {
     const container = document.getElementById('toast-container');
     const colors = { success: '#2d6a4f', warning: '#b08930', error: '#922', info: '#555' };
@@ -1552,5 +1271,5 @@
 
   lucide.createIcons();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e69d51407d23e9a',t:'MTc3NTIzNzc1My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e69e9e5f6ee3e9a',t:'MTc3NTIzODYwNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
