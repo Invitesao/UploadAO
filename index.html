@@ -82,54 +82,45 @@
    <div id="login-view" class="h-full w-full flex flex-col items-center justify-center px-4">
     <div class="w-full max-w-sm">
      <div class="text-center mb-8">
-      <div style="width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:#2563eb;color:#fff;margin:0 auto 20px;">
-       <i data-lucide="lock" style="width:32px;height:32px;"></i>
+      <div style="width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:#2563eb;color:#fff;margin:0 auto 20px;"><i data-lucide="lock" style="width:32px;height:32px;"></i>
       </div>
       <h1 style="font-family:'Poppins',sans-serif;font-size:28px;font-weight:700;margin:0 0 8px 0;">UploadAO</h1>
       <p style="font-size:14px;opacity:0.5;margin:0;">Painel de Administrador</p>
      </div>
      <div class="space-y-4">
-      <div>
-       <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Senha</label> <input type="password" id="admin-password" placeholder="Digite sua senha" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;transition:all 0.3s;" onkeypress="if(event.key==='Enter') adminLogin();">
+      <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Senha</label> <input type="password" id="admin-password" placeholder="Digite sua senha" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;transition:all 0.3s;" onkeypress="if(event.key==='Enter') adminLogin();">
       </div><button onclick="adminLogin()" style="width:100%;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> Entrar no Painel </button>
      </div>
     </div>
    </div><!-- ADMIN VIEW -->
    <div id="admin-view" style="display:none;" class="h-full w-full overflow-auto">
     <header style="background:#f5f5f5;border-bottom:1px solid rgba(26,26,26,0.1);padding:16px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;">
-     <div style="display:flex;align-items:center;gap:12px;">
-      <i data-lucide="settings" style="width:20px;height:20px;"></i> <span style="font-weight:600;">Painel de Administração</span>
+     <div style="display:flex;align-items:center;gap:12px;"><i data-lucide="settings" style="width:20px;height:20px;"></i> <span style="font-weight:600;">Painel de Administração</span>
      </div><button onclick="adminLogout()" style="background:none;border:none;cursor:pointer;display:flex;gap:6px;align-items:center;opacity:0.6;font-family:'Poppins',sans-serif;font-size:13px;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'"> <i data-lucide="log-out" style="width:18px;height:18px;"></i> <span>Sair</span> </button>
     </header>
     <div style="padding:24px;max-width:900px;margin:0 auto;">
      <div style="background:#fff;border:1px solid rgba(26,26,26,0.1);border-radius:16px;padding:24px;margin-bottom:24px;">
       <h2 style="font-size:18px;font-weight:600;margin:0 0 20px 0;">Criar Novo Evento</h2>
-      <div style="display:flex;gap:12px;margin-bottom:16px;">
-       <input type="text" id="search-events" placeholder="🔍 Buscar eventos..." style="flex:1;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;"> <button onclick="showAllEvents()" style="background:#e74c3c;color:#fff;border:none;padding:12px 16px;border-radius:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Limpar</button>
+      <div style="display:flex;gap:12px;margin-bottom:16px;"><input type="text" id="search-events" placeholder="🔍 Buscar eventos..." style="flex:1;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;"> <button onclick="showAllEvents()" style="background:#e74c3c;color:#fff;border:none;padding:12px 16px;border-radius:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Limpar</button>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-       <div>
-        <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Nome do Evento</label> <input type="text" id="new-event-title" placeholder="Ex: João &amp; Maria" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;">
+       <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Nome do Evento</label> <input type="text" id="new-event-title" placeholder="Ex: João &amp; Maria" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;">
        </div>
-       <div>
-        <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Data do Evento</label> <input type="date" id="new-event-date" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;">
+       <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Data do Evento</label> <input type="date" id="new-event-date" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;">
        </div>
       </div>
-      <div>
-       <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Mensagem Personalizada</label> <input type="text" id="new-event-message" placeholder="Ex: Partilha as tuas fotos!" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;margin-bottom:16px;">
+      <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Mensagem Personalizada</label> <input type="text" id="new-event-message" placeholder="Ex: Partilha as tuas fotos!" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;margin-bottom:16px;">
       </div>
       <div id="edit-event-fields" style="display:none;padding:16px;background:#f0f8ff;border-radius:12px;border:1px solid #2563eb33;margin-bottom:16px;">
        <h3 style="font-size:14px;font-weight:600;margin:0 0 12px 0;">✏️ Editar Evento</h3><input type="text" id="edit-event-title" placeholder="Novo nome" style="width:100%;padding:10px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;margin-bottom:8px;"> <input type="date" id="edit-event-date" style="width:100%;padding:10px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;margin-bottom:8px;"> <input type="text" id="edit-event-message" placeholder="Nova mensagem" style="width:100%;padding:10px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;margin-bottom:12px;">
-       <div style="display:flex;gap:8px;">
-        <button onclick="saveEventChanges()" style="background:#2563eb;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Guardar</button> <button onclick="cancelEditEvent()" style="background:#e0e0e0;border:none;padding:8px 16px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Cancelar</button>
+       <div style="display:flex;gap:8px;"><button onclick="saveEventChanges()" style="background:#2563eb;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Guardar</button> <button onclick="cancelEditEvent()" style="background:#e0e0e0;border:none;padding:8px 16px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Cancelar</button>
        </div>
       </div><button onclick="addNewEvent()" style="background:#2563eb;color:#fff;border:none;padding:12px 24px;border-radius:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;width:100%;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> <i data-lucide="plus" style="width:16px;height:16px;display:inline;margin-right:8px;vertical-align:-2px;"></i> Criar Evento </button>
      </div>
      <div style="background:#fff;border:1px solid rgba(26,26,26,0.1);border-radius:16px;padding:24px;">
       <h2 style="font-size:18px;font-weight:600;margin:0 0 20px 0;">Meus Eventos (<span id="event-count">0</span>)</h2>
       <div id="events-list" style="display:flex;flex-direction:column;gap:12px;"></div>
-      <div id="no-events-message" style="text-align:center;padding:24px;opacity:0.5;">
-       <i data-lucide="inbox" style="width:32px;height:32px;margin:0 auto 8px;display:block;opacity:0.3;"></i>
+      <div id="no-events-message" style="text-align:center;padding:24px;opacity:0.5;"><i data-lucide="inbox" style="width:32px;height:32px;margin:0 auto 8px;display:block;opacity:0.3;"></i>
        <p style="font-size:14px;margin:0;">Nenhum evento criado ainda</p>
       </div>
      </div>
@@ -138,15 +129,13 @@
    <div id="guest-login-view" style="display:none;" class="h-full w-full flex flex-col items-center justify-center px-4">
     <div class="w-full max-w-sm">
      <div class="text-center mb-8">
-      <div style="width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:#2563eb;color:#fff;margin:0 auto 20px;">
-       <i data-lucide="user-plus" style="width:32px;height:32px;"></i>
+      <div style="width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:#2563eb;color:#fff;margin:0 auto 20px;"><i data-lucide="user-plus" style="width:32px;height:32px;"></i>
       </div>
       <h1 id="guest-login-title" style="font-family:'Poppins',sans-serif;font-size:28px;font-weight:700;margin:0 0 8px 0;"></h1>
       <p style="font-size:14px;opacity:0.5;margin:0;">Qual é o teu nome?</p>
      </div>
      <div class="space-y-4">
-      <div>
-       <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Teu Nome</label> <input type="text" id="guest-name-input" placeholder="Ex: João Silva" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;transition:all 0.3s;" onkeypress="if(event.key==='Enter') confirmGuestName();">
+      <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Teu Nome</label> <input type="text" id="guest-name-input" placeholder="Ex: João Silva" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;transition:all 0.3s;" onkeypress="if(event.key==='Enter') confirmGuestName();">
       </div><button onclick="confirmGuestName()" style="width:100%;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> Continuar </button>
      </div>
     </div>
@@ -154,8 +143,7 @@
    <div id="guest-view" style="display:none;" class="h-full w-full overflow-auto">
     <header class="text-center pt-6 pb-3 px-4 fade-in stagger-1" style="border-bottom:1px solid rgba(26,26,26,0.1);">
      <div class="inline-flex items-center gap-2 mb-3">
-      <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;" id="logo-box">
-       <i data-lucide="camera" style="width:20px;height:20px;"></i>
+      <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;" id="logo-box"><i data-lucide="camera" style="width:20px;height:20px;"></i>
       </div><span id="brand-name" style="font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;letter-spacing:0.5px;">UploadAO</span>
      </div>
      <p id="guest-name-display" style="font-size:14px;font-weight:600;margin:0;opacity:0.7;"></p>
@@ -170,10 +158,10 @@
      </div>
     </section>
     <section class="px-4 max-w-lg mx-auto pb-6 fade-in stagger-3">
-     <div id="drop-zone" class="drop-zone relative rounded-2xl border-2 border-dashed p-8 text-center cursor-pointer transition-all" style="border-color: rgba(26,26,26,0.15); background: rgba(26,26,26,0.03);" onclick="document.getElementById('fileInput').click()"><input type="file" id="fileInput" multiple accept="image/*" class="hidden">
+     <div id="drop-zone" class="drop-zone relative rounded-2xl border-2 border-dashed p-8 text-center cursor-pointer transition-all" style="border-color: rgba(26,26,26,0.15); background: rgba(26,26,26,0.03);" onclick="document.getElementById('fileInput').click()">
+      <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
       <div class="mb-4">
-       <div class="inline-flex items-center justify-center w-16 h-16 rounded-full" id="upload-icon-circle" style="background: rgba(26,26,26,0.08);">
-        <i data-lucide="upload-cloud" id="upload-icon" style="width:28px;height:28px;"></i>
+       <div class="inline-flex items-center justify-center w-16 h-16 rounded-full" id="upload-icon-circle" style="background: rgba(26,26,26,0.08);"><i data-lucide="upload-cloud" id="upload-icon" style="width:28px;height:28px;"></i>
        </div>
       </div>
       <p style="font-size:16px;font-weight:500;margin:0 0 4px 0;">Toque para selecionar</p>
@@ -187,14 +175,11 @@
     </section>
     <section class="px-4 max-w-lg mx-auto pb-10 fade-in stagger-4">
      <div class="grid grid-cols-3 gap-3 text-center" style="font-size:12px;opacity:0.35;">
-      <div>
-       <i data-lucide="smartphone" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Abre o link
+      <div><i data-lucide="smartphone" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Abre o link
       </div>
-      <div>
-       <i data-lucide="image-plus" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Escolhe fotos
+      <div><i data-lucide="image-plus" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Escolhe fotos
       </div>
-      <div>
-       <i data-lucide="cloud-lightning" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Enviado!
+      <div><i data-lucide="cloud-lightning" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Enviado!
       </div>
      </div>
     </section>
@@ -205,8 +190,7 @@
    <div id="gallery-view" style="display:none;" class="h-full w-full overflow-auto">
     <header class="text-center pt-10 pb-4 px-4 fade-in stagger-1">
      <div class="inline-flex items-center gap-2 mb-3">
-      <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;" id="gallery-logo-box">
-       <i data-lucide="image" style="width:20px;height:20px;"></i>
+      <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;" id="gallery-logo-box"><i data-lucide="image" style="width:20px;height:20px;"></i>
       </div><span id="gallery-brand-name" style="font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;letter-spacing:0.5px;">Galeria</span>
      </div>
     </header>
@@ -216,8 +200,7 @@
     </section>
     <section class="px-4 max-w-3xl mx-auto pb-10 fade-in stagger-3">
      <div id="gallery-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));gap:12px;"></div>
-     <div id="gallery-empty" style="text-align:center;padding:40px 20px;opacity:0.5;">
-      <i data-lucide="inbox" style="width:48px;height:48px;margin:0 auto 16px;display:block;opacity:0.3;"></i>
+     <div id="gallery-empty" style="text-align:center;padding:40px 20px;opacity:0.5;"><i data-lucide="inbox" style="width:48px;height:48px;margin:0 auto 16px;display:block;opacity:0.3;"></i>
       <p style="font-size:16px;margin:0;">Nenhuma foto foi partilhada ainda 📷</p>
      </div>
     </section>
@@ -877,6 +860,8 @@
     }, 15000);
   }
 
+  let gallerySelectedFiles = new Set();
+
   async function renderGalleryPhotos() {
     if (!supabaseClient || !currentEventId) return;
 
@@ -913,30 +898,185 @@
 
     const config = window.elementSdk?.config || defaultConfig;
     const primary = config.primary_action || defaultConfig.primary_action;
+    const surface = config.surface_color || defaultConfig.surface_color;
 
     uploads.forEach((file) => {
       if (existing.has(file.id)) return;
 
       const card = document.createElement('div');
       card.setAttribute('data-file-id', file.id);
-      card.style.cssText = `position:relative;border-radius:12px;overflow:hidden;aspect-ratio:1;cursor:pointer;background:linear-gradient(135deg, ${primary}20, ${primary}05);display:flex;align-items:center;justify-content:center;transition:transform 0.3s ease;`;
-      card.onmouseover = () => { card.style.transform = 'scale(1.05)'; };
-      card.onmouseout = () => { card.style.transform = 'scale(1)'; };
+      card.style.cssText = `position:relative;border-radius:12px;overflow:hidden;aspect-ratio:1;background:linear-gradient(135deg, ${primary}20, ${primary}05);display:flex;align-items:center;justify-content:center;`;
 
-      card.innerHTML = `
-        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
-          <i data-lucide="image" style="width:40px;height:40px;color:${primary};opacity:0.5;"></i>
-        </div>
-        <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top, rgba(0,0,0,0.6), transparent);padding:12px;color:#fff;font-size:12px;">
-          <p style="margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;">${file.file_name}</p>
-        </div>
-      `;
+      // Obtem URL temporária da imagem
+      supabaseClient.storage.from(STORAGE_BUCKET).createSignedUrl(file.storage_path, 3600).then(({ data: signedData }) => {
+        if (signedData?.signedUrl) {
+          const img = document.createElement('img');
+          img.src = signedData.signedUrl;
+          img.style.cssText = `width:100%;height:100%;object-fit:cover;`;
+          img.onerror = () => {
+            img.style.display = 'none';
+            card.innerHTML = `<i data-lucide="image" style="width:40px;height:40px;color:${primary};opacity:0.5;"></i>`;
+            lucide.createIcons();
+          };
+          card.innerHTML = '';
+          card.appendChild(img);
+        }
+      });
 
-      card.onclick = () => downloadFile(file.id, file.file_name);
+      // Checkbox overlay
+      const checkbox = document.createElement('div');
+      checkbox.style.cssText = `position:absolute;top:8px;right:8px;width:24px;height:24px;background:#fff;border:2px solid ${primary};border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;z-index:10;`;
+      card.appendChild(checkbox);
+
+      // Delete button overlay
+      const deleteBtn = document.createElement('button');
+      deleteBtn.style.cssText = `position:absolute;top:8px;left:8px;width:32px;height:32px;background:rgba(255,0,0,0.8);border:none;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;z-index:10;color:#fff;`;
+      deleteBtn.innerHTML = '<i data-lucide="trash-2" style="width:16px;height:16px;"></i>';
+      deleteBtn.onclick = (e) => { e.stopPropagation(); deletePhotoFromGallery(file.id); };
+      card.appendChild(deleteBtn);
+
+      // Hover para mostrar botões
+      card.onmouseover = () => {
+        checkbox.style.opacity = '1';
+        deleteBtn.style.opacity = '1';
+      };
+      card.onmouseout = () => {
+        checkbox.style.opacity = '0';
+        deleteBtn.style.opacity = '0';
+      };
+
+      // Toggle checkbox
+      card.onclick = (e) => {
+        if (e.target === deleteBtn || e.target.closest('i[data-lucide="trash-2"]')) return;
+        const isSelected = gallerySelectedFiles.has(file.id);
+        if (isSelected) {
+          gallerySelectedFiles.delete(file.id);
+          checkbox.style.background = '#fff';
+          checkbox.innerHTML = '';
+        } else {
+          gallerySelectedFiles.add(file.id);
+          checkbox.style.background = primary;
+          checkbox.innerHTML = '<i data-lucide="check" style="width:16px;height:16px;color:#fff;"></i>';
+          lucide.createIcons();
+        }
+        updateGalleryToolbar();
+      };
+
       grid.appendChild(card);
     });
 
     lucide.createIcons();
+    updateGalleryToolbar();
+  }
+
+  function updateGalleryToolbar() {
+    const toolbar = document.getElementById('gallery-toolbar');
+    if (!toolbar) {
+      const config = window.elementSdk?.config || defaultConfig;
+      const surface = config.surface_color || defaultConfig.surface_color;
+      const primary = config.primary_action || defaultConfig.primary_action;
+      const secondary = config.secondary_action || defaultConfig.secondary_action;
+
+      const newToolbar = document.createElement('div');
+      newToolbar.id = 'gallery-toolbar';
+      newToolbar.style.cssText = `position:sticky;bottom:0;left:0;right:0;background:${surface};border-top:1px solid rgba(26,26,26,0.1);padding:12px;display:${gallerySelectedFiles.size > 0 ? 'flex' : 'none'};gap:8px;justify-content:center;align-items:center;z-index:100;`;
+      newToolbar.innerHTML = `
+        <span style="color:${secondary};font-size:14px;font-weight:500;margin-right:8px;">${gallerySelectedFiles.size} selecionada(s)</span>
+        <button onclick="downloadSelectedPhotos()" style="background:${primary};color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;display:flex;gap:6px;align-items:center;">
+          <i data-lucide="download" style="width:18px;height:18px;"></i> Descarregar
+        </button>
+        <button onclick="clearGallerySelection()" style="background:${secondary}33;color:${secondary};border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Limpar</button>
+      `;
+      document.getElementById('gallery-view').insertBefore(newToolbar, document.getElementById('gallery-grid'));
+      lucide.createIcons();
+    } else {
+      toolbar.style.display = gallerySelectedFiles.size > 0 ? 'flex' : 'none';
+      toolbar.querySelector('span').textContent = `${gallerySelectedFiles.size} selecionada(s)`;
+    }
+  }
+
+  function clearGallerySelection() {
+    gallerySelectedFiles.clear();
+    updateGalleryToolbar();
+    document.querySelectorAll('[data-file-id]').forEach(el => {
+      el.querySelector('div[style*="border"]').style.background = '#fff';
+      el.querySelector('div[style*="border"]').innerHTML = '';
+    });
+  }
+
+  async function downloadSelectedPhotos() {
+    if (gallerySelectedFiles.size === 0) return;
+
+    showToast('⏳ A preparar descarregamento...', 'info');
+    let downloaded = 0;
+    const total = gallerySelectedFiles.size;
+
+    for (const fileId of gallerySelectedFiles) {
+      try {
+        const { data: file } = await supabaseClient
+          .from('uploads')
+          .select('file_name, storage_path')
+          .eq('id', fileId)
+          .single();
+
+        if (!file) continue;
+
+        const { data, error } = await supabaseClient
+          .storage
+          .from(STORAGE_BUCKET)
+          .download(file.storage_path);
+
+        if (error) continue;
+
+        const url = window.URL.createObjectURL(data);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = file.file_name;
+        document.body.appendChild(link);
+        link.click();
+        window.URL.revokeObjectURL(url);
+        link.remove();
+
+        downloaded++;
+        await new Promise(r => setTimeout(r, 300));
+      } catch (err) {
+        console.error('Erro:', err);
+      }
+    }
+
+    clearGallerySelection();
+    showToast(`✅ ${downloaded}/${total} fotos descarregadas!`, 'success');
+  }
+
+  async function deletePhotoFromGallery(fileId) {
+    if (!confirm('Eliminar esta foto?')) return;
+
+    showToast('⏳ A eliminar...', 'info');
+
+    try {
+      const { data: file } = await supabaseClient
+        .from('uploads')
+        .select('storage_path')
+        .eq('id', fileId)
+        .single();
+
+      if (file) {
+        await supabaseClient.storage.from(STORAGE_BUCKET).remove([file.storage_path]);
+      }
+
+      await supabaseClient
+        .from('uploads')
+        .delete()
+        .eq('id', fileId);
+
+      gallerySelectedFiles.delete(fileId);
+      document.querySelector(`[data-file-id="${fileId}"]`).remove();
+      updateGalleryToolbar();
+      showToast('✅ Foto eliminada', 'success');
+    } catch (err) {
+      console.error('Erro:', err);
+      showToast('❌ Erro ao eliminar', 'error');
+    }
   }
 
   // --- FILE HANDLING ---
@@ -1335,21 +1475,18 @@
     const container = document.getElementById('my-uploaded-files');
     container.innerHTML = '';
 
-    uploads.forEach((file) => {
+    uploads.forEach((file, index) => {
       const div = document.createElement('div');
-      div.style.cssText = `background:${surface};border-radius:12px;padding:12px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;`;
+      div.style.cssText = `background:${surface};border-radius:12px;padding:12px;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;`;
 
       div.innerHTML = `
         <div style="width:50px;height:50px;border-radius:8px;background:${primary}1f;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <i data-lucide="image" style="width:24px;height:24px;color:${primary};"></i>
+          <i data-lucide="check-circle" style="width:24px;height:24px;color:${primary};"></i>
         </div>
         <div style="min-w:0;">
-          <p style="font-size:${baseSize * 0.85}px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:${config.text_color};font-weight:500;">${file.file_name}</p>
-          <p style="font-size:${baseSize * 0.7}px;opacity:0.5;margin:2px 0 0 0;color:${config.text_color};">${file.file_size_mb} MB</p>
+          <p style="font-size:${baseSize * 0.85}px;margin:0;color:${config.text_color};font-weight:500;">Foto ${index + 1} enviada ✅</p>
+          <p style="font-size:${baseSize * 0.7}px;opacity:0.5;margin:2px 0 0 0;color:${config.text_color};">${new Date(file.uploaded_at).toLocaleString('pt-PT')}</p>
         </div>
-        <button onclick="downloadFile('${file.id}', '${file.file_name}')" style="background:${primary};color:#fff;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif;font-size:${baseSize * 0.8}px;font-weight:500;">
-          <i data-lucide="download" style="width:16px;height:16px;display:inline;vertical-align:-2px;"></i>
-        </button>
       `;
       container.appendChild(div);
     });
@@ -1415,5 +1552,5 @@
 
   lucide.createIcons();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e69ca4381413e9a',t:'MTc3NTIzNzMxMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e69d51407d23e9a',t:'MTc3NTIzNzc1My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
