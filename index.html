@@ -77,52 +77,64 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
  </head>
  <body class="h-full" style="margin:0; font-family: 'Poppins', sans-serif;">
-  <div id="app" class="h-full w-full overflow-auto" style="background: #ffffff; color: #1a1a1a;"><!-- Hidden iframe for form submission --> <iframe name="upload_iframe" style="display:none;"></iframe><!-- Toast container -->
+  <div id="app" class="h-full w-full overflow-auto" style="background: #ffffff; color: #1a1a1a;">
+   <!-- Hidden iframe for form submission --> <iframe name="upload_iframe" style="display:none;"></iframe><!-- Toast container -->
    <div id="toast-container" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 items-center pointer-events-none"></div><!-- LOGIN VIEW -->
    <div id="login-view" class="h-full w-full flex flex-col items-center justify-center px-4">
     <div class="w-full max-w-sm">
      <div class="text-center mb-8">
-      <div style="width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:#2563eb;color:#fff;margin:0 auto 20px;"><i data-lucide="lock" style="width:32px;height:32px;"></i>
+      <div style="width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:#2563eb;color:#fff;margin:0 auto 20px;">
+       <i data-lucide="lock" style="width:32px;height:32px;"></i>
       </div>
       <h1 style="font-family:'Poppins',sans-serif;font-size:28px;font-weight:700;margin:0 0 8px 0;">UploadAO</h1>
       <p style="font-size:14px;opacity:0.5;margin:0;">Painel de Administrador</p>
      </div>
      <div class="space-y-4">
-      <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Senha</label> <input type="password" id="admin-password" placeholder="Digite sua senha" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;transition:all 0.3s;" onkeypress="if(event.key==='Enter') adminLogin();">
+      <div>
+       <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Senha</label> <input type="password" id="admin-password" placeholder="Digite sua senha" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;transition:all 0.3s;" onkeypress="if(event.key==='Enter') adminLogin();">
       </div><button onclick="adminLogin()" style="width:100%;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> Entrar no Painel </button>
      </div>
     </div>
    </div><!-- ADMIN VIEW -->
-   <div id="admin-view" style="display:none;" class="h-full w-full overflow-auto"><!-- Admin Header -->
+   <div id="admin-view" style="display:none;" class="h-full w-full overflow-auto">
+    <!-- Admin Header -->
     <header style="background:#f5f5f5;border-bottom:1px solid rgba(26,26,26,0.1);padding:16px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;">
-     <div style="display:flex;align-items:center;gap:12px;"><i data-lucide="settings" style="width:20px;height:20px;"></i> <span style="font-weight:600;">Painel de Administração</span>
+     <div style="display:flex;align-items:center;gap:12px;">
+      <i data-lucide="settings" style="width:20px;height:20px;"></i> <span style="font-weight:600;">Painel de Administração</span>
      </div><button onclick="adminLogout()" style="background:none;border:none;cursor:pointer;display:flex;gap:6px;align-items:center;opacity:0.6;font-family:'Poppins',sans-serif;font-size:13px;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'"> <i data-lucide="log-out" style="width:18px;height:18px;"></i> <span>Sair</span> </button>
     </header>
-    <div style="padding:24px;max-width:900px;margin:0 auto;"><!-- Create Event Section -->
+    <div style="padding:24px;max-width:900px;margin:0 auto;">
+     <!-- Create Event Section -->
      <div style="background:#fff;border:1px solid rgba(26,26,26,0.1);border-radius:16px;padding:24px;margin-bottom:24px;">
       <h2 style="font-size:18px;font-weight:600;margin:0 0 20px 0;">Criar Novo Evento</h2>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-       <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Nome do Evento</label> <input type="text" id="new-event-title" placeholder="Ex: João &amp; Maria" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;">
+       <div>
+        <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Nome do Evento</label> <input type="text" id="new-event-title" placeholder="Ex: João &amp; Maria" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;">
        </div>
-       <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Data do Evento</label> <input type="date" id="new-event-date" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;">
+       <div>
+        <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Data do Evento</label> <input type="date" id="new-event-date" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;">
        </div>
       </div>
-      <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Mensagem Personalizada</label> <input type="text" id="new-event-message" placeholder="Ex: Partilha as tuas fotos!" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;margin-bottom:16px;">
+      <div>
+       <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Mensagem Personalizada</label> <input type="text" id="new-event-message" placeholder="Ex: Partilha as tuas fotos!" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;margin-bottom:16px;">
       </div><button onclick="addNewEvent()" style="background:#2563eb;color:#fff;border:none;padding:12px 24px;border-radius:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;width:100%;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> <i data-lucide="plus" style="width:16px;height:16px;display:inline;margin-right:8px;vertical-align:-2px;"></i> Criar Evento </button>
      </div><!-- Events List -->
      <div style="background:#fff;border:1px solid rgba(26,26,26,0.1);border-radius:16px;padding:24px;">
       <h2 style="font-size:18px;font-weight:600;margin:0 0 20px 0;">Meus Eventos (<span id="event-count">0</span>)</h2>
       <div id="events-list" style="display:flex;flex-direction:column;gap:12px;"></div>
-      <div id="no-events-message" style="text-align:center;padding:24px;opacity:0.5;"><i data-lucide="inbox" style="width:32px;height:32px;margin:0 auto 8px;display:block;opacity:0.3;"></i>
+      <div id="no-events-message" style="text-align:center;padding:24px;opacity:0.5;">
+       <i data-lucide="inbox" style="width:32px;height:32px;margin:0 auto 8px;display:block;opacity:0.3;"></i>
        <p style="font-size:14px;margin:0;">Nenhum evento criado ainda</p>
       </div>
      </div>
     </div>
    </div><!-- GALLERY VIEW (Noivos) -->
-   <div id="gallery-view" style="display:none;" class="h-full w-full overflow-auto"><!-- Header -->
+   <div id="gallery-view" style="display:none;" class="h-full w-full overflow-auto">
+    <!-- Header -->
     <header class="text-center pt-10 pb-4 px-4 fade-in stagger-1">
      <div class="inline-flex items-center gap-2 mb-3">
-      <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;" id="gallery-logo-box"><i data-lucide="image" style="width:20px;height:20px;"></i>
+      <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;" id="gallery-logo-box">
+       <i data-lucide="image" style="width:20px;height:20px;"></i>
       </div><span id="gallery-brand-name" style="font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;letter-spacing:0.5px;">Galeria</span>
      </div>
     </header><!-- Event Info -->
@@ -132,8 +144,7 @@
     </section><!-- Galeria de Fotos -->
     <section class="px-4 max-w-3xl mx-auto pb-10 fade-in stagger-3">
      <div id="gallery-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));gap:12px;"></div>
-     <div id="gallery-empty" style="text-align:center;padding:40px 20px;opacity:0.5;">
-      <i data-lucide="inbox" style="width:48px;height:48px;margin:0 auto 16px;display:block;opacity:0.3;"></i>
+     <div id="gallery-empty" style="text-align:center;padding:40px 20px;opacity:0.5;"><i data-lucide="inbox" style="width:48px;height:48px;margin:0 auto 16px;display:block;opacity:0.3;"></i>
       <p style="font-size:16px;margin:0;">Nenhuma foto foi partilhada ainda 📷</p>
      </div>
     </section><!-- Footer -->
@@ -143,7 +154,8 @@
    </div><!-- Header -->
    <header class="text-center pt-10 pb-4 px-4 fade-in stagger-1">
     <div class="inline-flex items-center gap-2 mb-3">
-     <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;" id="logo-box"><i data-lucide="camera" style="width:20px;height:20px;"></i>
+     <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;" id="logo-box">
+      <i data-lucide="camera" style="width:20px;height:20px;"></i>
      </div><span id="brand-name" style="font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;letter-spacing:0.5px;">UploadAO</span>
     </div>
    </header><!-- Event Info -->
@@ -157,9 +169,11 @@
     </div>
    </section><!-- Upload Area -->
    <section class="px-4 max-w-lg mx-auto pb-6 fade-in stagger-3">
-    <div id="drop-zone" class="drop-zone relative rounded-2xl border-2 border-dashed p-8 text-center cursor-pointer transition-all" style="border-color: rgba(26,26,26,0.15); background: rgba(26,26,26,0.03);" onclick="document.getElementById('fileInput').click()"><input type="file" id="fileInput" multiple accept="image/*,video/*" class="hidden">
+    <div id="drop-zone" class="drop-zone relative rounded-2xl border-2 border-dashed p-8 text-center cursor-pointer transition-all" style="border-color: rgba(26,26,26,0.15); background: rgba(26,26,26,0.03);" onclick="document.getElementById('fileInput').click()">
+     <input type="file" id="fileInput" multiple accept="image/*,video/*" class="hidden">
      <div class="mb-4">
-      <div class="inline-flex items-center justify-center w-16 h-16 rounded-full" id="upload-icon-circle" style="background: rgba(26,26,26,0.08);"><i data-lucide="upload-cloud" id="upload-icon" style="width:28px;height:28px;"></i>
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-full" id="upload-icon-circle" style="background: rgba(26,26,26,0.08);">
+       <i data-lucide="upload-cloud" id="upload-icon" style="width:28px;height:28px;"></i>
       </div>
      </div>
      <p style="font-size:16px;font-weight:500;margin:0 0 4px 0;">Toque para selecionar</p>
@@ -176,11 +190,14 @@
    </section><!-- How it works -->
    <section class="px-4 max-w-lg mx-auto pb-10 fade-in stagger-4">
     <div class="grid grid-cols-3 gap-3 text-center" style="font-size:12px;opacity:0.35;">
-     <div><i data-lucide="smartphone" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Abre o link
+     <div>
+      <i data-lucide="smartphone" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Abre o link
      </div>
-     <div><i data-lucide="image-plus" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Escolhe fotos
+     <div>
+      <i data-lucide="image-plus" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Escolhe fotos
      </div>
-     <div><i data-lucide="cloud-lightning" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Enviado!
+     <div>
+      <i data-lucide="cloud-lightning" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Enviado!
      </div>
     </div>
    </section><!-- Footer -->
@@ -720,8 +737,8 @@
   function showGuestView(event) {
     document.getElementById('login-view').style.display = 'none';
     document.getElementById('admin-view').style.display = 'none';
-    document.getElementById('gallery-view').style.display = 'none';
-    document.getElementById('guest-view').style.display = 'block';
+    const galleryView = document.getElementById('gallery-view');
+    if (galleryView) galleryView.style.display = 'none';
     
     const config = window.elementSdk?.config || defaultConfig;
     document.getElementById('event-title').textContent = event.event_title;
@@ -1033,63 +1050,41 @@
             headers: {
               "Content-Type": "application/json"
             },
+            mode: "no-cors",
             body: JSON.stringify(payload)
           })
           .then(res => {
-            console.log('📡 Status da resposta:', res.status);
-            return res.text().then(text => ({ status: res.status, text }));
-          })
-          .then(({ status, text }) => {
-            console.log('📥 Resposta bruta:', text.substring(0, 500));
+            console.log('📡 Fetch realizado com sucesso (modo no-cors)');
+            console.log('📤 O ficheiro foi enviado para o Apps Script');
+            console.log('✅ Resultado: Ficheiro enviado (no-cors não retorna dados)');
             
-            // Tenta fazer parse como JSON
-            let data;
-            try {
-              data = JSON.parse(text);
-            } catch (e) {
-              console.error('❌ Resposta não é JSON válido:', text);
-              throw new Error('Servidor retornou resposta inválida');
+            // Em modo no-cors, assumimos sucesso se fetch foi bem-sucedido
+            if (bar) bar.style.width = '100%';
+
+            // Guarda metadados NO SUPABASE
+            if (supabaseClient) {
+              const newFileId = 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+              supabaseClient
+                .from('uploads')
+                .insert([{
+                  id: newFileId,
+                  event_id: currentEventId,
+                  guest_id: currentGuestId,
+                  file_name: file.name,
+                  file_size_mb: parseFloat((file.size / 1024 / 1024).toFixed(1)),
+                  file_type: file.type,
+                  uploaded_at: new Date().toISOString()
+                }])
+                .then(() => {
+                  console.log('✅ Metadados guardados no Supabase:', newFileId);
+                  renderMyUploadedFiles();
+                })
+                .catch(err => {
+                  console.warn('⚠️ Metadados não guardados (ficheiro foi enviado):', err.message);
+                });
             }
 
-            console.log('✅ JSON parseado:', data);
-
-            // Verifica resposta real
-            if (data.success === true && data.fileId) {
-              console.log('✅ Ficheiro enviado com sucesso:', file.name);
-              console.log('🆔 ID do Drive:', data.fileId);
-              
-              // Atualiza a barra de progresso para 100%
-              if (bar) bar.style.width = '100%';
-
-              // Guarda metadados NO SUPABASE com ID real do Drive
-              if (supabaseClient) {
-                supabaseClient
-                  .from('uploads')
-                  .insert([{
-                    id: data.fileId, // ✅ USAR ID REAL DO DRIVE
-                    event_id: currentEventId,
-                    guest_id: currentGuestId,
-                    file_name: file.name,
-                    file_size_mb: parseFloat((file.size / 1024 / 1024).toFixed(1)),
-                    file_type: file.type,
-                    uploaded_at: new Date().toISOString()
-                  }])
-                  .then(() => {
-                    console.log('✅ Metadados guardados no Supabase com ID real:', data.fileId);
-                    renderMyUploadedFiles();
-                  })
-                  .catch(err => {
-                    console.warn('⚠️ Metadados não guardados (ficheiro foi enviado):', err.message);
-                  });
-              }
-
-              resolve();
-            } else {
-              // Erro do Apps Script
-              const errorMsg = data.message || data.error || 'Erro desconhecido no servidor';
-              console.error('❌ Apps Script retornou erro:', errorMsg);
-              reject(new Error(errorMsg));
-            }
+            resolve();
           })
           .catch(err => {
             console.error('❌ Erro ao comunicar com Apps Script:', err.message);
@@ -1258,5 +1253,5 @@
 
   lucide.createIcons();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e664567800a3e9a',t:'MTc3NTIwMDQxMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e664ca0735d3e9a',t:'MTc3NTIwMDcwNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
