@@ -263,9 +263,12 @@
   let currentGuestId = null;
   let currentGuestName = null;
   let allGalleryPhotos = [];
+  let galleryPhotosCache = new Map();
   let currentPhotoIndex = 0;
   let gallerySelectedFiles = new Set();
   let editingEventId = null;
+  let galleryRefreshInterval = null;
+  let galleryPhotosLoaded = false;
 
   const CONCURRENT_UPLOADS = 8;
   let uploadQueue = [];
@@ -845,16 +848,39 @@
     document.getElementById('gallery-event-date').textContent = event.event_date;
 
     applyConfig(config);
-    renderGalleryPhotos();
-    setInterval(() => {
-      if (document.getElementById('gallery-view').style.display !== 'none') {
+    
+    // Carregar fotos uma vez
+    if (!galleryPhotosLoaded) {
+      renderGalleryPhotos();
+      galleryPhotosLoaded = true;
+    }
+    
+    // Parar qualquer intervalo anterior
+    if (galleryRefreshInterval) {
+      clearInterval(galleryRefreshInterval);
+    }
+    
+    // Novo intervalo - SÓ atualiza se a galeria está visível E o visualizador está fechado
+    galleryRefreshInterval = setInterval(() => {
+      if (document.getElementById('gallery-view').style.display !== 'none' && 
+          document.getElementById('photo-viewer-modal').style.display === 'none') {
         renderGalleryPhotos();
       }
-    }, 15000);
+    }, 30000);
   }
 
   async function openPhotoViewer(fileId, index) {
     currentPhotoIndex = index;
+    
+    // Verificar se já está em cache
+    if (galleryPhotosCache.has(fileId)) {
+      const cachedUrl = galleryPhotosCache.get(fileId);
+      document.getElementById('photo-viewer-image').src = cachedUrl;
+      updatePhotoCounter();
+      return;
+    }
+
+    // Carregar e guardar em cache
     const { data: file } = await supabaseClient
       .from('uploads')
       .select('storage_path, file_name')
@@ -869,6 +895,7 @@
       .createSignedUrl(file.storage_path, 3600);
 
     if (signedData?.signedUrl) {
+      galleryPhotosCache.set(fileId, signedData.signedUrl);
       document.getElementById('photo-viewer-image').src = signedData.signedUrl;
       document.getElementById('photo-viewer-image').dataset.fileId = fileId;
       document.getElementById('photo-viewer-image').dataset.fileName = file.file_name;
@@ -901,6 +928,13 @@
   function closePhotoViewer() {
     document.getElementById('photo-viewer-modal').style.display = 'none';
     document.getElementById('photo-viewer-image').src = '';
+    // Limpar cache quando fechar para liberar memória
+    if (currentPhotoIndex > 0) {
+      const prevPhoto = allGalleryPhotos[currentPhotoIndex - 1];
+      const nextPhoto = allGalleryPhotos[currentPhotoIndex + 1];
+      galleryPhotosCache.delete(prevPhoto?.id);
+      galleryPhotosCache.delete(nextPhoto?.id);
+    }
   }
 
   async function downloadCurrentPhoto() {
@@ -923,7 +957,7 @@
 
     const { data: uploads, error } = await supabaseClient
       .from('uploads')
-      .select('*')
+      .select('id, file_name, storage_path, uploaded_at')
       .eq('event_id', currentEventId)
       .order('uploaded_at', { ascending: false });
 
@@ -936,8 +970,9 @@
     const empty = document.getElementById('gallery-empty');
 
     if (!uploads || uploads.length === 0) {
-      grid.innerHTML = '';
-      empty.style.display = 'block';
+      if (grid.innerHTML === '') {
+        empty.style.display = 'block';
+      }
       allGalleryPhotos = [];
       return;
     }
@@ -948,33 +983,59 @@
     const config = window.elementSdk?.config || defaultConfig;
     const primary = config.primary_action || defaultConfig.primary_action;
 
-    grid.innerHTML = '';
+    // Criar mapa de IDs existentes no DOM
+    const existingCards = new Map(
+      [...grid.children].map(card => [card.getAttribute('data-file-id'), card])
+    );
+
+    // Atualizar ou criar cards
     uploads.forEach((file, index) => {
-      const card = document.createElement('div');
-      card.setAttribute('data-file-id', file.id);
-      card.style.cssText = `position:relative;border-radius:12px;overflow:hidden;aspect-ratio:1;background:linear-gradient(135deg, ${primary}20, ${primary}05);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.2s;`;
+      let card = existingCards.get(file.id);
 
-      supabaseClient.storage.from(STORAGE_BUCKET).createSignedUrl(file.storage_path, 3600).then(({ data: signedData }) => {
-        if (signedData?.signedUrl) {
-          const img = document.createElement('img');
-          img.src = signedData.signedUrl;
-          img.style.cssText = `width:100%;height:100%;object-fit:cover;`;
-          img.onerror = () => {
-            img.style.display = 'none';
-            card.innerHTML = `<i data-lucide="image" style="width:40px;height:40px;color:${primary};opacity:0.5;"></i>`;
-            lucide.createIcons();
-          };
-          card.innerHTML = '';
-          card.appendChild(img);
-        }
-      });
+      if (!card) {
+        // Criar novo card
+        card = document.createElement('div');
+        card.setAttribute('data-file-id', file.id);
+        card.style.cssText = `position:relative;border-radius:12px;overflow:hidden;aspect-ratio:1;background:linear-gradient(135deg, ${primary}20, ${primary}05);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.2s;`;
+        card.onclick = () => openPhotoViewer(file.id, index);
+        
+        grid.appendChild(card);
+      }
 
-      card.onclick = () => {
-        openPhotoViewer(file.id, index);
-      };
+      // Verificar se já tem imagem
+      if (card.querySelector('img') === null && !card.dataset.loadingStarted) {
+        card.dataset.loadingStarted = 'true';
+        
+        // Carregar URL assinada (cachear automaticamente)
+        supabaseClient.storage
+          .from(STORAGE_BUCKET)
+          .createSignedUrl(file.storage_path, 3600)
+          .then(({ data: signedData }) => {
+            if (signedData?.signedUrl && card.querySelector('img') === null) {
+              // Guardar em cache
+              galleryPhotosCache.set(file.id, signedData.signedUrl);
+              
+              const img = document.createElement('img');
+              img.src = signedData.signedUrl;
+              img.style.cssText = `width:100%;height:100%;object-fit:cover;`;
+              img.onerror = () => {
+                img.style.display = 'none';
+                card.innerHTML = `<i data-lucide="image" style="width:40px;height:40px;color:${primary};opacity:0.5;"></i>`;
+                lucide.createIcons();
+              };
+              
+              card.innerHTML = '';
+              card.appendChild(img);
+              card.onclick = () => openPhotoViewer(file.id, allGalleryPhotos.findIndex(p => p.id === file.id));
+            }
+          });
+      }
 
-      grid.appendChild(card);
+      existingCards.delete(file.id);
     });
+
+    // Remover cards de fotos deletadas
+    existingCards.forEach(card => card.remove());
 
     lucide.createIcons();
   }
@@ -1330,5 +1391,5 @@
 
   lucide.createIcons();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e6a0818f6d83e9a',t:'MTc3NTIzOTg0My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e6a1424132b3e9a',t:'MTc3NTI0MDMzNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
