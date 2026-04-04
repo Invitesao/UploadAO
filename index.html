@@ -73,93 +73,73 @@
   <div id="app" class="h-full w-full overflow-auto" style="background: #ffffff; color: #1a1a1a;">
    <div id="toast-container" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 items-center pointer-events-none"></div><!-- PHOTO VIEWER MODAL -->
    <div id="photo-viewer-modal" style="background:rgba(0,0,0,0.95);flex-direction:column;align-items:center;justify-content:center;display:none;">
-    <header style="position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:12px;background:rgba(0,0,0,0.5);z-index:100000;">
-     <span id="photo-counter" style="color:#fff;font-size:13px;font-weight:600;"></span> <button onclick="closePhotoViewer()" style="background:none;border:none;color:#fff;cursor:pointer;padding:8px;z-index:100001;"> <i data-lucide="x" style="width:24px;height:24px;"></i> </button>
+    <header style="position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:12px;background:rgba(0,0,0,0.5);z-index:100000;"><span id="photo-counter" style="color:#fff;font-size:13px;font-weight:600;"></span> <button onclick="closePhotoViewer()" style="background:none;border:none;color:#fff;cursor:pointer;padding:8px;z-index:100001;"> <i data-lucide="x" style="width:24px;height:24px;"></i> </button>
     </header>
-    <div style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:100%;padding:60px 8px 70px 8px;overflow:hidden;">
-     <button onclick="previousPhoto()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s;flex-shrink:0;z-index:100001;margin:0;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'"> <i data-lucide="chevron-left" style="width:20px;height:20px;"></i> </button> <img id="photo-viewer-image" src="" style="max-width:100%;max-height:100%;border-radius:8px;object-fit:contain;z-index:100000;margin:0;"> <button onclick="nextPhoto()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s;flex-shrink:0;z-index:100001;margin:0;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'"> <i data-lucide="chevron-right" style="width:20px;height:20px;"></i> </button>
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:100%;padding:60px 8px 70px 8px;overflow:hidden;"><button onclick="previousPhoto()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s;flex-shrink:0;z-index:100001;margin:0;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'"> <i data-lucide="chevron-left" style="width:20px;height:20px;"></i> </button> <img id="photo-viewer-image" src="" style="max-width:100%;max-height:100%;border-radius:8px;object-fit:contain;z-index:100000;margin:0;"> <button onclick="nextPhoto()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s;flex-shrink:0;z-index:100001;margin:0;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'"> <i data-lucide="chevron-right" style="width:20px;height:20px;"></i> </button>
     </div>
-    <footer style="position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:center;gap:12px;padding:12px;background:rgba(0,0,0,0.5);z-index:100000;">
-     <button onclick="downloadCurrentPhoto()" style="background:#2563eb;color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;display:flex;gap:6px;align-items:center;font-size:12px;z-index:100001;"> <i data-lucide="download" style="width:16px;height:16px;"></i> <span style="display:none;">Descarregar</span> </button>
+    <footer style="position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:center;gap:12px;padding:12px;background:rgba(0,0,0,0.5);z-index:100000;"><button onclick="downloadCurrentPhoto()" style="background:#2563eb;color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;display:flex;gap:6px;align-items:center;font-size:12px;z-index:100001;"> <i data-lucide="download" style="width:16px;height:16px;"></i> <span style="display:none;">Descarregar</span> </button>
     </footer>
    </div><!-- LOGIN VIEW -->
    <div id="login-view" class="h-full w-full flex flex-col items-center justify-center px-4">
     <div class="w-full max-w-sm">
      <div class="text-center mb-8">
-      <div style="width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:#2563eb;color:#fff;margin:0 auto 20px;">
-       <i data-lucide="lock" style="width:32px;height:32px;"></i>
+      <div style="width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:#2563eb;color:#fff;margin:0 auto 20px;"><i data-lucide="lock" style="width:32px;height:32px;"></i>
       </div>
       <h1 style="font-family:'Poppins',sans-serif;font-size:28px;font-weight:700;margin:0 0 8px 0;">UploadAO</h1>
       <p style="font-size:14px;opacity:0.5;margin:0;">Painel de Administrador</p>
      </div>
      <div class="space-y-4">
-      <div>
-       <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Senha</label> <input type="password" id="admin-password" placeholder="Digite sua senha" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;transition:all 0.3s;" onkeypress="if(event.key==='Enter') adminLogin();">
+      <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Senha</label> <input type="password" id="admin-password" placeholder="Digite sua senha" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;transition:all 0.3s;" onkeypress="if(event.key==='Enter') adminLogin();">
       </div><button onclick="adminLogin()" style="width:100%;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> Entrar no Painel </button>
      </div>
     </div>
    </div><!-- ADMIN VIEW -->
    <div id="admin-view" style="display:none;" class="h-full w-full overflow-auto">
     <header style="background:#f5f5f5;border-bottom:1px solid rgba(26,26,26,0.1);padding:16px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;">
-     <div style="display:flex;align-items:center;gap:12px;">
-      <i data-lucide="settings" style="width:20px;height:20px;"></i> <span style="font-weight:600;">Painel de Administração</span>
+     <div style="display:flex;align-items:center;gap:12px;"><i data-lucide="settings" style="width:20px;height:20px;"></i> <span style="font-weight:600;">Painel de Administração</span>
      </div><button onclick="adminLogout()" style="background:none;border:none;cursor:pointer;display:flex;gap:6px;align-items:center;opacity:0.6;font-family:'Poppins',sans-serif;font-size:13px;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'"> <i data-lucide="log-out" style="width:18px;height:18px;"></i> <span>Sair</span> </button>
     </header>
     <div style="padding:24px;max-width:900px;margin:0 auto;">
      <div style="background:#fff;border:1px solid rgba(26,26,26,0.1);border-radius:16px;padding:24px;margin-bottom:24px;">
       <h2 style="font-size:18px;font-weight:600;margin:0 0 20px 0;">Criar Novo Evento</h2>
-      <div style="display:flex;gap:12px;margin-bottom:16px;">
-       <input type="text" id="search-events" placeholder="🔍 Buscar eventos..." style="flex:1;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;"> <button onclick="showAllEvents()" style="background:#e74c3c;color:#fff;border:none;padding:12px 16px;border-radius:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Limpar</button>
+      <div style="display:flex;gap:12px;margin-bottom:16px;"><input type="text" id="search-events" placeholder="🔍 Buscar eventos..." style="flex:1;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;"> <button onclick="showAllEvents()" style="background:#e74c3c;color:#fff;border:none;padding:12px 16px;border-radius:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Limpar</button>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-       <div>
-        <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Nome do Evento</label> <input type="text" id="new-event-title" placeholder="Ex: João &amp; Maria" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;">
+       <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Nome do Evento</label> <input type="text" id="new-event-title" placeholder="Ex: João &amp; Maria" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;">
        </div>
-       <div>
-        <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Data do Evento</label> <input type="date" id="new-event-date" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;">
+       <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Data do Evento</label> <input type="date" id="new-event-date" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;">
        </div>
       </div>
-      <div>
-       <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Mensagem Personalizada</label> <input type="text" id="new-event-message" placeholder="Ex: Partilha as tuas fotos!" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;margin-bottom:16px;">
+      <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Mensagem Personalizada</label> <input type="text" id="new-event-message" placeholder="Ex: Partilha as tuas fotos!" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;margin-bottom:16px;">
       </div>
       <div id="edit-event-fields" style="display:none;padding:16px;background:#f0f8ff;border-radius:12px;border:1px solid #2563eb33;margin-bottom:16px;">
        <h3 style="font-size:14px;font-weight:600;margin:0 0 12px 0;">✏️ Editar Evento</h3><input type="text" id="edit-event-title" placeholder="Novo nome" style="width:100%;padding:10px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;margin-bottom:8px;"> <input type="date" id="edit-event-date" style="width:100%;padding:10px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;margin-bottom:8px;"> <input type="text" id="edit-event-message" placeholder="Nova mensagem" style="width:100%;padding:10px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;margin-bottom:8px;">
-       <div>
-        <label style="display:block;font-size:12px;font-weight:600;margin:0 0 6px 0;opacity:0.7;">📊 Limite Total de Fotos do Evento</label>
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
-         <input type="number" id="edit-event-max-photos" min="1" placeholder="Fotos" style="width:80px;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;"> <span id="edit-event-storage-display" style="font-size:11px;opacity:0.6;">Tamanho: 0 MB</span>
+       <div><label style="display:block;font-size:12px;font-weight:600;margin:0 0 6px 0;opacity:0.7;">📊 Limite Total de Fotos do Evento</label>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;"><input type="number" id="edit-event-max-photos" min="1" placeholder="Fotos" style="width:80px;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;"> <span id="edit-event-storage-display" style="font-size:11px;opacity:0.6;">Tamanho: 0 MB</span>
         </div>
        </div>
-       <div>
-        <label style="display:block;font-size:12px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">👥 Limite por Convidado</label>
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
-         <input type="checkbox" id="edit-event-enable-guest-limit" style="cursor:pointer;"> <label for="edit-event-enable-guest-limit" style="cursor:pointer;font-size:12px;flex:1;">Ativar limite de fotos por convidado</label>
+       <div><label style="display:block;font-size:12px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">👥 Limite por Convidado</label>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;"><input type="checkbox" id="edit-event-enable-guest-limit" style="cursor:pointer;"> <label for="edit-event-enable-guest-limit" style="cursor:pointer;font-size:12px;flex:1;">Ativar limite de fotos por convidado</label>
         </div>
-        <div id="guest-limit-config" style="display:none;background:#fff;padding:12px;border-radius:8px;border:1px solid rgba(37,99,235,0.2);">
-         <input type="number" id="edit-event-guest-max-photos" min="1" placeholder="Máx fotos por convidado" style="width:100%;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;">
+        <div id="guest-limit-config" style="display:none;background:#fff;padding:12px;border-radius:8px;border:1px solid rgba(37,99,235,0.2);"><input type="number" id="edit-event-guest-max-photos" min="1" placeholder="Máx fotos por convidado" style="width:100%;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;">
          <p style="font-size:11px;opacity:0.6;margin:8px 0 0 0;">Cada convidado poderá enviar no máximo este número de fotos.</p>
         </div>
        </div>
-       <div>
-        <label style="display:block;font-size:12px;font-weight:600;margin:0 0 6px 0;opacity:0.7;">⏳ Duração do Evento</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
-         <button onclick="setEventExpiration(15)" style="background:#fff;border:2px solid #2563eb;color:#2563eb;padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;transition:all 0.3s;" id="btn-exp-15">15 dias</button> <button onclick="setEventExpiration(20)" style="background:#fff;border:2px solid #2563eb;color:#2563eb;padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;transition:all 0.3s;" id="btn-exp-20">20 dias</button> <button onclick="setEventExpiration(30)" style="background:#fff;border:2px solid #2563eb;color:#2563eb;padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;transition:all 0.3s;" id="btn-exp-30">30 dias</button>
+       <div><label style="display:block;font-size:12px;font-weight:600;margin:0 0 6px 0;opacity:0.7;">⏳ Duração do Evento</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;"><button onclick="setEventExpiration(15)" style="background:#fff;border:2px solid #2563eb;color:#2563eb;padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;transition:all 0.3s;" id="btn-exp-15">15 dias</button> <button onclick="setEventExpiration(20)" style="background:#fff;border:2px solid #2563eb;color:#2563eb;padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;transition:all 0.3s;" id="btn-exp-20">20 dias</button> <button onclick="setEventExpiration(30)" style="background:#fff;border:2px solid #2563eb;color:#2563eb;padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;transition:all 0.3s;" id="btn-exp-30">30 dias</button>
         </div>
-        <div style="display:flex;gap:8px;align-items:center;">
-         <input type="number" id="extend-event-days" min="1" max="60" placeholder="Dias" style="width:60px;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;"> <button onclick="extendEventExpiration()" style="background:#f39c12;color:#fff;border:none;padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;flex:1;">Estender +</button>
+        <div style="display:flex;gap:8px;align-items:center;"><input type="number" id="extend-event-days" min="1" max="60" placeholder="Dias" style="width:60px;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;"> <button onclick="extendEventExpiration()" style="background:#f39c12;color:#fff;border:none;padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;flex:1;">Estender +</button>
         </div>
         <p id="expiration-info" style="font-size:11px;opacity:0.6;margin:8px 0 0 0;">Duração atual: 15 dias</p>
        </div>
-       <div style="display:flex;gap:8px;">
-        <button onclick="saveEventChanges()" style="background:#2563eb;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Guardar</button> <button onclick="cancelEditEvent()" style="background:#e0e0e0;border:none;padding:8px 16px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Cancelar</button>
+       <div style="display:flex;gap:8px;"><button onclick="saveEventChanges()" style="background:#2563eb;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Guardar</button> <button onclick="cancelEditEvent()" style="background:#e0e0e0;border:none;padding:8px 16px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Cancelar</button>
        </div>
       </div><button onclick="addNewEvent()" style="background:#2563eb;color:#fff;border:none;padding:12px 24px;border-radius:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;width:100%;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> <i data-lucide="plus" style="width:16px;height:16px;display:inline;margin-right:8px;vertical-align:-2px;"></i> Criar Evento </button>
      </div>
      <div style="background:#fff;border:1px solid rgba(26,26,26,0.1);border-radius:16px;padding:24px;">
       <h2 style="font-size:18px;font-weight:600;margin:0 0 20px 0;">Meus Eventos (<span id="event-count">0</span>)</h2>
       <div id="events-list" style="display:flex;flex-direction:column;gap:12px;"></div>
-      <div id="no-events-message" style="text-align:center;padding:24px;opacity:0.5;">
-       <i data-lucide="inbox" style="width:32px;height:32px;margin:0 auto 8px;display:block;opacity:0.3;"></i>
+      <div id="no-events-message" style="text-align:center;padding:24px;opacity:0.5;"><i data-lucide="inbox" style="width:32px;height:32px;margin:0 auto 8px;display:block;opacity:0.3;"></i>
        <p style="font-size:14px;margin:0;">Nenhum evento criado ainda</p>
       </div>
      </div>
@@ -168,15 +148,13 @@
    <div id="guest-login-view" style="display:none;" class="h-full w-full flex flex-col items-center justify-center px-4">
     <div class="w-full max-w-sm">
      <div class="text-center mb-8">
-      <div style="width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:#2563eb;color:#fff;margin:0 auto 20px;">
-       <i data-lucide="user-plus" style="width:32px;height:32px;"></i>
+      <div style="width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:#2563eb;color:#fff;margin:0 auto 20px;"><i data-lucide="user-plus" style="width:32px;height:32px;"></i>
       </div>
       <h1 id="guest-login-title" style="font-family:'Poppins',sans-serif;font-size:28px;font-weight:700;margin:0 0 8px 0;"></h1>
       <p style="font-size:14px;opacity:0.5;margin:0;">Qual é o teu nome?</p>
      </div>
      <div class="space-y-4">
-      <div>
-       <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Teu Nome</label> <input type="text" id="guest-name-input" placeholder="Ex: João Silva" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;transition:all 0.3s;" onkeypress="if(event.key==='Enter') confirmGuestName();">
+      <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Teu Nome</label> <input type="text" id="guest-name-input" placeholder="Ex: João Silva" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;transition:all 0.3s;" onkeypress="if(event.key==='Enter') confirmGuestName();">
       </div><button onclick="confirmGuestName()" style="width:100%;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> Continuar </button>
      </div>
     </div>
@@ -184,8 +162,7 @@
    <div id="guest-view" style="display:none;" class="h-full w-full overflow-auto">
     <header class="text-center pt-6 pb-3 px-4 fade-in stagger-1" style="border-bottom:1px solid rgba(26,26,26,0.1);">
      <div class="inline-flex items-center gap-2 mb-3">
-      <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;" id="logo-box">
-       <i data-lucide="camera" style="width:20px;height:20px;"></i>
+      <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;" id="logo-box"><i data-lucide="camera" style="width:20px;height:20px;"></i>
       </div><span id="brand-name" style="font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;letter-spacing:0.5px;">UploadAO</span>
      </div>
      <p id="guest-name-display" style="font-size:14px;font-weight:600;margin:0;opacity:0.7;"></p>
@@ -205,11 +182,9 @@
      </div>
     </section>
     <section class="px-4 max-w-lg mx-auto pb-6 fade-in stagger-3">
-     <div id="drop-zone" class="drop-zone relative rounded-2xl border-2 border-dashed p-8 text-center cursor-pointer transition-all" style="border-color: rgba(26,26,26,0.15); background: rgba(26,26,26,0.03);" onclick="document.getElementById('fileInput').click();">
-      <input type="file" id="fileInput" multiple accept="image/*,video/mp4,video/quicktime,video/webm" class="hidden">
+     <div id="drop-zone" class="drop-zone relative rounded-2xl border-2 border-dashed p-8 text-center cursor-pointer transition-all" style="border-color: rgba(26,26,26,0.15); background: rgba(26,26,26,0.03);" onclick="document.getElementById('fileInput').click();"><input type="file" id="fileInput" multiple accept="image/*,video/mp4,video/quicktime,video/webm" class="hidden">
       <div class="mb-4">
-       <div class="inline-flex items-center justify-center w-16 h-16 rounded-full" id="upload-icon-circle" style="background: rgba(26,26,26,0.08);">
-        <i data-lucide="upload-cloud" id="upload-icon" style="width:28px;height:28px;"></i>
+       <div class="inline-flex items-center justify-center w-16 h-16 rounded-full" id="upload-icon-circle" style="background: rgba(26,26,26,0.08);"><i data-lucide="upload-cloud" id="upload-icon" style="width:28px;height:28px;"></i>
        </div>
       </div>
       <p style="font-size:16px;font-weight:500;margin:0 0 4px 0;">Toque para selecionar</p>
@@ -218,14 +193,11 @@
      <div id="file-list" class="mt-4 flex flex-col gap-2"></div><button id="upload-btn" class="w-full mt-5 py-4 rounded-xl font-semibold text-base tracking-wide transition-all duration-300 hidden" style="border:none;cursor:pointer;" onclick="startUpload()"> <span id="upload-btn-text" class="flex items-center justify-center gap-2"> <i data-lucide="send" style="width:18px;height:18px;"></i> <span id="btn-label">Enviar Fotos</span> </span> </button>
     </section>
     <div class="grid grid-cols-3 gap-3 text-center" style="font-size:12px;opacity:0.35;">
-     <div>
-      <i data-lucide="smartphone" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Abre o link
+     <div><i data-lucide="smartphone" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Abre o link
      </div>
-     <div>
-      <i data-lucide="image-plus" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Escolhe fotos
+     <div><i data-lucide="image-plus" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Escolhe fotos
      </div>
-     <div>
-      <i data-lucide="cloud-lightning" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Enviado!
+     <div><i data-lucide="cloud-lightning" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Enviado!
      </div>
     </div>
     <footer style="text-align:center;padding:12px 16px;margin-top:24px;border-top:1px solid rgba(26,26,26,0.08);font-size:12px;">
@@ -235,8 +207,7 @@
    <div id="gallery-view" style="display:none;" class="h-full w-full overflow-auto">
     <header class="text-center pt-10 pb-4 px-4 fade-in stagger-1">
      <div class="inline-flex items-center gap-2 mb-3">
-      <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;" id="gallery-logo-box">
-       <i data-lucide="image" style="width:20px;height:20px;"></i>
+      <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;" id="gallery-logo-box"><i data-lucide="image" style="width:20px;height:20px;"></i>
       </div><span id="gallery-brand-name" style="font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;letter-spacing:0.5px;">Galeria</span>
      </div>
     </header>
@@ -250,23 +221,20 @@
     </section>
     <section class="px-4 max-w-3xl mx-auto pb-4 fade-in stagger-3">
      <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
-      <div style="display:flex;gap:8px;align-items:center;flex:1;"><input type="text" id="gallery-search-input" placeholder="🔍 Pesquisar convidado..." style="flex:1;min-width:150px;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;"> <button onclick="filterGalleryByGuest()" style="background:#2563eb;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:flex;gap:6px;align-items:center;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> <i data-lucide="search" style="width:14px;height:14px;"></i> Pesquisar </button> <button onclick="clearGalleryFilter()" style="background:#95a5a6;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:none;" id="clear-filter-btn" onmouseover="this.style.background='#7f8c8d'" onmouseout="this.style.background='#95a5a6'"> Limpar </button>
+      <div style="display:flex;gap:8px;align-items:center;flex:1;">
+       <input type="text" id="gallery-search-input" placeholder="🔍 Pesquisar convidado..." style="flex:1;min-width:150px;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;"> <button onclick="filterGalleryByGuest()" style="background:#2563eb;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:flex;gap:6px;align-items:center;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> <i data-lucide="search" style="width:14px;height:14px;"></i> Pesquisar </button> <button onclick="clearGalleryFilter()" style="background:#95a5a6;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:none;" id="clear-filter-btn" onmouseover="this.style.background='#7f8c8d'" onmouseout="this.style.background='#95a5a6'"> Limpar </button>
       </div>
-      <div style="display:flex;gap:8px;align-items:center;">
-       <button id="select-all-photos-btn" onclick="toggleSelectAllPhotos()" style="background:#f39c12;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:none;transition:all 0.3s;" onmouseover="this.style.background='#e67e22'" onmouseout="this.style.background='#f39c12'"> Marcar Todas </button> <span id="photo-selection-count" style="font-size:13px;font-weight:600;opacity:0.6;display:none;">0 selecionadas</span>
+      <div style="display:flex;gap:8px;align-items:center;"><button id="select-all-photos-btn" onclick="toggleSelectAllPhotos()" style="background:#f39c12;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:none;transition:all 0.3s;" onmouseover="this.style.background='#e67e22'" onmouseout="this.style.background='#f39c12'"> Marcar Todas </button> <span id="photo-selection-count" style="font-size:13px;font-weight:600;opacity:0.6;display:none;">0 selecionadas</span>
       </div><button id="download-selected-btn" onclick="downloadSelectedPhotos()" style="background:#27ae60;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:none;transition:all 0.3s;" onmouseover="this.style.background='#229954'" onmouseout="this.style.background='#27ae60'"> <i data-lucide="download" style="width:14px;height:14px;display:inline;margin-right:4px;vertical-align:-1px;"></i> Descarregar Selecionadas </button>
      </div>
      <section id="gallery-grid" style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;padding-bottom:12px;"></section>
-     <div id="gallery-empty" style="text-align:center;padding:40px 20px;opacity:0.5;">
-      <i data-lucide="inbox" style="width:48px;height:48px;margin:0 auto 16px;display:block;opacity:0.3;"></i>
+     <div id="gallery-empty" style="text-align:center;padding:40px 20px;opacity:0.5;"><i data-lucide="inbox" style="width:48px;height:48px;margin:0 auto 16px;display:block;opacity:0.3;"></i>
       <p style="font-size:16px;margin:0;">Nenhuma foto foi partilhada ainda 📷</p>
      </div>
-     <div id="gallery-pagination" style="display:flex;gap:12px;justify-content:center;margin-top:24px;align-items:center;">
-      <button id="gallery-prev-btn" onclick="previousGalleryPage()" style="background:#95a5a6;color:#fff;border:none;padding:10px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:none;transition:all 0.3s;display:flex;gap:6px;align-items:center;" onmouseover="this.style.background='#7f8c8d'" onmouseout="this.style.background='#95a5a6'"> <i data-lucide="chevron-left" style="width:16px;height:16px;"></i> Voltar </button> <span id="gallery-page-info" style="font-size:13px;font-weight:600;opacity:0.6;min-width:80px;text-align:center;"></span> <button id="gallery-next-btn" onclick="nextGalleryPage()" style="background:#2563eb;color:#fff;border:none;padding:10px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:none;transition:all 0.3s;display:flex;gap:6px;align-items:center;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> Ver Próximas <i data-lucide="chevron-right" style="width:16px;height:16px;"></i> </button>
+     <div id="gallery-pagination" style="display:flex;gap:12px;justify-content:center;margin-top:24px;align-items:center;"><button id="gallery-prev-btn" onclick="previousGalleryPage()" style="background:#95a5a6;color:#fff;border:none;padding:10px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:none;transition:all 0.3s;display:flex;gap:6px;align-items:center;" onmouseover="this.style.background='#7f8c8d'" onmouseout="this.style.background='#95a5a6'"> <i data-lucide="chevron-left" style="width:16px;height:16px;"></i> Voltar </button> <span id="gallery-page-info" style="font-size:13px;font-weight:600;opacity:0.6;min-width:80px;text-align:center;"></span> <button id="gallery-next-btn" onclick="nextGalleryPage()" style="background:#2563eb;color:#fff;border:none;padding:10px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:none;transition:all 0.3s;display:flex;gap:6px;align-items:center;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> Ver Próximas <i data-lucide="chevron-right" style="width:16px;height:16px;"></i> </button>
      </div>
     </section>
-    <section class="px-4 max-w-3xl mx-auto pb-10 text-center">
-     <button id="download-all-btn" onclick="downloadAllPhotosGallery()" style="background:#27ae60;color:#fff;border:none;padding:12px 24px;border-radius:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;display:flex;gap:8px;align-items:center;justify-content:center;margin:0 auto;transition:all 0.3s;" onmouseover="this.style.background='#229954'" onmouseout="this.style.background='#27ae60'"> <i data-lucide="download" style="width:18px;height:18px;"></i> <span>Descarregar Todas</span> </button>
+    <section class="px-4 max-w-3xl mx-auto pb-10 text-center"><button id="download-all-btn" onclick="downloadAllPhotosGallery()" style="background:#27ae60;color:#fff;border:none;padding:12px 24px;border-radius:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;display:flex;gap:8px;align-items:center;justify-content:center;margin:0 auto;transition:all 0.3s;" onmouseover="this.style.background='#229954'" onmouseout="this.style.background='#27ae60'"> <i data-lucide="download" style="width:18px;height:18px;"></i> <span>Descarregar Todas</span> </button>
     </section>
     <footer class="text-center pb-8 px-4" style="font-size:11px;opacity:0.25;">
      Created by <strong>Invites</strong>
@@ -323,9 +291,9 @@
   let editingEventId = null;
   let galleryPhotosLoaded = false;
   let galleryCurrentPage = 0;
-  let galleryFilteredPhotos = null; // null = mostrar todas, array = fotos filtradas
-  const PHOTOS_PER_PAGE = 18; // 3 colunas × 6 linhas
-  let currentEventExpirationDays = 15; // Dias de expiração do evento em edição
+  let galleryFilteredPhotos = null;
+  const PHOTOS_PER_PAGE = 18;
+  let currentEventExpirationDays = 15;
 
   // --- CACHE CONFIG ---
   const CACHE_CONFIG = {
@@ -625,16 +593,13 @@
     const formattedDate = `${day}.${month}.${year}`;
     const eventId = 'evt_' + Date.now();
 
-    // Default: 65MB = ~465 fotos
     const defaultMaxPhotos = calculatePhotosFromStorage(STORAGE_LIMITS.MAX_STORAGE_MB);
     const defaultMaxStorage = STORAGE_LIMITS.MAX_STORAGE_MB;
     
-    // Default: 15 dias de duração
     const eventDateObj = new Date(year, month - 1, day);
     const expirationDate = new Date(eventDateObj);
-    expirationDate.setDate(expirationDate.getDate() + 15); // 15 dias por padrão
+    expirationDate.setDate(expirationDate.getDate() + 15);
 
-    // Gerar URLs do evento
     const currentUrl = window.location.origin + window.location.pathname;
     const uploadUrl = currentUrl + '?event=' + eventId;
     const galleryUrl = currentUrl + '?gallery=' + eventId;
@@ -674,7 +639,6 @@
   async function loadEvents() {
     if (!supabaseClient) return;
     
-    // Limpar eventos com mais de 15 dias antes de carregar
     await cleanupOldEvents();
     
     const { data, error } = await supabaseClient
@@ -711,9 +675,7 @@
         }
       }
 
-      // Eliminar eventos expirados e suas fotos do R2
       for (const eventId of eventsToDelete) {
-        // Primeiro, eliminar todas as fotos
         const { data: uploads } = await supabaseClient
           .from('uploads')
           .select('storage_path')
@@ -722,7 +684,6 @@
         if (uploads && uploads.length > 0) {
           for (const upload of uploads) {
             try {
-              // Chamar o Worker para deletar do R2
               await fetch(WORKER_URL, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
@@ -734,13 +695,11 @@
           }
         }
 
-        // Eliminar registros de upload
         await supabaseClient
           .from('uploads')
           .delete()
           .eq('event_id', eventId);
 
-        // Eliminar evento
         await supabaseClient
           .from('events')
           .delete()
@@ -790,8 +749,8 @@
           <button onclick="copyLink('${event.gallery_url}')" style="background:#e74c3c;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Link Galeria</button>
           <button onclick="showEventStats('${event.id}')" style="background:#f39c12;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Estatísticas</button>
           <button onclick="toggleEventActive('${event.id}', ${isActive})" style="background:${isActive ? '#e67e22' : '#27ae60'};color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">${isActive ? 'Desativar' : 'Ativar'}</button>
-          <button onclick="toggleUploadsEnabled('${event.id}', ${event.uploads_enabled !== false}, 'photos')" style="background:${event.photos_enabled !== false ? '#c0392b' : '#27ae60'};color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">${event.photos_enabled !== false ? '🔒 Fotos' : '🔓 Fotos'}</button>
-          <button onclick="toggleUploadsEnabled('${event.id}', ${event.videos_enabled !== false}, 'videos')" style="background:${event.videos_enabled !== false ? '#c0392b' : '#27ae60'};color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">${event.videos_enabled !== false ? '🔒 Vídeos' : '🔓 Vídeos'}</button>
+          <button onclick="togglePhotosEnabled('${event.id}', ${event.photos_enabled !== false})" style="background:${event.photos_enabled !== false ? '#c0392b' : '#27ae60'};color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">${event.photos_enabled !== false ? '🔒 Fotos' : '🔓 Fotos'}</button>
+          <button onclick="toggleVideosEnabled('${event.id}', ${event.videos_enabled !== false})" style="background:${event.videos_enabled !== false ? '#c0392b' : '#27ae60'};color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">${event.videos_enabled !== false ? '🔒 Vídeos' : '🔓 Vídeos'}</button>
           <button onclick="startEditEvent('${event.id}', '${event.event_title}', '${event.event_date}', '${(event.event_message || '').replace(/'/g, "&#39;")}')" style="background:#8e44ad;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Editar</button>
           <button onclick="downloadEventPhotos('${event.id}')" style="background:#27ae60;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Download</button>
           <button onclick="deleteEvent('${event.id}')" style="background:#95a5a6;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Apagar</button>
@@ -838,7 +797,6 @@
       return;
     }
 
-    // Atualizar estado local IMEDIATAMENTE
     const eventIndex = allEvents.findIndex(e => e.id === eventId);
     if (eventIndex !== -1) {
       allEvents[eventIndex].photos_enabled = newState;
@@ -869,7 +827,6 @@
       return;
     }
 
-    // Atualizar estado local IMEDIATAMENTE
     const eventIndex = allEvents.findIndex(e => e.id === eventId);
     if (eventIndex !== -1) {
       allEvents[eventIndex].videos_enabled = newState;
@@ -898,20 +855,38 @@
     const totalMB = (uploads || []).reduce((sum, f) => sum + (f.file_size_mb || 0), 0);
     const guests = new Set((uploads || []).map(f => f.guest_id)).size;
 
-    alert(`📊 Estatísticas:\n\n📷 Fotos: ${totalPhotos}\n👥 Convidados: ${guests}\n💾 Armazenamento: ${totalMB.toFixed(1)} MB`);
+    const statText = `📊 Estatísticas:\n\n📷 Fotos: ${totalPhotos}\n👥 Convidados: ${guests}\n💾 Armazenamento: ${totalMB.toFixed(1)} MB`;
+    
+    const modal = document.createElement('div');
+    modal.style.cssText = `position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:99999;`;
+    modal.innerHTML = `
+      <div style="background:#fff;padding:24px;border-radius:12px;text-align:center;max-width:300px;font-family:'Poppins',sans-serif;">
+        <p style="margin:0 0 24px 0;white-space:pre-line;line-height:1.6;font-size:14px;">${statText}</p>
+        <button onclick="this.closest('[style*=fixed]').remove()" style="background:#2563eb;color:#fff;border:none;padding:10px 24px;border-radius:8px;cursor:pointer;font-weight:600;">Fechar</button>
+      </div>
+    `;
+    document.body.appendChild(modal);
   }
 
   function deleteEvent(eventId) {
-    if (!confirm('⚠️ Isto vai apagar TODAS as fotos no R2 e metadados. Tem a certeza?')) return;
-    
-    deleteEventWithPhotos(eventId);
+    const modal = document.createElement('div');
+    modal.style.cssText = `position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:99999;`;
+    modal.innerHTML = `
+      <div style="background:#fff;padding:24px;border-radius:12px;text-align:center;max-width:400px;font-family:'Poppins',sans-serif;">
+        <p style="margin:0 0 24px 0;font-size:16px;font-weight:600;">⚠️ Isto vai apagar TODAS as fotos no R2 e metadados. Tem a certeza?</p>
+        <div style="display:flex;gap:12px;justify-content:center;">
+          <button onclick="deleteEventWithPhotos('${eventId}'); this.closest('[style*=fixed]').remove()" style="background:#e74c3c;color:#fff;border:none;padding:10px 24px;border-radius:8px;cursor:pointer;font-weight:600;">Apagar</button>
+          <button onclick="this.closest('[style*=fixed]').remove()" style="background:#95a5a6;color:#fff;border:none;padding:10px 24px;border-radius:8px;cursor:pointer;font-weight:600;">Cancelar</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
   }
 
   async function deleteEventWithPhotos(eventId) {
     try {
       showToast('⏳ A apagar evento e fotos...', 'info');
 
-      // 1. Buscar TODAS as fotos (sem limite de 1000)
       let allUploads = [];
       let offset = 0;
       const pageSize = 1000;
@@ -935,11 +910,9 @@
         }
       }
 
-      // 2. Eliminar fotos do R2 EM BATCH
       if (allUploads.length > 0) {
         const paths = allUploads.map(u => u.storage_path);
         
-        // Enviar em chunks de 100 para não sobrecarregar
         for (let i = 0; i < paths.length; i += 100) {
           const chunk = paths.slice(i, i + 100);
           
@@ -955,7 +928,6 @@
         }
       }
 
-      // 3. Apagar metadados do Supabase
       const { error: deleteUploadsError } = await supabaseClient
         .from('uploads')
         .delete()
@@ -963,7 +935,6 @@
 
       if (deleteUploadsError) throw deleteUploadsError;
 
-      // 4. Apagar evento
       const { error: deleteEventError } = await supabaseClient
         .from('events')
         .delete()
@@ -1003,10 +974,10 @@
   }
 
   // --- STORAGE CALCULATION ---
-  const KB_PER_PHOTO = 140; // ~140KB por foto a 85% qualidade
+  const KB_PER_PHOTO = 140;
 
   function calculateStorageFromPhotos(photoCount) {
-    return Math.ceil((photoCount * KB_PER_PHOTO) / 1024 * 10) / 10; // MB arredondado a 1 casa decimal
+    return Math.ceil((photoCount * KB_PER_PHOTO) / 1024 * 10) / 10;
   }
 
   function calculatePhotosFromStorage(storageMB) {
@@ -1019,7 +990,6 @@
     document.getElementById('edit-event-date').value = date.replace(/(\d{2})\.(\d{2})\.(\d{4})/, '$3-$2-$1');
     document.getElementById('edit-event-message').value = message;
     
-    // Buscar limite atual de fotos do evento
     supabaseClient
       .from('events')
       .select('max_photos, expires_at, enable_guest_limit, guest_max_photos')
@@ -1030,7 +1000,6 @@
         document.getElementById('edit-event-max-photos').value = maxPhotos;
         updateStorageDisplay(maxPhotos);
         
-        // Carregar limite por convidado
         const enableGuestLimit = data?.enable_guest_limit || false;
         const guestMaxPhotos = data?.guest_max_photos || 5;
         
@@ -1038,7 +1007,6 @@
         document.getElementById('edit-event-guest-max-photos').value = guestMaxPhotos;
         document.getElementById('guest-limit-config').style.display = enableGuestLimit ? 'block' : 'none';
         
-        // Calcular dias restantes desde a data do evento até expiração
         const event = allEvents.find(e => e.id === eventId);
         if (event && data?.expires_at) {
           const expirationDate = new Date(data.expires_at);
@@ -1077,7 +1045,6 @@
     }
   });
 
-  // Controlar visibilidade do config de limite por convidado
   document.addEventListener('change', (e) => {
     if (e.target.id === 'edit-event-enable-guest-limit') {
       const config = document.getElementById('guest-limit-config');
@@ -1163,8 +1130,6 @@
     const [year, month, day] = newDateInput.split('-');
     const formattedDate = `${day}.${month}.${year}`;
 
-    // Guardar APENAS metadados no Supabase (fotos estão no R2)
-    // Calcular data de expiração baseado na data do evento + dias configurados
     const eventDateObj = new Date(year, month - 1, day);
     const expirationDate = new Date(eventDateObj);
     expirationDate.setDate(expirationDate.getDate() + currentEventExpirationDays);
@@ -1236,7 +1201,6 @@
 
     for (const file of uploadsFull) {
       try {
-        // Usar a URL pública do R2
         const publicUrl = R2_PUBLIC_URL + "/" + file.storage_path;
         
         const link = document.createElement('a');
@@ -1262,11 +1226,9 @@
     const eventId = params.get('event');
     const galleryId = params.get('gallery');
     
-    // Se tem parâmetro de evento/galeria, ir direto para convidado/galeria
     if (eventId) {
       currentEventId = eventId;
       
-      // Verificar se JÁ tem sessão de convidado salva
       const saved = sessionStorage.getItem('guestData_' + eventId);
       if (saved) {
         try {
@@ -1275,7 +1237,6 @@
             currentGuestId = data.guestId;
             currentGuestName = data.guestName;
             
-            // Carregar evento e ir direto para upload
             try {
               await loadEvents();
               const event = allEvents.find(e => e.id === eventId);
@@ -1293,7 +1254,6 @@
         }
       }
       
-      // Sem sessão salva - carregar evento e pedir nome
       try {
         await loadEvents();
         const event = allEvents.find(e => e.id === eventId);
@@ -1324,7 +1284,6 @@
       
       showToast('Evento não encontrado', 'error');
     } else {
-      // Sem parâmetros - modo admin
       if (!checkAdminSession()) {
         document.getElementById('login-view').style.display = 'flex';
       } else {
@@ -1370,7 +1329,6 @@
 
   function calculateDaysUntilDeletion(eventDate, expiresAt) {
     if (!expiresAt) {
-      // Fallback para eventos antigos sem expires_at (usar 15 dias como padrão)
       const [day, month, year] = eventDate.split('.');
       const eventDateObj = new Date(year, month - 1, day);
       const deletionDate = new Date(eventDateObj);
@@ -1398,7 +1356,6 @@
     document.getElementById('guest-login-view').style.display = 'none';
     document.getElementById('guest-view').style.display = 'block';
 
-    // ✅ Verificar se evento está ativo E se limite foi atingido
     const limitReached = event.current_photo_count >= event.max_photos;
 
     if (event.is_active === false || limitReached || event.uploads_enabled === false) {
@@ -1428,7 +1385,6 @@
       document.getElementById('event-message-box').style.display = 'none';
     }
 
-    // Não mostrar aviso na view de convidado (apenas na galeria)
     const warningBox = document.getElementById('deletion-warning-box');
     warningBox.style.display = 'none';
 
@@ -1446,14 +1402,11 @@
     document.getElementById('gallery-event-title').textContent = event.event_title;
     document.getElementById('gallery-event-date').textContent = event.event_date;
 
-    // Mostrar contagem regressiva
     updateGalleryCountdown(event.event_date, event.expires_at);
-    // Atualizar a cada minuto
     setInterval(() => updateGalleryCountdown(event.event_date, event.expires_at), 60000);
 
     applyConfig(config);
     
-    // Carregar fotos uma vez - sem intervalo automático
     if (!galleryPhotosLoaded) {
       renderGalleryPhotos();
       galleryPhotosLoaded = true;
@@ -1477,7 +1430,6 @@
   }
 
   async function preloadNextPhotos(fromIndex) {
-    // Pré-carregar as próximas 3 fotos em background
     const indicesToPreload = [fromIndex + 1, fromIndex + 2, fromIndex + 3];
     
     for (const idx of indicesToPreload) {
@@ -1485,31 +1437,26 @@
       
       const photo = allGalleryPhotos[idx];
       
-      // Se já tem em cache, skip
       if (galleryPhotosCache.has(photo.storage_path) || getUrlFromCache(photo.storage_path)) {
         continue;
       }
       
-      // Preload em background
       setTimeout(async () => {
         try {
-          // Verificar cache localStorage
           const cachedUrl = getUrlFromCache(photo.storage_path);
           if (cachedUrl) {
             galleryPhotosCache.set(photo.storage_path, cachedUrl);
             return;
           }
 
-          // Se não tem cache, construir URL pública do R2
           const publicUrl = R2_PUBLIC_URL + "/" + photo.storage_path;
           
-          // Guardar em cache
           saveUrlToCache(photo.storage_path, publicUrl);
           galleryPhotosCache.set(photo.storage_path, publicUrl);
         } catch (err) {
           console.warn('Erro ao pré-carregar foto:', err);
         }
-      }, 100 * (idx - fromIndex)); // Stagger preloads
+      }, 100 * (idx - fromIndex));
     }
   }
 
@@ -1518,7 +1465,6 @@
     
     const photo = allGalleryPhotos[index];
     
-    // Verificar cache localStorage primeiro
     const cachedUrl = getUrlFromCache(photo.storage_path);
     if (cachedUrl) {
       document.getElementById('photo-viewer-image').src = cachedUrl;
@@ -1531,10 +1477,8 @@
       return;
     }
 
-    // Se não tem cache, construir URL pública do R2
     const publicUrl = R2_PUBLIC_URL + "/" + photo.storage_path;
     
-    // Guardar em cache localStorage
     saveUrlToCache(photo.storage_path, publicUrl);
     galleryPhotosCache.set(photo.storage_path, publicUrl);
     
@@ -1570,7 +1514,6 @@
   function closePhotoViewer() {
     document.getElementById('photo-viewer-modal').style.display = 'none';
     document.getElementById('photo-viewer-image').src = '';
-    // Limpar cache quando fechar para liberar memória
     if (currentPhotoIndex > 0 && allGalleryPhotos[currentPhotoIndex]) {
       const currPhoto = allGalleryPhotos[currentPhotoIndex];
       galleryPhotosCache.delete(currPhoto.storage_path);
@@ -1608,7 +1551,6 @@
     const count = gallerySelectedPhotos.size;
     const total = allGalleryPhotos.length;
 
-    // Mostrar/esconder botões de seleção
     if (total > 0) {
       selectBtn.style.display = 'block';
       countSpan.style.display = 'block';
@@ -1619,16 +1561,12 @@
       return;
     }
 
-    // Atualizar texto do contador
     countSpan.textContent = `${count} ${count === 1 ? 'selecionada' : 'selecionadas'}`;
 
-    // Atualizar texto do botão
     selectBtn.textContent = visiblePhotos.every(p => gallerySelectedPhotos.has(p.id)) && visiblePhotos.length > 0 ? 'Desmarcar' : 'Marcar Todas';
 
-    // Mostrar/esconder botão download
     downloadBtn.style.display = count > 0 ? 'inline-flex' : 'none';
 
-    // Atualizar visual dos cards
     const cards = document.querySelectorAll('[data-file-id]');
     cards.forEach(card => {
       const fileId = card.getAttribute('data-file-id');
@@ -1660,7 +1598,6 @@
       return;
     }
 
-    // Filtrar por nome de convidado
     galleryFilteredPhotos = allGalleryPhotos.filter(photo =>
       photo.guest_name.toLowerCase().includes(query)
     );
@@ -1788,21 +1725,18 @@
       return;
     }
 
-    // Mostrar contagem correta (todas as fotos ou filtradas)
     const displayCount = galleryFilteredPhotos ? galleryFilteredPhotos.length : uploads.length;
     photoCount.textContent = `📷 ${displayCount} ${displayCount === 1 ? 'foto' : 'fotos'} partilhada${displayCount === 1 ? '' : 's'}`;
 
     empty.style.display = 'none';
     allGalleryPhotos = uploads;
     
-    // Se não tinha filtro antes e ainda não há, limpar
     if (!galleryFilteredPhotos) {
       galleryCurrentPage = 0;
     }
 
     const photosToShow = galleryFilteredPhotos || allGalleryPhotos;
 
-    // Atualizar paginação
     const totalPages = Math.ceil(photosToShow.length / PHOTOS_PER_PAGE);
     const pageInfo = document.getElementById('gallery-page-info');
     const prevBtn = document.getElementById('gallery-prev-btn');
@@ -1819,17 +1753,14 @@
     const config = window.elementSdk?.config || defaultConfig;
     const primary = config.primary_action || defaultConfig.primary_action;
 
-    // Criar mapa de IDs existentes no DOM
     const existingCards = new Map(
       [...grid.children].map(card => [card.getAttribute('data-file-id'), card])
     );
 
-    // Atualizar ou criar cards apenas para fotos visíveis
     visiblePhotos.forEach((file, index) => {
       let card = existingCards.get(file.id);
 
       if (!card) {
-        // Criar novo card
         card = document.createElement('div');
         card.setAttribute('data-file-id', file.id);
         card.style.cssText = `position:relative;border-radius:12px;overflow:hidden;aspect-ratio:1;background:linear-gradient(135deg, ${primary}20, ${primary}05);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.2s;opacity:0.7;`;
@@ -1841,14 +1772,11 @@
         grid.appendChild(card);
       }
 
-      // Verificar se já tem imagem
       if (card.querySelector('img') === null && !card.dataset.loadingStarted) {
         card.dataset.loadingStarted = 'true';
         
-        // Construir URL pública do R2 (sem chamar Supabase)
         const publicUrl = R2_PUBLIC_URL + "/" + file.storage_path;
         
-        // Guardar em cache localStorage
         saveUrlToCache(file.storage_path, publicUrl);
         galleryPhotosCache.set(file.storage_path, publicUrl);
         
@@ -1880,7 +1808,6 @@
           card.innerHTML = '';
           card.appendChild(imgContainer);
           
-          // Mostrar checkbox ao hover
           card.onmouseover = () => { checkbox.style.opacity = '1'; };
           card.onmouseout = () => { 
             if (!gallerySelectedPhotos.has(file.id)) {
@@ -1897,7 +1824,6 @@
       existingCards.delete(file.id);
     });
 
-    // Remover cards de fotos não visíveis
     existingCards.forEach(card => card.remove());
 
     lucide.createIcons();
@@ -1968,7 +1894,6 @@
       return;
     }
 
-    // Buscar todos os ficheiros já enviados para este evento
     const { data: uploadedPhotos } = await supabaseClient
       .from('uploads')
       .select('file_name, file_size_mb')
@@ -1984,7 +1909,6 @@
     mediaFiles.forEach(f => {
       const fileKey = `${f.name}|${(f.size / 1024 / 1024).toFixed(1)}`;
       
-      // Verificar duplicatas: já selecionada OU já enviada
       if (!selectedFiles.find(s => s.name === f.name && s.size === f.size) && 
           !uploadedSet.has(fileKey)) {
         filesToAdd.push(f);
@@ -2026,14 +1950,12 @@
       return;
     }
 
-    // Criar grid de 3 colunas para miniaturas (mobile-first)
     const gridContainer = document.createElement('div');
     gridContainer.style.cssText = `display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;margin-bottom:16px;`;
 
     selectedFiles.forEach((f, i) => {
       const sizeMB = (f.size / 1024 / 1024).toFixed(1);
 
-      // Criar leitor de arquivo para pré-visualização
       const reader = new FileReader();
       reader.onload = (e) => {
         const div = document.createElement('div');
@@ -2081,7 +2003,6 @@
 
     fileList.appendChild(gridContainer);
 
-    // Adicionar resumo de ficheiros
     const summary = document.createElement('div');
     summary.style.cssText = `background:${surface};border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:${baseSize * 0.85}px;`;
     
@@ -2169,8 +2090,6 @@
     lucide.createIcons();
   }
 
-
-
   async function uploadFile(file, index) {
     if (!file.type.startsWith('image/') && !VIDEO_CONFIG.allowedFormats.includes(file.type)) {
       showToast(`❌ ${file.name} não é uma imagem ou vídeo válido`, 'error');
@@ -2181,7 +2100,6 @@
       throw new Error('Missing required data');
     }
 
-    // Buscar informações do evento (limite de fotos)
     const { data: eventData } = await supabaseClient
       .from('events')
       .select('enable_guest_limit, guest_max_photos, max_photos, photos_enabled, videos_enabled')
@@ -2192,20 +2110,17 @@
       throw new Error('Event not found');
     }
 
-    // Verificar se é vídeo e se está ativado
     const isVideo = VIDEO_CONFIG.allowedFormats.includes(file.type);
     if (isVideo && eventData.videos_enabled === false) {
       showToast('❌ Uploads de vídeos estão bloqueados para este evento', 'error');
       throw new Error('Video uploads disabled');
     }
 
-    // Verificar se é imagem e se está ativada
     if (!isVideo && eventData.photos_enabled === false) {
       showToast('❌ Uploads de fotos estão bloqueados para este evento', 'error');
       throw new Error('Photo uploads disabled');
     }
 
-    // Verificar limite POR EVENTO
     const { data: existingUploads } = await supabaseClient
       .from('uploads')
       .select('id', { count: 'exact' })
@@ -2217,7 +2132,6 @@
       throw new Error('Event upload limit exceeded');
     }
 
-    // Verificar limite POR CONVIDADO (se ativado)
     if (eventData.enable_guest_limit) {
       const { data: guestUploads, count: guestCount } = await supabaseClient
         .from('uploads')
@@ -2231,12 +2145,10 @@
       }
     }
 
-    // Processar ficheiro (comprimir se for imagem, validar se for vídeo)
     let finalBlob = file;
     let fileType = file.type;
 
     if (isVideo) {
-      // Validações para vídeo
       if (file.size > VIDEO_CONFIG.maxSizeMB * 1024 * 1024) {
         showToast(`❌ ${file.name} ultrapassa ${VIDEO_CONFIG.maxSizeMB}MB`, 'error');
         throw new Error('Video file too large');
@@ -2244,7 +2156,6 @@
       finalBlob = file;
       fileType = file.type;
     } else {
-      // Comprimir imagem
       const { blob } = await compressImage(file);
 
       if (blob.size > STORAGE_LIMITS.MAX_FILE_SIZE_MB * 1024 * 1024) {
@@ -2255,7 +2166,6 @@
       fileType = 'image/jpeg';
     }
 
-    // Verificar limite de armazenamento POR EVENTO
     const { data: allUploads } = await supabaseClient
       .from('uploads')
       .select('file_size_mb')
@@ -2270,13 +2180,11 @@
       throw new Error('Storage limit exceeded');
     }
 
-    // Preparar FormData para enviar ao Worker
     const formData = new FormData();
     formData.append('file', finalBlob, isVideo ? 'video.mp4' : 'photo.jpg');
     formData.append('eventId', currentEventId);
     formData.append('guestId', currentGuestId);
 
-    // Enviar ao Worker do Cloudflare
     const workerResponse = await fetch(WORKER_URL, {
       method: 'POST',
       body: formData
@@ -2292,12 +2200,10 @@
       throw new Error(workerData.error || 'Upload failed');
     }
 
-    // workerData.path = "eventId/guestId_timestamp_filename.jpg"
     const storagePath = workerData.path;
     const fileUrl = R2_PUBLIC_URL + "/" + storagePath;
     const fileSizeMB = (finalBlob.size / 1024 / 1024).toFixed(1);
 
-    // Guardar APENAS metadados no Supabase (ficheiros estão no R2)
     const uploadRecord = {
       id: 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
       event_id: currentEventId,
@@ -2402,5 +2308,5 @@
 
   lucide.createIcons();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e6e95dd27f53e9a',t:'MTc3NTI4NzU5Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e6e9f8931ba3e9a',t:'MTc3NTI4Nzk4OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
