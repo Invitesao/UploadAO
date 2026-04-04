@@ -118,6 +118,13 @@
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;"><input type="number" id="edit-event-max-photos" min="1" placeholder="Fotos" style="width:80px;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;"> <span id="edit-event-storage-display" style="font-size:11px;opacity:0.6;">Tamanho: 0 MB</span>
         </div>
        </div>
+       <div><label style="display:block;font-size:12px;font-weight:600;margin:0 0 6px 0;opacity:0.7;">⏳ Duração do Evento</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;"><button onclick="setEventExpiration(15)" style="background:#fff;border:2px solid #2563eb;color:#2563eb;padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;transition:all 0.3s;" id="btn-exp-15">15 dias</button> <button onclick="setEventExpiration(20)" style="background:#fff;border:2px solid #2563eb;color:#2563eb;padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;transition:all 0.3s;" id="btn-exp-20">20 dias</button> <button onclick="setEventExpiration(30)" style="background:#fff;border:2px solid #2563eb;color:#2563eb;padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;transition:all 0.3s;" id="btn-exp-30">30 dias</button>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;"><input type="number" id="extend-event-days" min="1" max="60" placeholder="Dias" style="width:60px;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;"> <button onclick="extendEventExpiration()" style="background:#f39c12;color:#fff;border:none;padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;flex:1;">Estender +</button>
+        </div>
+        <p id="expiration-info" style="font-size:11px;opacity:0.6;margin:8px 0 0 0;">Duração atual: 15 dias</p>
+       </div>
        <div style="display:flex;gap:8px;"><button onclick="saveEventChanges()" style="background:#2563eb;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Guardar</button> <button onclick="cancelEditEvent()" style="background:#e0e0e0;border:none;padding:8px 16px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Cancelar</button>
        </div>
       </div><button onclick="addNewEvent()" style="background:#2563eb;color:#fff;border:none;padding:12px 24px;border-radius:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;width:100%;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> <i data-lucide="plus" style="width:16px;height:16px;display:inline;margin-right:8px;vertical-align:-2px;"></i> Criar Evento </button>
@@ -186,8 +193,8 @@
      <div><i data-lucide="cloud-lightning" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Enviado!
      </div>
     </div>
-    <footer class="text-center pb-8 px-4" style="font-size:11px;opacity:0.25;">
-     Created by <strong>Invites</strong>
+    <footer style="text-align:center;padding:12px 16px;margin-top:24px;border-top:1px solid rgba(26,26,26,0.08);font-size:12px;">
+     <p style="margin:0 0 8px 0;opacity:0.6;">Gostaria de ter este serviço no seu evento?</p><a href="tel:940480419" style="background:#2563eb;color:#fff;padding:8px 16px;border-radius:8px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-weight:600;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> <i data-lucide="phone" style="width:16px;height:16px;"></i> Contacte-nos: 940 480 419 </a>
     </footer>
    </div><!-- GALLERY VIEW -->
    <div id="gallery-view" style="display:none;" class="h-full w-full overflow-auto">
@@ -213,7 +220,7 @@
       <div style="display:flex;gap:8px;align-items:center;"><button id="select-all-photos-btn" onclick="toggleSelectAllPhotos()" style="background:#f39c12;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:none;transition:all 0.3s;" onmouseover="this.style.background='#e67e22'" onmouseout="this.style.background='#f39c12'"> Marcar Todas </button> <span id="photo-selection-count" style="font-size:13px;font-weight:600;opacity:0.6;display:none;">0 selecionadas</span>
       </div><button id="download-selected-btn" onclick="downloadSelectedPhotos()" style="background:#27ae60;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:none;transition:all 0.3s;" onmouseover="this.style.background='#229954'" onmouseout="this.style.background='#27ae60'"> <i data-lucide="download" style="width:14px;height:14px;display:inline;margin-right:4px;vertical-align:-1px;"></i> Descarregar Selecionadas </button>
      </div>
-     <div id="gallery-grid" style="display:grid;grid-template-columns:repeat(3, 1fr);gap:12px;"></div>
+     <section id="gallery-grid" style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;padding-bottom:12px;"></section>
      <div id="gallery-empty" style="text-align:center;padding:40px 20px;opacity:0.5;"><i data-lucide="inbox" style="width:48px;height:48px;margin:0 auto 16px;display:block;opacity:0.3;"></i>
       <p style="font-size:16px;margin:0;">Nenhuma foto foi partilhada ainda 📷</p>
      </div>
@@ -273,6 +280,7 @@
   let galleryCurrentPage = 0;
   let galleryFilteredPhotos = null; // null = mostrar todas, array = fotos filtradas
   const PHOTOS_PER_PAGE = 18; // 3 colunas × 6 linhas
+  let currentEventExpirationDays = 15; // Dias de expiração do evento em edição
 
   // --- CACHE CONFIG ---
   const CACHE_CONFIG = {
@@ -575,6 +583,11 @@
     // Default: 65MB = ~465 fotos
     const defaultMaxPhotos = calculatePhotosFromStorage(STORAGE_LIMITS.MAX_STORAGE_MB);
     const defaultMaxStorage = STORAGE_LIMITS.MAX_STORAGE_MB;
+    
+    // Default: 15 dias de duração
+    const eventDateObj = new Date(year, month - 1, day);
+    const expirationDate = new Date(eventDateObj);
+    expirationDate.setDate(expirationDate.getDate() + 15); // 15 dias por padrão
 
     // Gerar URLs do evento
     const currentUrl = window.location.origin + window.location.pathname;
@@ -592,6 +605,7 @@
         max_storage_mb: defaultMaxStorage,
         upload_url: uploadUrl,
         gallery_url: galleryUrl,
+        expires_at: expirationDate.toISOString(),
         created_at: new Date().toISOString()
       }]);
 
@@ -606,7 +620,7 @@
     document.getElementById('new-event-message').value = '';
 
     loadEvents();
-    showToast(`Evento criado! (${defaultMaxPhotos} fotos / ${defaultMaxStorage} MB)`, 'success');
+    showToast(`Evento criado! (${defaultMaxPhotos} fotos / ${defaultMaxStorage} MB / 15 dias)`, 'success');
   }
 
   async function loadEvents() {
@@ -630,7 +644,7 @@
     try {
       const { data: events } = await supabaseClient
         .from('events')
-        .select('id, event_date');
+        .select('id, expires_at');
 
       if (!events) return;
 
@@ -640,13 +654,11 @@
       const eventsToDelete = [];
 
       for (const event of events) {
-        // event_date format: "DD.MM.YYYY"
-        const [day, month, year] = event.event_date.split('.');
-        const eventDateObj = new Date(year, month - 1, day);
-        const deletionDate = new Date(eventDateObj);
-        deletionDate.setDate(deletionDate.getDate() + 15);
-
-        if (today >= deletionDate) {
+        if (!event.expires_at) continue;
+        
+        const expirationDate = new Date(event.expires_at);
+        
+        if (today >= expirationDate) {
           eventsToDelete.push(event.id);
         }
       }
@@ -711,21 +723,50 @@
     }
 
     noMsg.style.display = 'none';
-    list.innerHTML = allEvents.map((event) => `
+    list.innerHTML = allEvents.map((event) => {
+      const isActive = event.is_active !== false;
+      const statusColor = isActive ? '#27ae60' : '#95a5a6';
+      const statusText = isActive ? '✅ Ativo' : '⛔ Inativo';
+      
+      return `
       <div style="padding:16px;background:#f9f9f9;border-radius:12px;border:1px solid rgba(26,26,26,0.08);">
-        <h3 style="font-weight:600;margin:0 0 4px 0;font-size:15px;">${event.event_title}</h3>
-        <p style="font-size:13px;opacity:0.6;margin:0 0 12px 0;">📅 ${event.event_date}</p>
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px;">
+          <div>
+            <h3 style="font-weight:600;margin:0 0 4px 0;font-size:15px;">${event.event_title}</h3>
+            <p style="font-size:13px;opacity:0.6;margin:0;">📅 ${event.event_date}</p>
+          </div>
+          <div style="background:${statusColor};color:#fff;padding:4px 12px;border-radius:8px;font-size:11px;font-weight:600;white-space:nowrap;">${statusText}</div>
+        </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button onclick="copyLink('${event.upload_url}')" style="background:#2563eb;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Link Upload</button>
           <button onclick="copyLink('${event.gallery_url}')" style="background:#e74c3c;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Link Galeria</button>
           <button onclick="showEventStats('${event.id}')" style="background:#f39c12;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Estatísticas</button>
+          <button onclick="toggleEventActive('${event.id}', ${isActive})" style="background:${isActive ? '#e67e22' : '#27ae60'};color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">${isActive ? 'Desativar' : 'Ativar'}</button>
           <button onclick="startEditEvent('${event.id}', '${event.event_title}', '${event.event_date}', '${(event.event_message || '').replace(/'/g, "&#39;")}')" style="background:#8e44ad;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Editar</button>
           <button onclick="downloadEventPhotos('${event.id}')" style="background:#27ae60;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Download</button>
           <button onclick="deleteEvent('${event.id}')" style="background:#95a5a6;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Apagar</button>
         </div>
       </div>
-    `).join('');
+    `;
+    }).join('');
     lucide.createIcons();
+  }
+
+  async function toggleEventActive(eventId, currentlyActive) {
+    const newState = !currentlyActive;
+    const { error } = await supabaseClient
+      .from('events')
+      .update({ is_active: newState })
+      .eq('id', eventId);
+
+    if (error) {
+      showToast('Erro ao atualizar status', 'error');
+      return;
+    }
+
+    const status = newState ? 'Ativado' : 'Desativado';
+    showToast(`✅ Evento ${status}!`, 'success');
+    loadEvents();
   }
 
   function copyLink(url) {
@@ -869,13 +910,24 @@
     // Buscar limite atual de fotos do evento
     supabaseClient
       .from('events')
-      .select('max_photos')
+      .select('max_photos, expires_at')
       .eq('id', eventId)
       .single()
       .then(({ data }) => {
         const maxPhotos = data?.max_photos || calculatePhotosFromStorage(STORAGE_LIMITS.MAX_STORAGE_MB);
         document.getElementById('edit-event-max-photos').value = maxPhotos;
         updateStorageDisplay(maxPhotos);
+        
+        // Calcular dias restantes desde a data do evento até expiração
+        const event = allEvents.find(e => e.id === eventId);
+        if (event && data?.expires_at) {
+          const expirationDate = new Date(data.expires_at);
+          const [day, month, year] = event.event_date.split('.');
+          const eventDateObj = new Date(year, month - 1, day);
+          const daysUntilExpiration = Math.ceil((expirationDate - eventDateObj) / (1000 * 60 * 60 * 24));
+          currentEventExpirationDays = daysUntilExpiration;
+          updateExpirationUI();
+        }
       });
     
     document.getElementById('edit-event-fields').style.display = 'block';
@@ -884,11 +936,13 @@
 
   function cancelEditEvent() {
     editingEventId = null;
+    currentEventExpirationDays = 15;
     document.getElementById('edit-event-fields').style.display = 'none';
     document.getElementById('edit-event-title').value = '';
     document.getElementById('edit-event-date').value = '';
     document.getElementById('edit-event-message').value = '';
     document.getElementById('edit-event-max-photos').value = '';
+    document.getElementById('extend-event-days').value = '';
   }
 
   function updateStorageDisplay(photoCount) {
@@ -903,6 +957,43 @@
       updateStorageDisplay(photoCount);
     }
   });
+
+  function updateExpirationUI() {
+    const buttons = ['btn-exp-15', 'btn-exp-20', 'btn-exp-30'];
+    buttons.forEach(btnId => {
+      const btn = document.getElementById(btnId);
+      const days = parseInt(btnId.split('-')[2]);
+      if (days === currentEventExpirationDays) {
+        btn.style.background = '#2563eb';
+        btn.style.color = '#fff';
+      } else {
+        btn.style.background = '#fff';
+        btn.style.color = '#2563eb';
+      }
+    });
+    
+    document.getElementById('expiration-info').textContent = `Duração atual: ${currentEventExpirationDays} dias`;
+  }
+
+  function setEventExpiration(days) {
+    currentEventExpirationDays = days;
+    updateExpirationUI();
+  }
+
+  function extendEventExpiration() {
+    const input = document.getElementById('extend-event-days');
+    const daysToAdd = parseInt(input.value);
+    
+    if (!daysToAdd || daysToAdd < 1) {
+      showToast('Digite um número de dias válido', 'warning');
+      return;
+    }
+
+    currentEventExpirationDays += daysToAdd;
+    input.value = '';
+    updateExpirationUI();
+    showToast(`✅ Evento estendido para ${currentEventExpirationDays} dias`, 'success');
+  }
 
   async function saveEventChanges() {
     if (!editingEventId) return;
@@ -931,6 +1022,12 @@
     const [year, month, day] = newDateInput.split('-');
     const formattedDate = `${day}.${month}.${year}`;
 
+    // Guardar APENAS metadados no Supabase (fotos estão no R2)
+    // Calcular data de expiração baseado na data do evento + dias configurados
+    const eventDateObj = new Date(year, month - 1, day);
+    const expirationDate = new Date(eventDateObj);
+    expirationDate.setDate(expirationDate.getDate() + currentEventExpirationDays);
+
     const { error } = await supabaseClient
       .from('events')
       .update({
@@ -938,7 +1035,8 @@
         event_date: formattedDate,
         event_message: newMessage || 'Partilha as tuas fotos!',
         max_photos: newMaxPhotos,
-        max_storage_mb: newStorageMB
+        max_storage_mb: newStorageMB,
+        expires_at: expirationDate.toISOString()
       })
       .eq('id', editingEventId);
 
@@ -949,7 +1047,7 @@
 
     cancelEditEvent();
     loadEvents();
-    showToast(`✅ Evento atualizado! (${newMaxPhotos} fotos / ${newStorageMB} MB)`, 'success');
+    showToast(`✅ Evento atualizado! (${newMaxPhotos} fotos / ${newStorageMB} MB / ${currentEventExpirationDays} dias)`, 'success');
   }
 
   async function downloadEventPhotos(eventId) {
@@ -1122,17 +1220,26 @@
     }
   }
 
-  function calculateDaysUntilDeletion(eventDate) {
-    // eventDate format: "DD.MM.YYYY"
-    const [day, month, year] = eventDate.split('.');
-    const eventDateObj = new Date(year, month - 1, day);
-    const deletionDate = new Date(eventDateObj);
-    deletionDate.setDate(deletionDate.getDate() + 15);
-    
+  function calculateDaysUntilDeletion(eventDate, expiresAt) {
+    if (!expiresAt) {
+      // Fallback para eventos antigos sem expires_at (usar 15 dias como padrão)
+      const [day, month, year] = eventDate.split('.');
+      const eventDateObj = new Date(year, month - 1, day);
+      const deletionDate = new Date(eventDateObj);
+      deletionDate.setDate(deletionDate.getDate() + 15);
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const daysRemaining = Math.ceil((deletionDate - today) / (1000 * 60 * 60 * 24));
+      return daysRemaining;
+    }
+
+    const expirationDate = new Date(expiresAt);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    const daysRemaining = Math.ceil((deletionDate - today) / (1000 * 60 * 60 * 24));
+    const daysRemaining = Math.ceil((expirationDate - today) / (1000 * 60 * 60 * 24));
     return daysRemaining;
   }
 
@@ -1142,6 +1249,21 @@
     document.getElementById('gallery-view').style.display = 'none';
     document.getElementById('guest-login-view').style.display = 'none';
     document.getElementById('guest-view').style.display = 'block';
+
+    // ✅ Verificar se evento está ativo
+    if (event.is_active === false) {
+      document.getElementById('drop-zone').style.display = 'none';
+      document.getElementById('upload-btn').style.display = 'none';
+      document.getElementById('file-list').innerHTML = `
+        <div style="background:#ffebee;border:2px solid #e74c3c;border-radius:12px;padding:24px;text-align:center;">
+          <i data-lucide="lock" style="width:48px;height:48px;color:#e74c3c;margin:0 auto 12px;display:block;"></i>
+          <h2 style="font-size:18px;font-weight:600;margin:0 0 8px 0;color:#e74c3c;">Evento Encerrado</h2>
+          <p style="font-size:14px;opacity:0.7;margin:0;">Este evento não está mais aceitando fotos. Obrigado pela compreensão! 🙏</p>
+        </div>
+      `;
+      lucide.createIcons();
+      return;
+    }
 
     const config = window.elementSdk?.config || defaultConfig;
     document.getElementById('event-title').textContent = event.event_title;
@@ -1156,17 +1278,9 @@
       document.getElementById('event-message-box').style.display = 'none';
     }
 
-    // Mostrar aviso de eliminação se < 3 dias
-    const daysRemaining = calculateDaysUntilDeletion(event.event_date);
+    // Não mostrar aviso na view de convidado (apenas na galeria)
     const warningBox = document.getElementById('deletion-warning-box');
-    const warningText = document.getElementById('deletion-warning-text');
-    
-    if (daysRemaining <= 3 && daysRemaining > 0) {
-      warningText.textContent = `⏰ Este evento será eliminado em ${daysRemaining} ${daysRemaining === 1 ? 'dia' : 'dias'}`;
-      warningBox.style.display = 'block';
-    } else {
-      warningBox.style.display = 'none';
-    }
+    warningBox.style.display = 'none';
 
     applyConfig(config);
     renderFileList();
@@ -1183,9 +1297,9 @@
     document.getElementById('gallery-event-date').textContent = event.event_date;
 
     // Mostrar contagem regressiva
-    updateGalleryCountdown(event.event_date);
+    updateGalleryCountdown(event.event_date, event.expires_at);
     // Atualizar a cada minuto
-    setInterval(() => updateGalleryCountdown(event.event_date), 60000);
+    setInterval(() => updateGalleryCountdown(event.event_date, event.expires_at), 60000);
 
     applyConfig(config);
     
@@ -1196,8 +1310,8 @@
     }
   }
 
-  function updateGalleryCountdown(eventDate) {
-    const daysRemaining = calculateDaysUntilDeletion(eventDate);
+  function updateGalleryCountdown(eventDate, expiresAt) {
+    const daysRemaining = calculateDaysUntilDeletion(eventDate, expiresAt);
     const countdownBox = document.getElementById('gallery-countdown-box');
     const countdownText = document.getElementById('gallery-countdown-text');
     
@@ -1750,29 +1864,83 @@
     const baseSize = config.font_size || defaultConfig.font_size;
 
     fileList.innerHTML = '';
+
+    if (selectedFiles.length === 0) {
+      uploadBtn.classList.add('hidden');
+      uploadBtn.classList.remove('btn-pulse');
+      return;
+    }
+
+    // Criar grid de 3 colunas para miniaturas (mobile-first)
+    const gridContainer = document.createElement('div');
+    gridContainer.style.cssText = `display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;margin-bottom:16px;`;
+
     selectedFiles.forEach((f, i) => {
       const sizeMB = (f.size / 1024 / 1024).toFixed(1);
 
-      const div = document.createElement('div');
-      div.setAttribute('data-file-index', i);
-      div.style.cssText = `background:${surface};border-radius:12px;padding:12px;display:grid;grid-template-columns:60px 1fr auto;gap:12px;align-items:center;`;
+      // Criar leitor de arquivo para pré-visualização
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const div = document.createElement('div');
+        div.setAttribute('data-file-index', i);
+        div.style.cssText = `position:relative;border-radius:12px;overflow:hidden;aspect-ratio:1;background:${primary}1f;display:flex;align-items:center;justify-content:center;transition:all 0.2s;`;
 
-      div.innerHTML = `
-        <div style="width:60px;height:60px;border-radius:8px;background:${primary}1f;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <i data-lucide="image" style="width:24px;height:24px;opacity:0.3;"></i>
-        </div>
-        <div style="min-w:0;">
-          <p style="font-size:${baseSize * 0.85}px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${f.name}</p>
-          <p style="font-size:${baseSize * 0.7}px;opacity:0.35;margin:2px 0 0 0;">${sizeMB} MB</p>
-        </div>
-        <button onclick="removeFile(${i})" style="background:none;border:none;cursor:pointer;color:${secondary};padding:4px;flex-shrink:0;" ${isUploading ? 'disabled' : ''}>
-          <i data-lucide="x" style="width:18px;height:18px;"></i>
-        </button>
-      `;
-      fileList.appendChild(div);
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.style.cssText = `width:100%;height:100%;object-fit:cover;`;
+
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;transition:all 0.3s;`;
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.style.cssText = `background:rgba(255,59,48,0.9);border:none;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;opacity:0;${isUploading ? 'pointer-events:none;' : ''}`;
+        deleteBtn.innerHTML = `<i data-lucide="trash-2" style="width:20px;height:20px;color:#fff;"></i>`;
+        deleteBtn.onclick = (e) => {
+          e.stopPropagation();
+          removeFile(i);
+        };
+
+        const sizeLabel = document.createElement('div');
+        sizeLabel.style.cssText = `position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,0.6);color:#fff;padding:3px 6px;border-radius:6px;font-size:${baseSize * 0.6}px;font-weight:600;font-family:'Poppins',sans-serif;`;
+        sizeLabel.textContent = `${sizeMB}MB`;
+
+        overlay.appendChild(deleteBtn);
+        div.appendChild(img);
+        div.appendChild(overlay);
+        div.appendChild(sizeLabel);
+
+        div.onmouseover = () => {
+          overlay.style.background = 'rgba(0,0,0,0.5)';
+          deleteBtn.style.opacity = isUploading ? '0' : '1';
+        };
+        div.onmouseout = () => {
+          overlay.style.background = 'rgba(0,0,0,0)';
+          deleteBtn.style.opacity = '0';
+        };
+
+        gridContainer.appendChild(div);
+        lucide.createIcons();
+      };
+      reader.readAsDataURL(f);
     });
 
-    uploadBtn.classList.toggle('hidden', selectedFiles.length === 0);
+    fileList.appendChild(gridContainer);
+
+    // Adicionar resumo de fotos
+    const summary = document.createElement('div');
+    summary.style.cssText = `background:${surface};border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:${baseSize * 0.85}px;`;
+    summary.innerHTML = `
+      <div>
+        <span style="font-weight:600;">📷 ${selectedFiles.length}</span>
+        <span style="opacity:0.6;">foto${selectedFiles.length !== 1 ? 's' : ''} selecionada${selectedFiles.length !== 1 ? 's' : ''}</span>
+      </div>
+      <div style="opacity:0.6;text-align:right;">
+        ${(selectedFiles.reduce((sum, f) => sum + f.size, 0) / 1024 / 1024).toFixed(1)} MB
+      </div>
+    `;
+    fileList.appendChild(summary);
+
+    uploadBtn.classList.remove('hidden');
     if (selectedFiles.length > 0 && !isUploading) uploadBtn.classList.add('btn-pulse');
     else uploadBtn.classList.remove('btn-pulse');
 
@@ -2018,5 +2186,5 @@
 
   lucide.createIcons();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e6e11fc50833e9a',t:'MTc3NTI4MjE5MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e6e327911723e9a',t:'MTc3NTI4MzUyMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
