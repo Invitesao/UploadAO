@@ -206,7 +206,7 @@
     </section>
     <section class="px-4 max-w-lg mx-auto pb-6 fade-in stagger-3">
      <div id="drop-zone" class="drop-zone relative rounded-2xl border-2 border-dashed p-8 text-center cursor-pointer transition-all" style="border-color: rgba(26,26,26,0.15); background: rgba(26,26,26,0.03);" onclick="document.getElementById('fileInput').click();">
-      <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
+      <input type="file" id="fileInput" multiple accept="image/*,video/mp4,video/quicktime,video/webm" class="hidden">
       <div class="mb-4">
        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full" id="upload-icon-circle" style="background: rgba(26,26,26,0.08);">
         <i data-lucide="upload-cloud" id="upload-icon" style="width:28px;height:28px;"></i>
@@ -229,7 +229,7 @@
      </div>
     </div>
     <footer style="text-align:center;padding:12px 16px;margin-top:24px;border-top:1px solid rgba(26,26,26,0.08);font-size:12px;">
-     <p style="margin:0 0 8px 0;opacity:0.6;">Gostaria de ter este serviço no seu evento?</p><a href="tel:940480419" style="background:#2563eb;color:#fff;padding:8px 16px;border-radius:8px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-weight:600;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> <i data-lucide="phone" style="width:16px;height:16px;"></i> Contacte-nos: 940 480 419 </a>
+     <p style="margin:0 0 8px 0;opacity:0.6;">Gostaria de ter este serviço no seu evento?</p><a href="https://wa.me/351959823409" target="_blank" rel="noopener noreferrer" style="background:#2563eb;color:#fff;padding:8px 16px;border-radius:8px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-weight:600;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> <i data-lucide="phone" style="width:16px;height:16px;"></i> Contacte-nos: 959 823 409 </a>
     </footer>
    </div><!-- GALLERY VIEW -->
    <div id="gallery-view" style="display:none;" class="h-full w-full overflow-auto">
@@ -284,8 +284,8 @@
   const R2_PUBLIC_URL = "https://pub-3a468df4dbe6438aaa7bab238a2e8d32.r2.dev";
 
   const STORAGE_LIMITS = {
-    MAX_STORAGE_MB: 2500,
-    MAX_STORAGE_BYTES: 2500 * 1024 * 1024,
+    MAX_STORAGE_MB: 1024,
+    MAX_STORAGE_BYTES: 1024 * 1024 * 1024,
     MAX_FILE_SIZE_MB: 1,
     MAX_FILES_PER_EVENT: 10000,
     WARNING_THRESHOLD: 0.85
@@ -296,6 +296,12 @@
     maxWidth: 1200,
     maxHeight: 1600,
     mimeType: 'image/jpeg'
+  };
+
+  const VIDEO_CONFIG = {
+    maxSizeMB: 100,
+    maxDurationSeconds: 600, // 10 minutos
+    allowedFormats: ['video/mp4', 'video/quicktime', 'video/webm']
   };
 
   let supabaseClient = null;
@@ -647,7 +653,8 @@
         expires_at: expirationDate.toISOString(),
         created_at: new Date().toISOString(),
         enable_guest_limit: false,
-        guest_max_photos: 5
+        guest_max_photos: 5,
+        uploads_enabled: true
       }]);
 
     if (error) {
@@ -783,6 +790,8 @@
           <button onclick="copyLink('${event.gallery_url}')" style="background:#e74c3c;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Link Galeria</button>
           <button onclick="showEventStats('${event.id}')" style="background:#f39c12;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Estatísticas</button>
           <button onclick="toggleEventActive('${event.id}', ${isActive})" style="background:${isActive ? '#e67e22' : '#27ae60'};color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">${isActive ? 'Desativar' : 'Ativar'}</button>
+          <button onclick="toggleUploadsEnabled('${event.id}', ${event.uploads_enabled !== false}, 'photos')" style="background:${event.photos_enabled !== false ? '#c0392b' : '#27ae60'};color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">${event.photos_enabled !== false ? '🔒 Fotos' : '🔓 Fotos'}</button>
+          <button onclick="toggleUploadsEnabled('${event.id}', ${event.videos_enabled !== false}, 'videos')" style="background:${event.videos_enabled !== false ? '#c0392b' : '#27ae60'};color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">${event.videos_enabled !== false ? '🔒 Vídeos' : '🔓 Vídeos'}</button>
           <button onclick="startEditEvent('${event.id}', '${event.event_title}', '${event.event_date}', '${(event.event_message || '').replace(/'/g, "&#39;")}')" style="background:#8e44ad;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Editar</button>
           <button onclick="downloadEventPhotos('${event.id}')" style="background:#27ae60;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Download</button>
           <button onclick="deleteEvent('${event.id}')" style="background:#95a5a6;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Apagar</button>
@@ -807,6 +816,28 @@
 
     const status = newState ? 'Ativado' : 'Desativado';
     showToast(`✅ Evento ${status}!`, 'success');
+    loadEvents();
+  }
+
+  async function toggleUploadsEnabled(eventId, currentlyEnabled, type) {
+    const newState = !currentlyEnabled;
+    const updateData = type === 'photos' 
+      ? { photos_enabled: newState }
+      : { videos_enabled: newState };
+
+    const { error } = await supabaseClient
+      .from('events')
+      .update(updateData)
+      .eq('id', eventId);
+
+    if (error) {
+      showToast('Erro ao atualizar ' + type, 'error');
+      return;
+    }
+
+    const status = newState ? 'Desbloqueados' : 'Bloqueados';
+    const typeLabel = type === 'photos' ? 'Fotos' : 'Vídeos';
+    showToast(`✅ ${typeLabel} ${status}!`, 'success');
     loadEvents();
   }
 
@@ -1108,7 +1139,8 @@
         max_storage_mb: newStorageMB,
         expires_at: expirationDate.toISOString(),
         enable_guest_limit: enableGuestLimit,
-        guest_max_photos: guestMaxPhotos
+        guest_max_photos: guestMaxPhotos,
+        uploads_enabled: true
       })
       .eq('id', editingEventId);
 
@@ -1325,14 +1357,14 @@
     // ✅ Verificar se evento está ativo E se limite foi atingido
     const limitReached = event.current_photo_count >= event.max_photos;
 
-    if (event.is_active === false || limitReached) {
+    if (event.is_active === false || limitReached || event.uploads_enabled === false) {
       document.getElementById('drop-zone').style.display = 'none';
       document.getElementById('upload-btn').style.display = 'none';
       document.getElementById('file-list').innerHTML = `
         <div style="background:${limitReached ? '#ffebee' : '#ffebee'};border:2px solid ${limitReached ? '#e74c3c' : '#e74c3c'};border-radius:12px;padding:24px;text-align:center;">
           <i data-lucide="lock" style="width:48px;height:48px;color:#e74c3c;margin:0 auto 12px;display:block;"></i>
-          <h2 style="font-size:18px;font-weight:600;margin:0 0 8px 0;color:#e74c3c;">${limitReached ? '📸 Limite de Fotos Atingido' : 'Evento Encerrado'}</h2>
-          <p style="font-size:14px;opacity:0.7;margin:0;">${limitReached ? `Este evento já alcançou o limite de ${event.max_photos} fotos. Obrigado por compreender! 🙏` : 'Este evento não está mais aceitando fotos. Obrigado pela compreensão! 🙏'}</p>
+          <h2 style="font-size:18px;font-weight:600;margin:0 0 8px 0;color:#e74c3c;">${limitReached ? '📸 Limite de Fotos Atingido' : event.uploads_enabled === false ? '🔒 Uploads Bloqueados' : 'Evento Encerrado'}</h2>
+          <p style="font-size:14px;opacity:0.7;margin:0;">${limitReached ? `Este evento já alcançou o limite de ${event.max_photos} fotos. Obrigado por compreender! 🙏` : event.uploads_enabled === false ? 'Os uploads foram bloqueados pelo organizador. Contacte-o para mais informações! 📧' : 'Este evento não está mais aceitando fotos. Obrigado pela compreensão! 🙏'}</p>
         </div>
       `;
       lucide.createIcons();
@@ -1875,19 +1907,24 @@
   });
 
   async function addFiles(files) {
-    const mediaFiles = files.filter(f => f.type.startsWith('image/'));
+    const mediaFiles = files.filter(f => {
+      const isImage = f.type.startsWith('image/');
+      const isVideo = VIDEO_CONFIG.allowedFormats.includes(f.type);
+      return isImage || isVideo;
+    });
+
     if (!mediaFiles.length) {
-      showToast('Seleciona apenas imagens', 'warning');
+      showToast('Seleciona apenas imagens ou vídeos', 'warning');
       return;
     }
 
     const remainingSlots = 20 - selectedFiles.length;
     if (remainingSlots <= 0) {
-      showToast('❌ Máximo 20 fotos por vez - enviar estas primeiro', 'error');
+      showToast('❌ Máximo 20 ficheiros por vez - enviar estes primeiro', 'error');
       return;
     }
 
-    // Buscar todas as fotos já enviadas para este evento
+    // Buscar todos os ficheiros já enviados para este evento
     const { data: uploadedPhotos } = await supabaseClient
       .from('uploads')
       .select('file_name, file_size_mb')
@@ -1920,11 +1957,11 @@
     });
 
     if (duplicates > 0) {
-      showToast(`⚠️ ${duplicates} foto(s) já enviada(s) neste evento`, 'warning');
+      showToast(`⚠️ ${duplicates} ficheiro(s) já enviado(s) neste evento`, 'warning');
     }
 
     if (canAdd < filesToAdd.length) {
-      showToast(`⚠️ ${filesToAdd.length - canAdd} foto(s) não adicionada(s) - limite de 20 por vez`, 'warning');
+      showToast(`⚠️ ${filesToAdd.length - canAdd} ficheiro(s) não adicionado(s) - limite de 20 por vez`, 'warning');
     }
 
     renderFileList();
@@ -2000,13 +2037,20 @@
 
     fileList.appendChild(gridContainer);
 
-    // Adicionar resumo de fotos
+    // Adicionar resumo de ficheiros
     const summary = document.createElement('div');
     summary.style.cssText = `background:${surface};border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:${baseSize * 0.85}px;`;
+    
+    const photoCount = selectedFiles.filter(f => f.type.startsWith('image/')).length;
+    const videoCount = selectedFiles.filter(f => VIDEO_CONFIG.allowedFormats.includes(f.type)).length;
+    
+    let summaryText = `📷 ${photoCount}`;
+    if (videoCount > 0) summaryText += ` + 🎥 ${videoCount}`;
+    
     summary.innerHTML = `
       <div>
-        <span style="font-weight:600;">📷 ${selectedFiles.length}</span>
-        <span style="opacity:0.6;">foto${selectedFiles.length !== 1 ? 's' : ''} selecionada${selectedFiles.length !== 1 ? 's' : ''}</span>
+        <span style="font-weight:600;">${summaryText}</span>
+        <span style="opacity:0.6;">ficheiro${selectedFiles.length !== 1 ? 's' : ''} selecionado${selectedFiles.length !== 1 ? 's' : ''}</span>
       </div>
       <div style="opacity:0.6;text-align:right;">
         ${(selectedFiles.reduce((sum, f) => sum + f.size, 0) / 1024 / 1024).toFixed(1)} MB
@@ -2084,8 +2128,8 @@
 
 
   async function uploadFile(file, index) {
-    if (!file.type.startsWith('image/')) {
-      showToast(`❌ ${file.name} não é uma imagem válida`, 'error');
+    if (!file.type.startsWith('image/') && !VIDEO_CONFIG.allowedFormats.includes(file.type)) {
+      showToast(`❌ ${file.name} não é uma imagem ou vídeo válido`, 'error');
       throw new Error('Invalid MIME type');
     }
 
@@ -2096,12 +2140,25 @@
     // Buscar informações do evento (limite de fotos)
     const { data: eventData } = await supabaseClient
       .from('events')
-      .select('enable_guest_limit, guest_max_photos, max_photos')
+      .select('enable_guest_limit, guest_max_photos, max_photos, photos_enabled, videos_enabled')
       .eq('id', currentEventId)
       .single();
 
     if (!eventData) {
       throw new Error('Event not found');
+    }
+
+    // Verificar se é vídeo e se está ativado
+    const isVideo = VIDEO_CONFIG.allowedFormats.includes(file.type);
+    if (isVideo && eventData.videos_enabled === false) {
+      showToast('❌ Uploads de vídeos estão bloqueados para este evento', 'error');
+      throw new Error('Video uploads disabled');
+    }
+
+    // Verificar se é imagem e se está ativada
+    if (!isVideo && eventData.photos_enabled === false) {
+      showToast('❌ Uploads de fotos estão bloqueados para este evento', 'error');
+      throw new Error('Photo uploads disabled');
     }
 
     // Verificar limite POR EVENTO
@@ -2112,7 +2169,7 @@
 
     const uploadCount = existingUploads?.length || 0;
     if (uploadCount >= eventData.max_photos) {
-      showToast(`❌ Limite de ${eventData.max_photos} fotos para este evento atingido`, 'error');
+      showToast(`❌ Limite de ${eventData.max_photos} ficheiros para este evento atingido`, 'error');
       throw new Error('Event upload limit exceeded');
     }
 
@@ -2125,17 +2182,33 @@
         .eq('guest_id', currentGuestId);
 
       if (guestCount >= eventData.guest_max_photos) {
-        showToast(`❌ Você já atingiu o limite de ${eventData.guest_max_photos} foto(s) neste evento`, 'error');
+        showToast(`❌ Você já atingiu o limite de ${eventData.guest_max_photos} ficheiro(s) neste evento`, 'error');
         throw new Error('Guest upload limit exceeded');
       }
     }
 
-    // Comprimir PRIMEIRO antes de verificar tamanho
-    const { blob } = await compressImage(file);
+    // Processar ficheiro (comprimir se for imagem, validar se for vídeo)
+    let finalBlob = file;
+    let fileType = file.type;
 
-    if (blob.size > STORAGE_LIMITS.MAX_FILE_SIZE_MB * 1024 * 1024) {
-      showToast(`❌ ${file.name} ultrapassa ${STORAGE_LIMITS.MAX_FILE_SIZE_MB}MB após compressão`, 'error');
-      throw new Error('File too large');
+    if (isVideo) {
+      // Validações para vídeo
+      if (file.size > VIDEO_CONFIG.maxSizeMB * 1024 * 1024) {
+        showToast(`❌ ${file.name} ultrapassa ${VIDEO_CONFIG.maxSizeMB}MB`, 'error');
+        throw new Error('Video file too large');
+      }
+      finalBlob = file;
+      fileType = file.type;
+    } else {
+      // Comprimir imagem
+      const { blob } = await compressImage(file);
+
+      if (blob.size > STORAGE_LIMITS.MAX_FILE_SIZE_MB * 1024 * 1024) {
+        showToast(`❌ ${file.name} ultrapassa ${STORAGE_LIMITS.MAX_FILE_SIZE_MB}MB após compressão`, 'error');
+        throw new Error('File too large');
+      }
+      finalBlob = blob;
+      fileType = 'image/jpeg';
     }
 
     // Verificar limite de armazenamento POR EVENTO
@@ -2145,7 +2218,7 @@
       .eq('event_id', currentEventId);
 
     const currentUsage = (allUploads || []).reduce((sum, f) => sum + (f.file_size_mb || 0), 0);
-    const newFileSize = blob.size / 1024 / 1024;
+    const newFileSize = finalBlob.size / 1024 / 1024;
     const projectedUsage = currentUsage + newFileSize;
 
     if (projectedUsage > STORAGE_LIMITS.MAX_STORAGE_MB) {
@@ -2155,7 +2228,7 @@
 
     // Preparar FormData para enviar ao Worker
     const formData = new FormData();
-    formData.append('file', blob, 'photo.jpg');
+    formData.append('file', finalBlob, isVideo ? 'video.mp4' : 'photo.jpg');
     formData.append('eventId', currentEventId);
     formData.append('guestId', currentGuestId);
 
@@ -2178,9 +2251,9 @@
     // workerData.path = "eventId/guestId_timestamp_filename.jpg"
     const storagePath = workerData.path;
     const fileUrl = R2_PUBLIC_URL + "/" + storagePath;
-    const fileSizeMB = (blob.size / 1024 / 1024).toFixed(1);
+    const fileSizeMB = (finalBlob.size / 1024 / 1024).toFixed(1);
 
-    // Guardar APENAS metadados no Supabase (fotos estão no R2)
+    // Guardar APENAS metadados no Supabase (ficheiros estão no R2)
     const uploadRecord = {
       id: 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
       event_id: currentEventId,
@@ -2188,7 +2261,7 @@
       guest_name: currentGuestName,
       file_name: file.name,
       file_size_mb: parseFloat(fileSizeMB),
-      file_type: 'image/jpeg',
+      file_type: fileType,
       uploaded_at: new Date().toISOString(),
       storage_path: storagePath,
       file_url: fileUrl
@@ -2285,5 +2358,5 @@
 
   lucide.createIcons();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e6e3c67816b3e9a',t:'MTc3NTI4MzkyOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e6e6c96e26a3e9a',t:'MTc3NTI4NTkwMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
