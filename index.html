@@ -819,43 +819,65 @@
     loadEvents();
   }
 
-  async function toggleUploadsEnabled(eventId, currentlyEnabled, type) {
+  async function togglePhotosEnabled(eventId, currentlyEnabled) {
     if (!supabaseClient || !eventId || eventId.trim() === '') {
       showToast('Erro: ID do evento inválido', 'error');
       return;
     }
 
     const newState = !currentlyEnabled;
-    const updateData = type === 'photos' 
-      ? { photos_enabled: newState }
-      : { videos_enabled: newState };
 
     const { error } = await supabaseClient
       .from('events')
-      .update(updateData)
+      .update({ photos_enabled: newState })
       .eq('id', eventId.trim());
 
     if (error) {
       console.error('Erro Supabase:', error);
-      showToast('Erro ao atualizar ' + type + ': ' + (error.message || 'desconhecido'), 'error');
+      showToast('Erro ao atualizar fotos: ' + (error.message || 'desconhecido'), 'error');
       return;
     }
 
     // Atualizar estado local IMEDIATAMENTE
     const eventIndex = allEvents.findIndex(e => e.id === eventId);
     if (eventIndex !== -1) {
-      if (type === 'photos') {
-        allEvents[eventIndex].photos_enabled = newState;
-      } else {
-        allEvents[eventIndex].videos_enabled = newState;
-      }
+      allEvents[eventIndex].photos_enabled = newState;
     }
 
-    const status = newState ? 'Desbloqueados' : 'Bloqueados';
-    const typeLabel = type === 'photos' ? 'Fotos' : 'Vídeos';
-    showToast(`✅ ${typeLabel} ${status}!`, 'success');
+    const status = newState ? 'Ativadas' : 'Bloqueadas';
+    showToast(`✅ Fotos ${status}!`, 'success');
     
-    // Renderizar lista SEM recarregar do servidor
+    renderEventsList();
+  }
+
+  async function toggleVideosEnabled(eventId, currentlyEnabled) {
+    if (!supabaseClient || !eventId || eventId.trim() === '') {
+      showToast('Erro: ID do evento inválido', 'error');
+      return;
+    }
+
+    const newState = !currentlyEnabled;
+
+    const { error } = await supabaseClient
+      .from('events')
+      .update({ videos_enabled: newState })
+      .eq('id', eventId.trim());
+
+    if (error) {
+      console.error('Erro Supabase:', error);
+      showToast('Erro ao atualizar vídeos: ' + (error.message || 'desconhecido'), 'error');
+      return;
+    }
+
+    // Atualizar estado local IMEDIATAMENTE
+    const eventIndex = allEvents.findIndex(e => e.id === eventId);
+    if (eventIndex !== -1) {
+      allEvents[eventIndex].videos_enabled = newState;
+    }
+
+    const status = newState ? 'Ativados' : 'Bloqueados';
+    showToast(`✅ Vídeos ${status}!`, 'success');
+    
     renderEventsList();
   }
 
@@ -1201,7 +1223,7 @@
 
     const { data: uploadsFull } = await supabaseClient
       .from('uploads')
-      .select('id, file_name, file_url')
+      .select('id, file_name, file_url, storage_path')
       .eq('event_id', eventId);
 
     if (!uploadsFull || uploadsFull.length === 0) {
@@ -1214,9 +1236,13 @@
 
     for (const file of uploadsFull) {
       try {
+        // Usar a URL pública do R2
+        const publicUrl = R2_PUBLIC_URL + "/" + file.storage_path;
+        
         const link = document.createElement('a');
-        link.href = file.file_url;
+        link.href = publicUrl;
         link.download = file.file_name;
+        link.setAttribute('download', file.file_name);
         document.body.appendChild(link);
         link.click();
         link.remove();
@@ -2376,5 +2402,5 @@
 
   lucide.createIcons();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e6e8e1145cb3e9a',t:'MTc3NTI4NzI3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e6e95dd27f53e9a',t:'MTc3NTI4NzU5Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
