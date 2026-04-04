@@ -146,7 +146,10 @@
        <div>
         <label style="display:block;font-size:12px;font-weight:600;margin:0 0 6px 0;opacity:0.7;">📊 Limite Total de Fotos do Evento</label>
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
-         <input type="number" id="edit-event-max-photos" min="1" placeholder="Fotos" style="width:80px;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;"> <span id="edit-event-storage-display" style="font-size:11px;opacity:0.6;">Tamanho: 0 MB</span>
+         <input type="number" id="edit-event-max-photos" min="1" max="2000" placeholder="Fotos (1-2000)" style="width:120px;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;"> <span id="edit-event-storage-display" style="font-size:11px;opacity:0.6;">Tamanho: 0 MB</span>
+        </div>
+        <div style="background:rgba(37,99,235,0.08);padding:8px 12px;border-radius:8px;border-left:3px solid #2563eb;margin-bottom:12px;">
+         <p style="font-size:11px;opacity:0.7;margin:0;"><strong>ℹ️</strong> Padrão: 1000 fotos | Máximo permitido: 2000 fotos | Cada foto: ~140KB</p>
         </div>
        </div>
        <div>
@@ -224,9 +227,15 @@
       <p id="event-message" style="font-size:14px;margin:0;font-weight:500;color:#2563eb;"></p>
      </div>
     </section>
-    <section id="deletion-warning-box" class="px-4 max-w-lg mx-auto pb-4 fade-in stagger-2" style="display:none;">
-     <div id="deletion-warning-content" style="background:#fff3cd;border-left:4px solid #ff9800;padding:12px 16px;border-radius:8px;text-align:center;">
-      <p id="deletion-warning-text" style="font-size:13px;margin:0;color:#856404;font-weight:600;"></p>
+    <section id="event-quota-box" class="px-4 max-w-lg mx-auto pb-4 fade-in stagger-2" style="display:none;">
+     <div id="event-quota-content" style="background:#f0f8ff;border-left:4px solid #2563eb;padding:12px 16px;border-radius:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+       <span id="quota-label" style="font-size:12px;font-weight:600;color:#2563eb;"></span> <span id="quota-percentage" style="font-size:13px;font-weight:600;color:#2563eb;"></span>
+      </div>
+      <div style="width:100%;height:6px;background:rgba(37,99,235,0.2);border-radius:3px;overflow:hidden;">
+       <div id="quota-bar" style="height:100%;width:0%;background:linear-gradient(90deg, #27ae60, #2563eb);transition:all 0.3s;border-radius:3px;"></div>
+      </div>
+      <p id="quota-status" style="font-size:11px;margin:8px 0 0 0;opacity:0.7;"></p>
      </div>
     </section>
     <section id="activation-countdown-box" class="px-4 max-w-lg mx-auto pb-6 fade-in stagger-2" style="display:none;">
@@ -260,7 +269,7 @@
      </div>
     </div>
     <footer style="text-align:center;padding:12px 16px;margin-top:24px;border-top:1px solid rgba(26,26,26,0.08);font-size:12px;">
-     <p style="margin:0 0 8px 0;opacity:0.6;">Gostaria de ter este serviço no seu evento?</p><a href="https://wa.me/+224959823409" target="_blank" rel="noopener noreferrer" style="background:#2563eb;color:#fff;padding:8px 16px;border-radius:8px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-weight:600;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> <i data-lucide="phone" style="width:16px;height:16px;"></i> Contacte-nos: 959 823 409 </a>
+     <p style="margin:0 0 8px 0;opacity:0.6;">Gostaria de ter este serviço no seu evento?</p><a href="https://wa.me/244959823409" target="_blank" rel="noopener noreferrer" style="background:#2563eb;color:#fff;padding:8px 16px;border-radius:8px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-weight:600;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> <i data-lucide="phone" style="width:16px;height:16px;"></i> Contacte-nos: +244 959 823 409 </a>
     </footer>
    </div><!-- GALLERY VIEW -->
    <div id="gallery-view" style="display:none;" class="h-full w-full overflow-auto">
@@ -318,8 +327,11 @@
     MAX_STORAGE_MB: 1024,
     MAX_STORAGE_BYTES: 1024 * 1024 * 1024,
     MAX_FILE_SIZE_MB: 1,
-    MAX_FILES_PER_EVENT: 10000,
-    WARNING_THRESHOLD: 0.85
+    MAX_FILES_PER_EVENT: 2000,
+    MAX_PHOTOS_DEFAULT: 1000,
+    MAX_PHOTOS_ABSOLUTE_MAX: 2000,
+    WARNING_THRESHOLD: 0.8,
+    CRITICAL_THRESHOLD: 0.95
   };
 
   const COMPRESSION_CONFIG = {
@@ -471,18 +483,18 @@
   let uploadQueue = [];
   let activeUploads = 0;
 
-  async function processUploadQueue() {
+  function processUploadQueue() {
     while (uploadQueue.length > 0 && activeUploads < CONCURRENT_UPLOADS) {
       activeUploads++;
       const task = uploadQueue.shift();
-      try {
-        await task();
-      } catch (err) {
-        console.error('Erro na fila de upload:', err);
-      } finally {
+      task().then(() => {
         activeUploads--;
         processUploadQueue();
-      }
+      }).catch(err => {
+        console.error('Erro na fila de upload:', err);
+        activeUploads--;
+        processUploadQueue();
+      });
     }
   }
 
@@ -582,7 +594,7 @@
   applyConfig(defaultConfig);
 
   // --- ADMIN FUNCTIONS ---
-  async function adminLogin() {
+  function adminLogin() {
     const password = document.getElementById('admin-password').value;
     if (!password.trim()) {
       showToast('Digite a senha', 'warning');
@@ -637,7 +649,7 @@
     return false;
   }
 
-  async function addNewEvent() {
+  function addNewEvent() {
     if (!supabaseClient) {
       showToast('Supabase não inicializou', 'error');
       return;
@@ -656,8 +668,8 @@
     const formattedDate = `${day}.${month}.${year}`;
     const eventId = 'evt_' + Date.now();
 
-    const defaultMaxPhotos = calculatePhotosFromStorage(STORAGE_LIMITS.MAX_STORAGE_MB);
-    const defaultMaxStorage = STORAGE_LIMITS.MAX_STORAGE_MB;
+    const defaultMaxPhotos = STORAGE_LIMITS.MAX_PHOTOS_DEFAULT;
+    const defaultMaxStorage = calculateStorageFromPhotos(defaultMaxPhotos);
     
     const eventDateObj = new Date(year, month - 1, day);
     const expirationDate = new Date(eventDateObj);
@@ -670,7 +682,7 @@
     // Activation date defaults to event date
     const activationDate = dateInput;
 
-    const { error } = await supabaseClient
+    supabaseClient
       .from('events')
       .insert([{
         id: eventId,
@@ -687,100 +699,100 @@
         guest_max_photos: 5,
         uploads_enabled: true,
         activation_date: activationDate
-      }]);
+      }])
+      .then(({ error }) => {
+        if (error) {
+          console.error('Erro Supabase:', error);
+          showToast('Erro ao criar evento: ' + (error.message || 'desconhecido'), 'error');
+          return;
+        }
 
-    if (error) {
-      console.error('Erro Supabase:', error);
-      showToast('Erro ao criar evento: ' + (error.message || 'desconhecido'), 'error');
-      return;
-    }
+        document.getElementById('new-event-title').value = '';
+        document.getElementById('new-event-date').value = '';
+        document.getElementById('new-event-message').value = '';
 
-    document.getElementById('new-event-title').value = '';
-    document.getElementById('new-event-date').value = '';
-    document.getElementById('new-event-message').value = '';
-
-    loadEvents();
-    showToast(`Evento criado! (${defaultMaxPhotos} fotos / ${defaultMaxStorage} MB / 15 dias)`, 'success');
+        loadEvents();
+        showToast(`Evento criado! (${defaultMaxPhotos} fotos / ${defaultMaxStorage} MB / 15 dias)`, 'success');
+      });
   }
 
-  async function loadEvents() {
+  function loadEvents() {
     if (!supabaseClient) return;
     
-    await cleanupOldEvents();
+    cleanupOldEvents();
     
-    const { data, error } = await supabaseClient
+    supabaseClient
       .from('events')
       .select('*')
-      .order('created_at', { ascending: false });
-
-    allEvents = data || [];
-    renderEventsList();
+      .order('created_at', { ascending: false })
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Erro ao carregar eventos:', error);
+          return;
+        }
+        allEvents = data || [];
+        renderEventsList();
+      });
   }
 
-  async function cleanupOldEvents() {
+  function cleanupOldEvents() {
     if (!supabaseClient) return;
 
-    try {
-      const { data: events } = await supabaseClient
-        .from('events')
-        .select('id, expires_at');
+    supabaseClient
+      .from('events')
+      .select('id, expires_at')
+      .then(({ data: events }) => {
+        if (!events) return;
 
-      if (!events) return;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+        const eventsToDelete = [];
 
-      const eventsToDelete = [];
-
-      for (const event of events) {
-        if (!event.expires_at) continue;
-        
-        const expirationDate = new Date(event.expires_at);
-        
-        if (today >= expirationDate) {
-          eventsToDelete.push(event.id);
-        }
-      }
-
-      for (const eventId of eventsToDelete) {
-        const { data: uploads } = await supabaseClient
-          .from('uploads')
-          .select('storage_path')
-          .eq('event_id', eventId);
-
-        if (uploads && uploads.length > 0) {
-          for (const upload of uploads) {
-            try {
-              await fetch(WORKER_URL, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ path: upload.storage_path })
-              });
-            } catch (err) {
-              console.warn('Erro ao remover arquivo do R2:', err);
-            }
+        for (const event of events) {
+          if (!event.expires_at) continue;
+          
+          const expirationDate = new Date(event.expires_at);
+          
+          if (today >= expirationDate) {
+            eventsToDelete.push(event.id);
           }
         }
 
-        await supabaseClient
-          .from('uploads')
-          .delete()
-          .eq('event_id', eventId);
+        eventsToDelete.forEach(eventId => {
+          supabaseClient
+            .from('uploads')
+            .select('storage_path')
+            .eq('event_id', eventId)
+            .then(({ data: uploads }) => {
+              if (uploads && uploads.length > 0) {
+                uploads.forEach(upload => {
+                  fetch(WORKER_URL, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: upload.storage_path })
+                  }).catch(err => console.warn('Erro ao remover arquivo do R2:', err));
+                });
+              }
 
-        await supabaseClient
-          .from('events')
-          .delete()
-          .eq('id', eventId);
+              supabaseClient
+                .from('uploads')
+                .delete()
+                .eq('event_id', eventId);
 
-        console.log(`Evento expirado eliminado: ${eventId}`);
-      }
+              supabaseClient
+                .from('events')
+                .delete()
+                .eq('id', eventId);
 
-      if (eventsToDelete.length > 0) {
-        console.log(`Limpeza: ${eventsToDelete.length} evento(s) eliminado(s)`);
-      }
-    } catch (err) {
-      console.error('Erro ao limpar eventos antigos:', err);
-    }
+              console.log(`Evento expirado eliminado: ${eventId}`);
+            });
+        });
+
+        if (eventsToDelete.length > 0) {
+          console.log(`Limpeza: ${eventsToDelete.length} evento(s) eliminado(s)`);
+        }
+      });
   }
 
   function renderEventsList() {
@@ -828,24 +840,25 @@
     lucide.createIcons();
   }
 
-  async function toggleEventActive(eventId, currentlyActive) {
+  function toggleEventActive(eventId, currentlyActive) {
     const newState = !currentlyActive;
-    const { error } = await supabaseClient
+    supabaseClient
       .from('events')
       .update({ is_active: newState })
-      .eq('id', eventId);
+      .eq('id', eventId)
+      .then(({ error }) => {
+        if (error) {
+          showToast('Erro ao atualizar status', 'error');
+          return;
+        }
 
-    if (error) {
-      showToast('Erro ao atualizar status', 'error');
-      return;
-    }
-
-    const status = newState ? 'Ativado' : 'Desativado';
-    showToast(`✅ Evento ${status}!`, 'success');
-    loadEvents();
+        const status = newState ? 'Ativado' : 'Desativado';
+        showToast(`✅ Evento ${status}!`, 'success');
+        loadEvents();
+      });
   }
 
-  async function togglePhotosEnabled(eventId, currentlyEnabled) {
+  function togglePhotosEnabled(eventId, currentlyEnabled) {
     if (!supabaseClient || !eventId || eventId.trim() === '') {
       showToast('Erro: ID do evento inválido', 'error');
       return;
@@ -853,29 +866,30 @@
 
     const newState = !currentlyEnabled;
 
-    const { error } = await supabaseClient
+    supabaseClient
       .from('events')
       .update({ photos_enabled: newState })
-      .eq('id', eventId.trim());
+      .eq('id', eventId.trim())
+      .then(({ error }) => {
+        if (error) {
+          console.error('Erro Supabase:', error);
+          showToast('Erro ao atualizar fotos: ' + (error.message || 'desconhecido'), 'error');
+          return;
+        }
 
-    if (error) {
-      console.error('Erro Supabase:', error);
-      showToast('Erro ao atualizar fotos: ' + (error.message || 'desconhecido'), 'error');
-      return;
-    }
+        const eventIndex = allEvents.findIndex(e => e.id === eventId);
+        if (eventIndex !== -1) {
+          allEvents[eventIndex].photos_enabled = newState;
+        }
 
-    const eventIndex = allEvents.findIndex(e => e.id === eventId);
-    if (eventIndex !== -1) {
-      allEvents[eventIndex].photos_enabled = newState;
-    }
-
-    const status = newState ? 'Ativadas' : 'Bloqueadas';
-    showToast(`✅ Fotos ${status}!`, 'success');
-    
-    renderEventsList();
+        const status = newState ? 'Ativadas' : 'Bloqueadas';
+        showToast(`✅ Fotos ${status}!`, 'success');
+        
+        renderEventsList();
+      });
   }
 
-  async function toggleVideosEnabled(eventId, currentlyEnabled) {
+  function toggleVideosEnabled(eventId, currentlyEnabled) {
     if (!supabaseClient || !eventId || eventId.trim() === '') {
       showToast('Erro: ID do evento inválido', 'error');
       return;
@@ -883,26 +897,27 @@
 
     const newState = !currentlyEnabled;
 
-    const { error } = await supabaseClient
+    supabaseClient
       .from('events')
       .update({ videos_enabled: newState })
-      .eq('id', eventId.trim());
+      .eq('id', eventId.trim())
+      .then(({ error }) => {
+        if (error) {
+          console.error('Erro Supabase:', error);
+          showToast('Erro ao atualizar vídeos: ' + (error.message || 'desconhecido'), 'error');
+          return;
+        }
 
-    if (error) {
-      console.error('Erro Supabase:', error);
-      showToast('Erro ao atualizar vídeos: ' + (error.message || 'desconhecido'), 'error');
-      return;
-    }
+        const eventIndex = allEvents.findIndex(e => e.id === eventId);
+        if (eventIndex !== -1) {
+          allEvents[eventIndex].videos_enabled = newState;
+        }
 
-    const eventIndex = allEvents.findIndex(e => e.id === eventId);
-    if (eventIndex !== -1) {
-      allEvents[eventIndex].videos_enabled = newState;
-    }
-
-    const status = newState ? 'Ativados' : 'Bloqueados';
-    showToast(`✅ Vídeos ${status}!`, 'success');
-    
-    renderEventsList();
+        const status = newState ? 'Ativados' : 'Bloqueados';
+        showToast(`✅ Vídeos ${status}!`, 'success');
+        
+        renderEventsList();
+      });
   }
 
   function copyLink(url) {
@@ -911,28 +926,29 @@
     });
   }
 
-  async function showEventStats(eventId) {
+  function showEventStats(eventId) {
     if (!supabaseClient) return;
-    const { data: uploads } = await supabaseClient
+    supabaseClient
       .from('uploads')
       .select('*')
-      .eq('event_id', eventId);
+      .eq('event_id', eventId)
+      .then(({ data: uploads }) => {
+        const totalPhotos = uploads?.length || 0;
+        const totalMB = (uploads || []).reduce((sum, f) => sum + (f.file_size_mb || 0), 0);
+        const guests = new Set((uploads || []).map(f => f.guest_id)).size;
 
-    const totalPhotos = uploads?.length || 0;
-    const totalMB = (uploads || []).reduce((sum, f) => sum + (f.file_size_mb || 0), 0);
-    const guests = new Set((uploads || []).map(f => f.guest_id)).size;
-
-    const statText = `📊 Estatísticas:\n\n📷 Fotos: ${totalPhotos}\n👥 Convidados: ${guests}\n💾 Armazenamento: ${totalMB.toFixed(1)} MB`;
-    
-    const modal = document.createElement('div');
-    modal.style.cssText = `position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:99999;`;
-    modal.innerHTML = `
-      <div style="background:#fff;padding:24px;border-radius:12px;text-align:center;max-width:300px;font-family:'Poppins',sans-serif;">
-        <p style="margin:0 0 24px 0;white-space:pre-line;line-height:1.6;font-size:14px;">${statText}</p>
-        <button onclick="this.closest('[style*=fixed]').remove()" style="background:#2563eb;color:#fff;border:none;padding:10px 24px;border-radius:8px;cursor:pointer;font-weight:600;">Fechar</button>
-      </div>
-    `;
-    document.body.appendChild(modal);
+        const statText = `📊 Estatísticas:\n\n📷 Fotos: ${totalPhotos}\n👥 Convidados: ${guests}\n💾 Armazenamento: ${totalMB.toFixed(1)} MB`;
+        
+        const modal = document.createElement('div');
+        modal.style.cssText = `position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:99999;`;
+        modal.innerHTML = `
+          <div style="background:#fff;padding:24px;border-radius:12px;text-align:center;max-width:300px;font-family:'Poppins',sans-serif;">
+            <p style="margin:0 0 24px 0;white-space:pre-line;line-height:1.6;font-size:14px;">${statText}</p>
+            <button onclick="this.closest('[style*=fixed]').remove()" style="background:#2563eb;color:#fff;border:none;padding:10px 24px;border-radius:8px;cursor:pointer;font-weight:600;">Fechar</button>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      });
   }
 
   function deleteEvent(eventId) {
@@ -950,71 +966,86 @@
     document.body.appendChild(modal);
   }
 
-  async function deleteEventWithPhotos(eventId) {
-    try {
-      showToast('⏳ A apagar evento e fotos...', 'info');
+  function deleteEventWithPhotos(eventId) {
+    showToast('⏳ A apagar evento e fotos...', 'info');
 
-      let allUploads = [];
-      let offset = 0;
-      const pageSize = 1000;
-      let hasMore = true;
+    let allUploads = [];
+    let offset = 0;
+    const pageSize = 1000;
 
-      while (hasMore) {
-        const { data, error } = await supabaseClient
-          .from('uploads')
-          .select('storage_path')
-          .eq('event_id', eventId)
-          .range(offset, offset + pageSize - 1);
+    function deleteNextPage() {
+      supabaseClient
+        .from('uploads')
+        .select('storage_path')
+        .eq('event_id', eventId)
+        .range(offset, offset + pageSize - 1)
+        .then(({ data, error }) => {
+          if (error) {
+            showToast('Erro ao carregar uploads', 'error');
+            return;
+          }
 
-        if (error) throw error;
+          if (data && data.length > 0) {
+            allUploads = allUploads.concat(data);
+            offset += pageSize;
+            deleteNextPage();
+          } else {
+            deleteFilesAndRecords();
+          }
+        });
+    }
 
-        if (data && data.length > 0) {
-          allUploads = allUploads.concat(data);
-          offset += pageSize;
-          hasMore = data.length === pageSize;
-        } else {
-          hasMore = false;
-        }
-      }
-
+    function deleteFilesAndRecords() {
       if (allUploads.length > 0) {
         const paths = allUploads.map(u => u.storage_path);
         
-        for (let i = 0; i < paths.length; i += 100) {
-          const chunk = paths.slice(i, i + 100);
-          
-          try {
-            await fetch(WORKER_URL, {
-              method: 'DELETE',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paths: chunk })
-            });
-          } catch (err) {
-            console.warn('Erro ao remover chunk do R2:', err);
+        let pathIndex = 0;
+        function deleteNextChunk() {
+          const chunk = paths.slice(pathIndex, pathIndex + 100);
+          if (chunk.length === 0) {
+            deleteFromDatabase();
+            return;
           }
-        }
-      }
 
-      const { error: deleteUploadsError } = await supabaseClient
+          fetch(WORKER_URL, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paths: chunk })
+          })
+            .then(() => {
+              pathIndex += 100;
+              deleteNextChunk();
+            })
+            .catch(err => {
+              console.warn('Erro ao remover chunk do R2:', err);
+              pathIndex += 100;
+              deleteNextChunk();
+            });
+        }
+        deleteNextChunk();
+      } else {
+        deleteFromDatabase();
+      }
+    }
+
+    function deleteFromDatabase() {
+      supabaseClient
         .from('uploads')
         .delete()
-        .eq('event_id', eventId);
-
-      if (deleteUploadsError) throw deleteUploadsError;
-
-      const { error: deleteEventError } = await supabaseClient
-        .from('events')
-        .delete()
-        .eq('id', eventId);
-
-      if (deleteEventError) throw deleteEventError;
-
-      loadEvents();
-      showToast(`✅ Evento apagado! ${allUploads.length} foto(s) eliminada(s) do R2`, 'success');
-    } catch (err) {
-      console.error('Erro ao apagar evento:', err);
-      showToast('❌ Erro ao apagar evento', 'error');
+        .eq('event_id', eventId)
+        .then(() => {
+          supabaseClient
+            .from('events')
+            .delete()
+            .eq('id', eventId)
+            .then(() => {
+              loadEvents();
+              showToast(`✅ Evento apagado! ${allUploads.length} foto(s) eliminada(s) do R2`, 'success');
+            });
+        });
     }
+
+    deleteNextPage();
   }
 
   function setupSearchEvents() {
@@ -1113,9 +1144,66 @@
     document.getElementById('edit-event-storage-display').textContent = `Tamanho: ${storageMB} MB (~${photoCount} fotos)`;
   }
 
+  function showEventQuotaIndicator(event) {
+    if (!event.max_photos) {
+      document.getElementById('event-quota-box').style.display = 'none';
+      return;
+    }
+
+    const currentCount = event.current_photo_count || 0;
+    const maxCount = event.max_photos;
+    const percentage = Math.round((currentCount / maxCount) * 100);
+    const remainingCount = Math.max(0, maxCount - currentCount);
+
+    const quotaBox = document.getElementById('event-quota-box');
+    const quotaLabel = document.getElementById('quota-label');
+    const quotaPercentage = document.getElementById('quota-percentage');
+    const quotaBar = document.getElementById('quota-bar');
+    const quotaStatus = document.getElementById('quota-status');
+
+    quotaLabel.textContent = `📊 ${currentCount}/${maxCount} fotos`;
+    quotaPercentage.textContent = `${percentage}%`;
+    quotaBar.style.width = `${percentage}%`;
+
+    if (percentage >= 95) {
+      quotaBar.style.background = 'linear-gradient(90deg, #e74c3c, #c0392b)';
+      quotaStatus.textContent = `🚨 CRÍTICO! Apenas ${remainingCount} lugar(es) disponível(is)`;
+      quotaStatus.style.color = '#e74c3c';
+    } else if (percentage >= 80) {
+      quotaBar.style.background = 'linear-gradient(90deg, #f39c12, #e67e22)';
+      quotaStatus.textContent = `⚠️ AVISO! ${remainingCount} lugar(es) disponível(is)`;
+      quotaStatus.style.color = '#f39c12';
+    } else {
+      quotaBar.style.background = 'linear-gradient(90deg, #27ae60, #2563eb)';
+      quotaStatus.textContent = `✅ ${remainingCount} fotos ainda podem ser carregadas`;
+      quotaStatus.style.color = '#27ae60';
+    }
+
+    if (percentage > 0) {
+      quotaBox.style.display = 'block';
+    } else {
+      quotaBox.style.display = 'none';
+    }
+  }
+
   document.addEventListener('input', (e) => {
     if (e.target.id === 'edit-event-max-photos') {
       const photoCount = parseInt(e.target.value) || 0;
+      
+      if (photoCount < 1) {
+        showToast('⚠️ Mínimo: 1 foto', 'warning');
+        e.target.value = 1;
+        updateStorageDisplay(1);
+        return;
+      }
+      
+      if (photoCount > STORAGE_LIMITS.MAX_PHOTOS_ABSOLUTE_MAX) {
+        showToast(`⚠️ Máximo: ${STORAGE_LIMITS.MAX_PHOTOS_ABSOLUTE_MAX} fotos`, 'warning');
+        e.target.value = STORAGE_LIMITS.MAX_PHOTOS_ABSOLUTE_MAX;
+        updateStorageDisplay(STORAGE_LIMITS.MAX_PHOTOS_ABSOLUTE_MAX);
+        return;
+      }
+      
       updateStorageDisplay(photoCount);
     }
   });
@@ -1193,7 +1281,7 @@
     showToast(`✅ Evento estendido para ${currentEventExpirationDays} dias`, 'success');
   }
 
-  async function saveEventChanges() {
+  function saveEventChanges() {
     if (!editingEventId || !supabaseClient) {
       showToast('Erro: dados inválidos', 'error');
       return;
@@ -1202,7 +1290,7 @@
     const newTitle = document.getElementById('edit-event-title').value.trim();
     const newDateInput = document.getElementById('edit-event-date').value.trim();
     const newMessage = document.getElementById('edit-event-message').value.trim();
-    const newMaxPhotos = parseInt(document.getElementById('edit-event-max-photos').value) || calculatePhotosFromStorage(STORAGE_LIMITS.MAX_STORAGE_MB);
+    const newMaxPhotos = parseInt(document.getElementById('edit-event-max-photos').value) || STORAGE_LIMITS.MAX_PHOTOS_DEFAULT;
     const activationDateInput = document.getElementById('edit-event-activation-date').value.trim();
     
     const enableGuestLimit = document.getElementById('edit-event-enable-guest-limit').checked;
@@ -1213,8 +1301,8 @@
       return;
     }
 
-    if (newMaxPhotos < 1) {
-      showToast('Número de fotos deve ser pelo menos 1', 'warning');
+    if (newMaxPhotos < 1 || newMaxPhotos > STORAGE_LIMITS.MAX_PHOTOS_ABSOLUTE_MAX) {
+      showToast(`Número de fotos deve estar entre 1 e ${STORAGE_LIMITS.MAX_PHOTOS_ABSOLUTE_MAX}`, 'warning');
       return;
     }
     
@@ -1225,7 +1313,7 @@
 
     const newStorageMB = calculateStorageFromPhotos(newMaxPhotos);
     if (newStorageMB > 1000) {
-      showToast('⚠️ Limite de armazenamento máximo: ~1000 MB', 'warning');
+      showToast(`⚠️ Limite de armazenamento máximo: 1000 MB (máx ~1428 fotos)`, 'warning');
       return;
     }
 
@@ -1249,23 +1337,24 @@
       uploads_enabled: true
     };
 
-    const { error } = await supabaseClient
+    supabaseClient
       .from('events')
       .update(updateData)
-      .eq('id', editingEventId.trim());
+      .eq('id', editingEventId.trim())
+      .then(({ error }) => {
+        if (error) {
+          console.error('Erro Supabase:', error);
+          showToast('Erro ao atualizar: ' + (error.message || 'desconhecido'), 'error');
+          return;
+        }
 
-    if (error) {
-      console.error('Erro Supabase:', error);
-      showToast('Erro ao atualizar: ' + (error.message || 'desconhecido'), 'error');
-      return;
-    }
-
-    cancelEditEvent();
-    loadEvents();
-    showToast(`✅ Evento atualizado! (${newMaxPhotos} fotos / ${newStorageMB} MB / ${currentEventExpirationDays} dias / Ativação: ${activationDateInput})`, 'success');
+        cancelEditEvent();
+        loadEvents();
+        showToast(`✅ Evento atualizado! (${newMaxPhotos} fotos / ${newStorageMB} MB / ${currentEventExpirationDays} dias / Ativação: ${activationDateInput})`, 'success');
+      });
   }
 
-  async function downloadEventPhotos(eventId) {
+  function downloadEventPhotos(eventId) {
     if (!supabaseClient) return;
     
     const event = allEvents.find(e => e.id === eventId);
@@ -1276,58 +1365,63 @@
 
     showToast('⏳ A preparar download em massa...', 'info');
     
-    const { data: uploads, error } = await supabaseClient
+    supabaseClient
       .from('uploads')
       .select('file_size_mb')
-      .eq('event_id', eventId);
+      .eq('event_id', eventId)
+      .then(({ data: uploads, error }) => {
+        if (error || !uploads) {
+          showToast('Erro ao carregar dados', 'error');
+          return;
+        }
 
-    if (error || !uploads) {
-      showToast('Erro ao carregar dados', 'error');
-      return;
-    }
-
-    const totalSize = uploads.reduce((sum, f) => sum + (f.file_size_mb || 0), 0);
-    
-    if (totalSize > 500) {
-      showToast(`⚠️ Aviso: ${totalSize.toFixed(0)}MB para descarregar`, 'warning');
-    }
-
-    const { data: uploadsFull } = await supabaseClient
-      .from('uploads')
-      .select('id, file_name, file_url, storage_path')
-      .eq('event_id', eventId);
-
-    if (!uploadsFull || uploadsFull.length === 0) {
-      showToast('Nenhuma foto para descarregar', 'warning');
-      return;
-    }
-
-    let downloaded = 0;
-    const total = uploadsFull.length;
-
-    for (const file of uploadsFull) {
-      try {
-        const publicUrl = R2_PUBLIC_URL + "/" + file.storage_path;
+        const totalSize = uploads.reduce((sum, f) => sum + (f.file_size_mb || 0), 0);
         
-        const link = document.createElement('a');
-        link.href = publicUrl;
-        link.download = file.file_name;
-        link.setAttribute('download', file.file_name);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        
-        downloaded++;
-        await new Promise(r => setTimeout(r, 300));
-      } catch (err) {
-        console.error('Erro:', err);
-      }
-    }
+        if (totalSize > 500) {
+          showToast(`⚠️ Aviso: ${totalSize.toFixed(0)}MB para descarregar`, 'warning');
+        }
 
-    showToast(`✅ ${downloaded}/${total} fotos descarregadas!`, 'success');
+        supabaseClient
+          .from('uploads')
+          .select('id, file_name, file_url, storage_path')
+          .eq('event_id', eventId)
+          .then(({ data: uploadsFull }) => {
+            if (!uploadsFull || uploadsFull.length === 0) {
+              showToast('Nenhuma foto para descarregar', 'warning');
+              return;
+            }
+
+            let downloaded = 0;
+            const total = uploadsFull.length;
+
+            uploadsFull.forEach((file, index) => {
+              setTimeout(() => {
+                try {
+                  const publicUrl = R2_PUBLIC_URL + "/" + file.storage_path;
+                  
+                  const link = document.createElement('a');
+                  link.href = publicUrl;
+                  link.download = file.file_name;
+                  link.setAttribute('download', file.file_name);
+                  document.body.appendChild(link);
+                  link.click();
+                  link.remove();
+                  
+                  downloaded++;
+                } catch (err) {
+                  console.error('Erro:', err);
+                }
+              }, index * 300);
+            });
+
+            setTimeout(() => {
+              showToast(`✅ ${downloaded}/${total} fotos descarregadas!`, 'success');
+            }, total * 300 + 500);
+          });
+      });
   }
 
-  window.addEventListener('load', async () => {
+  window.addEventListener('load', () => {
     // Keep loading screen visible during initialization
     const loadingScreen = document.getElementById('loading-screen');
     loadingScreen.style.display = 'flex';
@@ -1336,82 +1430,72 @@
     const eventId = params.get('event');
     const galleryId = params.get('gallery');
     
-    try {
-      if (eventId) {
-        currentEventId = eventId;
-        
-        const saved = sessionStorage.getItem('guestData_' + eventId);
-        if (saved) {
-          try {
-            const data = JSON.parse(saved);
-            if (data.eventId === eventId && data.guestId && data.guestName) {
-              currentGuestId = data.guestId;
-              currentGuestName = data.guestName;
-              
-              try {
-                await loadEvents();
-                const event = allEvents.find(e => e.id === eventId);
-                if (event) {
-                  loadingScreen.style.display = 'none';
-                  showGuestView(event);
-                  setupSearchEvents();
-                  return;
-                }
-              } catch (err) {
-                console.error('Erro ao carregar eventos:', err);
+    if (eventId) {
+      currentEventId = eventId;
+      
+      const saved = sessionStorage.getItem('guestData_' + eventId);
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          if (data.eventId === eventId && data.guestId && data.guestName) {
+            currentGuestId = data.guestId;
+            currentGuestName = data.guestName;
+            
+            loadEvents();
+            setTimeout(() => {
+              const event = allEvents.find(e => e.id === eventId);
+              if (event) {
+                loadingScreen.style.display = 'none';
+                showGuestView(event);
+                setupSearchEvents();
+              } else {
+                loadingScreen.style.display = 'none';
+                showToast('Evento não encontrado', 'error');
               }
-            }
-          } catch (e) {
-            console.error('Erro ao restaurar sessão:', e);
-          }
-        }
-        
-        try {
-          await loadEvents();
-          const event = allEvents.find(e => e.id === eventId);
-          if (event) {
-            loadingScreen.style.display = 'none';
-            showGuestLoginView(event);
-            setupSearchEvents();
+            }, 100);
             return;
           }
-        } catch (err) {
-          console.error('Erro ao carregar eventos:', err);
+        } catch (e) {
+          console.error('Erro ao restaurar sessão:', e);
         }
-        
-        loadingScreen.style.display = 'none';
-        showToast('Evento não encontrado', 'error');
-      } else if (galleryId) {
-        currentEventId = galleryId;
-        
-        try {
-          await loadEvents();
-          const event = allEvents.find(e => e.id === galleryId);
-          if (event) {
-            loadingScreen.style.display = 'none';
-            showGalleryView(event);
-            setupSearchEvents();
-            return;
-          }
-        } catch (err) {
-          console.error('Erro ao carregar eventos:', err);
-        }
-        
-        loadingScreen.style.display = 'none';
-        showToast('Evento não encontrado', 'error');
-      } else {
-        if (!checkAdminSession()) {
-          loadingScreen.style.display = 'none';
-          document.getElementById('login-view').style.display = 'flex';
-        } else {
-          await loadEvents();
-          loadingScreen.style.display = 'none';
-        }
-        setupSearchEvents();
       }
-    } catch (err) {
-      console.error('Erro geral:', err);
-      loadingScreen.style.display = 'none';
+      
+      loadEvents();
+      setTimeout(() => {
+        const event = allEvents.find(e => e.id === eventId);
+        if (event) {
+          loadingScreen.style.display = 'none';
+          showGuestLoginView(event);
+          setupSearchEvents();
+        } else {
+          loadingScreen.style.display = 'none';
+          showToast('Evento não encontrado', 'error');
+        }
+      }, 100);
+    } else if (galleryId) {
+      currentEventId = galleryId;
+      
+      loadEvents();
+      setTimeout(() => {
+        const event = allEvents.find(e => e.id === galleryId);
+        if (event) {
+          loadingScreen.style.display = 'none';
+          showGalleryView(event);
+          setupSearchEvents();
+        } else {
+          loadingScreen.style.display = 'none';
+          showToast('Evento não encontrado', 'error');
+        }
+      }, 100);
+    } else {
+      if (!checkAdminSession()) {
+        loadingScreen.style.display = 'none';
+        document.getElementById('login-view').style.display = 'flex';
+      } else {
+        loadEvents();
+        loadingScreen.style.display = 'none';
+      }
+      setupSearchEvents();
     }
   });
 
@@ -1513,7 +1597,10 @@
         <div style="background:${limitReached ? '#ffebee' : '#ffebee'};border:2px solid ${limitReached ? '#e74c3c' : '#e74c3c'};border-radius:12px;padding:24px;text-align:center;">
           <i data-lucide="lock" style="width:48px;height:48px;color:#e74c3c;margin:0 auto 12px;display:block;"></i>
           <h2 style="font-size:18px;font-weight:600;margin:0 0 8px 0;color:#e74c3c;">${limitReached ? '📸 Limite de Fotos Atingido' : event.uploads_enabled === false ? '🔒 Uploads Bloqueados' : 'Evento Encerrado'}</h2>
-          <p style="font-size:14px;opacity:0.7;margin:0;">${limitReached ? `Este evento já alcançou o limite de ${event.max_photos} fotos. Obrigado por compreender! 🙏` : event.uploads_enabled === false ? 'Os uploads foram bloqueados pelo organizador. Contacte-o para mais informações! 📧' : 'Este evento não está mais aceitando fotos. Obrigado pela compreensão! 🙏'}</p>
+          <p style="font-size:14px;opacity:0.7;margin:0 0 12px 0;">${limitReached ? `Este evento já alcançou o limite de ${event.max_photos} fotos. Obrigado por compreender! 🙏` : event.uploads_enabled === false ? 'Os uploads foram bloqueados pelo organizador. Contacte-o para mais informações! 📧' : 'Este evento não está mais aceitando fotos. Obrigado pela compreensão! 🙏'}</p>
+          <div style="background:#fff;border-radius:8px;padding:12px;margin-top:12px;">
+            <p style="font-size:12px;margin:0;opacity:0.6;"><strong>${event.max_photos} fotos máximo</strong> para este evento</p>
+          </div>
         </div>
       `;
       lucide.createIcons();
@@ -1532,8 +1619,8 @@
       document.getElementById('event-message-box').style.display = 'none';
     }
 
-    const warningBox = document.getElementById('deletion-warning-box');
-    warningBox.style.display = 'none';
+    // Show quota indicator
+    showEventQuotaIndicator(event);
 
     applyConfig(config);
     renderFileList();
@@ -1603,38 +1690,34 @@
     }
   }
 
-  async function preloadNextPhotos(fromIndex) {
+  function preloadNextPhotos(fromIndex) {
     const indicesToPreload = [fromIndex + 1, fromIndex + 2, fromIndex + 3];
     
-    for (const idx of indicesToPreload) {
-      if (idx >= allGalleryPhotos.length) continue;
+    indicesToPreload.forEach((idx, offset) => {
+      if (idx >= allGalleryPhotos.length) return;
       
       const photo = allGalleryPhotos[idx];
       
       if (galleryPhotosCache.has(photo.storage_path) || getUrlFromCache(photo.storage_path)) {
-        continue;
+        return;
       }
       
-      setTimeout(async () => {
-        try {
-          const cachedUrl = getUrlFromCache(photo.storage_path);
-          if (cachedUrl) {
-            galleryPhotosCache.set(photo.storage_path, cachedUrl);
-            return;
-          }
-
-          const publicUrl = R2_PUBLIC_URL + "/" + photo.storage_path;
-          
-          saveUrlToCache(photo.storage_path, publicUrl);
-          galleryPhotosCache.set(photo.storage_path, publicUrl);
-        } catch (err) {
-          console.warn('Erro ao pré-carregar foto:', err);
+      setTimeout(() => {
+        const cachedUrl = getUrlFromCache(photo.storage_path);
+        if (cachedUrl) {
+          galleryPhotosCache.set(photo.storage_path, cachedUrl);
+          return;
         }
+
+        const publicUrl = R2_PUBLIC_URL + "/" + photo.storage_path;
+        
+        saveUrlToCache(photo.storage_path, publicUrl);
+        galleryPhotosCache.set(photo.storage_path, publicUrl);
       }, 100 * (idx - fromIndex));
-    }
+    });
   }
 
-  async function openPhotoViewer(fileId, index) {
+  function openPhotoViewer(fileId, index) {
     currentPhotoIndex = index;
     
     const photo = allGalleryPhotos[index];
@@ -1665,19 +1748,19 @@
     lucide.createIcons();
   }
 
-  async function nextPhoto() {
+  function nextPhoto() {
     if (currentPhotoIndex < allGalleryPhotos.length - 1) {
       currentPhotoIndex++;
       const photo = allGalleryPhotos[currentPhotoIndex];
-      await openPhotoViewer(photo.id, currentPhotoIndex);
+      openPhotoViewer(photo.id, currentPhotoIndex);
     }
   }
 
-  async function previousPhoto() {
+  function previousPhoto() {
     if (currentPhotoIndex > 0) {
       currentPhotoIndex--;
       const photo = allGalleryPhotos[currentPhotoIndex];
-      await openPhotoViewer(photo.id, currentPhotoIndex);
+      openPhotoViewer(photo.id, currentPhotoIndex);
     }
   }
 
@@ -1818,7 +1901,7 @@
     }
   }
 
-  async function downloadSelectedPhotos() {
+  function downloadSelectedPhotos() {
     if (gallerySelectedPhotos.size === 0) {
       showToast('Seleciona pelo menos uma foto', 'warning');
       return;
@@ -1829,65 +1912,68 @@
     const total = gallerySelectedPhotos.size;
     const photosToDownload = allGalleryPhotos.filter(p => gallerySelectedPhotos.has(p.id));
 
-    for (const photo of photosToDownload) {
-      try {
-        const publicUrl = R2_PUBLIC_URL + "/" + photo.storage_path;
-        
-        const link = document.createElement('a');
-        link.href = publicUrl;
-        link.download = photo.file_name;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
+    photosToDownload.forEach((photo, index) => {
+      setTimeout(() => {
+        try {
+          const publicUrl = R2_PUBLIC_URL + "/" + photo.storage_path;
+          
+          const link = document.createElement('a');
+          link.href = publicUrl;
+          link.download = photo.file_name;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
 
-        downloaded++;
-        await new Promise(r => setTimeout(r, 300));
-      } catch (err) {
-        console.error('Erro:', err);
-      }
-    }
+          downloaded++;
+        } catch (err) {
+          console.error('Erro:', err);
+        }
+      }, index * 300);
+    });
 
-    gallerySelectedPhotos.clear();
-    updateGallerySelectionUI();
-    showToast(`✅ ${downloaded}/${total} fotos descarregadas!`, 'success');
+    setTimeout(() => {
+      gallerySelectedPhotos.clear();
+      updateGallerySelectionUI();
+      showToast(`✅ ${downloaded}/${total} fotos descarregadas!`, 'success');
+    }, total * 300 + 500);
   }
 
-  async function downloadCurrentPhoto() {
+  function downloadCurrentPhoto() {
     const img = document.getElementById('photo-viewer-image');
     const fileId = img.dataset.fileId;
     const fileName = img.dataset.fileName;
     if (fileId && fileName) {
-      try {
-        const { data: file } = await supabaseClient
-          .from('uploads')
-          .select('storage_path')
-          .eq('id', fileId)
-          .single();
+      supabaseClient
+        .from('uploads')
+        .select('storage_path')
+        .eq('id', fileId)
+        .single()
+        .then(({ data: file }) => {
+          if (!file) {
+            showToast('Ficheiro não encontrado', 'error');
+            return;
+          }
 
-        if (!file) {
-          showToast('Ficheiro não encontrado', 'error');
-          return;
-        }
+          const publicUrl = R2_PUBLIC_URL + "/" + file.storage_path;
+          
+          const link = document.createElement('a');
+          link.href = publicUrl;
+          link.download = fileName;
+          link.setAttribute('download', '');
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
 
-        const publicUrl = R2_PUBLIC_URL + "/" + file.storage_path;
-        
-        const link = document.createElement('a');
-        link.href = publicUrl;
-        link.download = fileName;
-        link.setAttribute('download', '');
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-
-        showToast('✅ Foto descarregada!', 'success');
-      } catch (err) {
-        console.error('Erro ao descarregar:', err);
-        showToast('❌ Erro ao descarregar foto', 'error');
-      }
+          showToast('✅ Foto descarregada!', 'success');
+        })
+        .catch(err => {
+          console.error('Erro ao descarregar:', err);
+          showToast('❌ Erro ao descarregar foto', 'error');
+        });
     }
   }
 
-  async function renderGalleryPhotos() {
+  function renderGalleryPhotos() {
     if (!supabaseClient || !currentEventId) return;
 
     const event = allEvents.find(e => e.id === currentEventId);
@@ -1896,183 +1982,191 @@
       return;
     }
 
-    const { data: uploads, error } = await supabaseClient
+    supabaseClient
       .from('uploads')
       .select('id, file_name, storage_path, uploaded_at, guest_name, guest_id')
       .eq('event_id', currentEventId)
-      .order('uploaded_at', { ascending: false });
-
-    if (error) {
-      console.error('Erro ao carregar galeria:', error);
-      return;
-    }
-
-    const grid = document.getElementById('gallery-grid');
-    const empty = document.getElementById('gallery-empty');
-    const pagination = document.getElementById('gallery-pagination');
-    const photoCount = document.getElementById('gallery-photo-count');
-
-    if (!uploads || uploads.length === 0) {
-      if (grid.innerHTML === '') {
-        empty.style.display = 'block';
-      }
-      photoCount.textContent = '📷 0 fotos partilhadas';
-      allGalleryPhotos = [];
-      galleryFilteredPhotos = null;
-      galleryCurrentPage = 0;
-      pagination.style.display = 'none';
-      updateGallerySelectionUI();
-      return;
-    }
-
-    const displayCount = galleryFilteredPhotos ? galleryFilteredPhotos.length : uploads.length;
-    photoCount.textContent = `📷 ${displayCount} ${displayCount === 1 ? 'foto' : 'fotos'} partilhada${displayCount === 1 ? '' : 's'}`;
-
-    empty.style.display = 'none';
-    allGalleryPhotos = uploads;
-    
-    if (!galleryFilteredPhotos) {
-      galleryCurrentPage = 0;
-    }
-
-    const photosToShow = galleryFilteredPhotos || allGalleryPhotos;
-
-    const totalPages = Math.ceil(photosToShow.length / PHOTOS_PER_PAGE);
-    const pageInfo = document.getElementById('gallery-page-info');
-    const prevBtn = document.getElementById('gallery-prev-btn');
-    const nextBtn = document.getElementById('gallery-next-btn');
-    
-    pageInfo.textContent = `Página ${galleryCurrentPage + 1} de ${totalPages}`;
-    prevBtn.style.display = galleryCurrentPage > 0 ? 'inline-flex' : 'none';
-    nextBtn.style.display = galleryCurrentPage < totalPages - 1 ? 'inline-flex' : 'none';
-    pagination.style.display = totalPages > 1 ? 'flex' : 'none';
-
-    const visiblePhotos = getVisiblePhotos();
-    updateGallerySelectionUI();
-
-    const config = window.elementSdk?.config || defaultConfig;
-    const primary = config.primary_action || defaultConfig.primary_action;
-
-    const existingCards = new Map(
-      [...grid.children].map(card => [card.getAttribute('data-file-id'), card])
-    );
-
-    visiblePhotos.forEach((file, index) => {
-      let card = existingCards.get(file.id);
-
-      if (!card) {
-        card = document.createElement('div');
-        card.setAttribute('data-file-id', file.id);
-        card.style.cssText = `position:relative;border-radius:12px;overflow:hidden;aspect-ratio:1;background:linear-gradient(135deg, ${primary}20, ${primary}05);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.2s;opacity:0.7;`;
-        
-        const photoClickHandler = () => openPhotoViewer(file.id, allGalleryPhotos.findIndex(p => p.id === file.id));
-        
-        card.onclick = photoClickHandler;
-        
-        grid.appendChild(card);
-      }
-
-      if (card.querySelector('img') === null && !card.dataset.loadingStarted) {
-        card.dataset.loadingStarted = 'true';
-        
-        const publicUrl = R2_PUBLIC_URL + "/" + file.storage_path;
-        
-        saveUrlToCache(file.storage_path, publicUrl);
-        galleryPhotosCache.set(file.storage_path, publicUrl);
-        
-        if (card.querySelector('img') === null) {
-          const imgContainer = document.createElement('div');
-          imgContainer.style.cssText = 'width:100%;height:100%;position:relative;';
-          
-          const img = document.createElement('img');
-          img.src = publicUrl;
-          img.loading = 'lazy';
-          img.style.cssText = `width:100%;height:100%;object-fit:cover;`;
-          img.onerror = () => {
-            img.style.display = 'none';
-            card.innerHTML = `<i data-lucide="image" style="width:40px;height:40px;color:${primary};opacity:0.5;"></i>`;
-            lucide.createIcons();
-          };
-          
-          const checkbox = document.createElement('div');
-          checkbox.style.cssText = `position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;background:${primary};display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;cursor:pointer;z-index:10;`;
-          checkbox.innerHTML = `<i data-lucide="check" style="width:14px;height:14px;color:#fff;"></i>`;
-          checkbox.onclick = (e) => {
-            e.stopPropagation();
-            togglePhotoSelection(file.id);
-          };
-          
-          imgContainer.appendChild(img);
-          imgContainer.appendChild(checkbox);
-          
-          card.innerHTML = '';
-          card.appendChild(imgContainer);
-          
-          card.onmouseover = () => { checkbox.style.opacity = '1'; };
-          card.onmouseout = () => { 
-            if (!gallerySelectedPhotos.has(file.id)) {
-              checkbox.style.opacity = '0';
-            }
-          };
-          
-          card.onclick = () => openPhotoViewer(file.id, allGalleryPhotos.findIndex(p => p.id === file.id));
-          
-          lucide.createIcons();
+      .order('uploaded_at', { ascending: false })
+      .then(({ data: uploads, error }) => {
+        if (error) {
+          console.error('Erro ao carregar galeria:', error);
+          return;
         }
-      }
 
-      existingCards.delete(file.id);
-    });
+        const grid = document.getElementById('gallery-grid');
+        const empty = document.getElementById('gallery-empty');
+        const pagination = document.getElementById('gallery-pagination');
+        const photoCount = document.getElementById('gallery-photo-count');
 
-    existingCards.forEach(card => card.remove());
+        if (!uploads || uploads.length === 0) {
+          if (grid.innerHTML === '') {
+            empty.style.display = 'block';
+          }
+          photoCount.textContent = '📷 0 fotos partilhadas';
+          allGalleryPhotos = [];
+          galleryFilteredPhotos = null;
+          galleryCurrentPage = 0;
+          pagination.style.display = 'none';
+          updateGallerySelectionUI();
+          return;
+        }
 
-    lucide.createIcons();
+        const displayCount = galleryFilteredPhotos ? galleryFilteredPhotos.length : uploads.length;
+        photoCount.textContent = `📷 ${displayCount} ${displayCount === 1 ? 'foto' : 'fotos'} partilhada${displayCount === 1 ? '' : 's'}`;
+
+        empty.style.display = 'none';
+        allGalleryPhotos = uploads;
+        
+        if (!galleryFilteredPhotos) {
+          galleryCurrentPage = 0;
+        }
+
+        const photosToShow = galleryFilteredPhotos || allGalleryPhotos;
+
+        const totalPages = Math.ceil(photosToShow.length / PHOTOS_PER_PAGE);
+        const pageInfo = document.getElementById('gallery-page-info');
+        const prevBtn = document.getElementById('gallery-prev-btn');
+        const nextBtn = document.getElementById('gallery-next-btn');
+        
+        pageInfo.textContent = `Página ${galleryCurrentPage + 1} de ${totalPages}`;
+        prevBtn.style.display = galleryCurrentPage > 0 ? 'inline-flex' : 'none';
+        nextBtn.style.display = galleryCurrentPage < totalPages - 1 ? 'inline-flex' : 'none';
+        pagination.style.display = totalPages > 1 ? 'flex' : 'none';
+
+        const visiblePhotos = getVisiblePhotos();
+        updateGallerySelectionUI();
+
+        const config = window.elementSdk?.config || defaultConfig;
+        const primary = config.primary_action || defaultConfig.primary_action;
+
+        const existingCards = new Map(
+          [...grid.children].map(card => [card.getAttribute('data-file-id'), card])
+        );
+
+        visiblePhotos.forEach((file, index) => {
+          let card = existingCards.get(file.id);
+
+          if (!card) {
+            card = document.createElement('div');
+            card.setAttribute('data-file-id', file.id);
+            card.style.cssText = `position:relative;border-radius:12px;overflow:hidden;aspect-ratio:1;background:linear-gradient(135deg, ${primary}20, ${primary}05);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.2s;opacity:0.7;`;
+            
+            const photoClickHandler = () => openPhotoViewer(file.id, allGalleryPhotos.findIndex(p => p.id === file.id));
+            
+            card.onclick = photoClickHandler;
+            
+            grid.appendChild(card);
+          }
+
+          if (card.querySelector('img') === null && !card.dataset.loadingStarted) {
+            card.dataset.loadingStarted = 'true';
+            
+            const publicUrl = R2_PUBLIC_URL + "/" + file.storage_path;
+            
+            saveUrlToCache(file.storage_path, publicUrl);
+            galleryPhotosCache.set(file.storage_path, publicUrl);
+            
+            if (card.querySelector('img') === null) {
+              const imgContainer = document.createElement('div');
+              imgContainer.style.cssText = 'width:100%;height:100%;position:relative;';
+              
+              const img = document.createElement('img');
+              img.src = publicUrl;
+              img.loading = 'lazy';
+              img.style.cssText = `width:100%;height:100%;object-fit:cover;`;
+              img.onerror = () => {
+                img.style.display = 'none';
+                card.innerHTML = `<i data-lucide="image" style="width:40px;height:40px;color:${primary};opacity:0.5;"></i>`;
+                lucide.createIcons();
+              };
+              
+              const checkbox = document.createElement('div');
+              checkbox.style.cssText = `position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;background:${primary};display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;cursor:pointer;z-index:10;`;
+              checkbox.innerHTML = `<i data-lucide="check" style="width:14px;height:14px;color:#fff;"></i>`;
+              checkbox.onclick = (e) => {
+                e.stopPropagation();
+                togglePhotoSelection(file.id);
+              };
+              
+              imgContainer.appendChild(img);
+              imgContainer.appendChild(checkbox);
+              
+              card.innerHTML = '';
+              card.appendChild(imgContainer);
+              
+              card.onmouseover = () => { checkbox.style.opacity = '1'; };
+              card.onmouseout = () => { 
+                if (!gallerySelectedPhotos.has(file.id)) {
+                  checkbox.style.opacity = '0';
+                }
+              };
+              
+              card.onclick = () => openPhotoViewer(file.id, allGalleryPhotos.findIndex(p => p.id === file.id));
+              
+              lucide.createIcons();
+            }
+          }
+
+          existingCards.delete(file.id);
+        });
+
+        existingCards.forEach(card => card.remove());
+
+        lucide.createIcons();
+      });
   }
 
-  async function downloadAllPhotosGallery() {
+  function downloadAllPhotosGallery() {
     if (!supabaseClient || !currentEventId || allGalleryPhotos.length === 0) return;
 
     showToast('⏳ A preparar ZIP com todas as fotos...', 'info');
     
-    try {
-      const zip = new JSZip();
-      const folderName = 'UploadAO_Fotos';
-      let downloaded = 0;
-      const total = allGalleryPhotos.length;
+    const zip = new JSZip();
+    const folderName = 'UploadAO_Fotos';
+    let downloaded = 0;
+    const total = allGalleryPhotos.length;
+    let completed = 0;
 
-      for (const photo of allGalleryPhotos) {
+    allGalleryPhotos.forEach((photo, index) => {
+      setTimeout(() => {
         try {
           const publicUrl = R2_PUBLIC_URL + "/" + photo.storage_path;
           
-          const response = await fetch(publicUrl);
-          if (!response.ok) throw new Error('Erro ao descarregar');
-          
-          const blob = await response.blob();
-          
-          const safeName = photo.file_name.replace(/[^a-zA-Z0-9._-]/g, '_');
-          zip.folder(folderName).file(safeName, blob);
-          
-          downloaded++;
+          fetch(publicUrl)
+            .then(response => {
+              if (!response.ok) throw new Error('Erro ao descarregar');
+              return response.blob();
+            })
+            .then(blob => {
+              const safeName = photo.file_name.replace(/[^a-zA-Z0-9._-]/g, '_');
+              zip.folder(folderName).file(safeName, blob);
+              downloaded++;
+              completed++;
+              
+              if (completed === total) {
+                zip.generateAsync({ type: 'blob' }).then(zipBlob => {
+                  const link = document.createElement('a');
+                  link.href = URL.createObjectURL(zipBlob);
+                  link.download = `UploadAO_${currentEventId}_${new Date().toISOString().split('T')[0]}.zip`;
+                  document.body.appendChild(link);
+                  link.click();
+                  link.remove();
+                  URL.revokeObjectURL(link.href);
+
+                  showToast(`✅ ${downloaded} foto(s) baixadas em ZIP!`, 'success');
+                });
+              }
+            })
+            .catch(err => {
+              console.error('Erro ao processar foto:', err);
+              completed++;
+            });
         } catch (err) {
           console.error('Erro ao processar foto:', err);
+          completed++;
         }
-      }
-
-      const zipBlob = await zip.generateAsync({ type: 'blob' });
-      
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(zipBlob);
-      link.download = `UploadAO_${currentEventId}_${new Date().toISOString().split('T')[0]}.zip`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(link.href);
-
-      showToast(`✅ ${downloaded} foto(s) baixadas em ZIP!`, 'success');
-    } catch (err) {
-      console.error('Erro ao criar ZIP:', err);
-      showToast('❌ Erro ao criar arquivo ZIP', 'error');
-    }
+      }, index * 50);
+    });
   }
 
   // --- FILE HANDLING ---
@@ -2094,7 +2188,7 @@
     addFiles(Array.from(e.dataTransfer.files));
   });
 
-  async function addFiles(files) {
+  function addFiles(files) {
     const mediaFiles = files.filter(f => {
       const isImage = f.type.startsWith('image/');
       const isVideo = VIDEO_CONFIG.allowedFormats.includes(f.type);
@@ -2112,45 +2206,50 @@
       return;
     }
 
-    const { data: uploadedPhotos } = await supabaseClient
+    supabaseClient
       .from('uploads')
       .select('file_name, file_size_mb')
-      .eq('event_id', currentEventId);
+      .eq('event_id', currentEventId)
+      .then(({ data: uploadedPhotos }) => {
+        const uploadedSet = new Set(
+          (uploadedPhotos || []).map(p => `${p.file_name}|${p.file_size_mb}`)
+        );
 
-    const uploadedSet = new Set(
-      (uploadedPhotos || []).map(p => `${p.file_name}|${p.file_size_mb}`)
-    );
+        let duplicates = 0;
+        const filesToAdd = [];
 
-    let duplicates = 0;
-    const filesToAdd = [];
+        mediaFiles.forEach(f => {
+          const fileKey = `${f.name}|${(f.size / 1024 / 1024).toFixed(1)}`;
+          
+          if (!selectedFiles.find(s => s.name === f.name && s.size === f.size) && 
+              !uploadedSet.has(fileKey)) {
+            filesToAdd.push(f);
+          } else if (uploadedSet.has(fileKey)) {
+            duplicates++;
+          }
+        });
 
-    mediaFiles.forEach(f => {
-      const fileKey = `${f.name}|${(f.size / 1024 / 1024).toFixed(1)}`;
-      
-      if (!selectedFiles.find(s => s.name === f.name && s.size === f.size) && 
-          !uploadedSet.has(fileKey)) {
-        filesToAdd.push(f);
-      } else if (uploadedSet.has(fileKey)) {
-        duplicates++;
-      }
-    });
+        const rejected = mediaFiles.length - filesToAdd.length;
+        const canAdd = Math.min(filesToAdd.length, remainingSlots);
 
-    const rejected = mediaFiles.length - filesToAdd.length;
-    const canAdd = Math.min(filesToAdd.length, remainingSlots);
+        filesToAdd.slice(0, canAdd).forEach(f => {
+          selectedFiles.push(f);
+        });
 
-    filesToAdd.slice(0, canAdd).forEach(f => {
-      selectedFiles.push(f);
-    });
+        if (duplicates > 0) {
+          showToast(`⚠️ ${duplicates} ficheiro(s) já enviado(s) neste evento`, 'warning');
+        }
 
-    if (duplicates > 0) {
-      showToast(`⚠️ ${duplicates} ficheiro(s) já enviado(s) neste evento`, 'warning');
-    }
+        if (canAdd < filesToAdd.length) {
+          showToast(`⚠️ ${filesToAdd.length - canAdd} ficheiro(s) não adicionado(s) - limite de 20 por vez`, 'warning');
+        }
 
-    if (canAdd < filesToAdd.length) {
-      showToast(`⚠️ ${filesToAdd.length - canAdd} ficheiro(s) não adicionado(s) - limite de 20 por vez`, 'warning');
-    }
-
-    renderFileList();
+        renderFileList();
+      })
+      .catch(err => {
+        console.error('Erro ao verificar duplicatas:', err);
+        showToast('Erro ao verificar ficheiros', 'error');
+      });
   }
 
   function renderFileList() {
@@ -2254,7 +2353,7 @@
     renderFileList();
   }
 
-  async function startUpload() {
+  function startUpload() {
     if (isUploading || !selectedFiles.length) return;
 
     isUploading = true;
@@ -2271,32 +2370,40 @@
 
     const filesToUpload = [...selectedFiles];
     let successCount = 0;
+    let completedCount = 0;
 
     filesToUpload.forEach((file, index) => {
-      uploadQueue.push(async () => {
-        try {
-          await uploadFile(file, index);
-          successCount++;
-        } catch (err) {
-          console.error('Erro ao enviar:', file.name, err);
-          showToast(`❌ Erro ao enviar ${file.name}`, 'error');
-        }
+      uploadQueue.push(() => {
+        return uploadFile(file, index)
+          .then(() => {
+            successCount++;
+            completedCount++;
+            if (completedCount === filesToUpload.length) {
+              finishUpload(successCount, filesToUpload.length);
+            }
+          })
+          .catch(err => {
+            console.error('Erro ao enviar:', file.name, err);
+            showToast(`❌ Erro ao enviar ${file.name}`, 'error');
+            completedCount++;
+            if (completedCount === filesToUpload.length) {
+              finishUpload(successCount, filesToUpload.length);
+            }
+          });
       });
     });
 
     processUploadQueue();
+  }
 
-    while (uploadQueue.length > 0 || activeUploads > 0) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
-
+  function finishUpload(successCount, totalCount) {
     isUploading = false;
     uploadBtn.disabled = false;
     uploadBtn.style.opacity = '1';
 
     const config = window.elementSdk?.config || defaultConfig;
     const msg = config.thank_you_message || defaultConfig.thank_you_message;
-    showToast(`${msg} (${successCount}/${filesToUpload.length})`, 'success');
+    showToast(`${msg} (${successCount}/${totalCount})`, 'success');
 
     selectedFiles = [];
     renderFileList();
@@ -2308,144 +2415,170 @@
     lucide.createIcons();
   }
 
-  async function uploadFile(file, index) {
-    if (!file.type.startsWith('image/') && !VIDEO_CONFIG.allowedFormats.includes(file.type)) {
-      showToast(`❌ ${file.name} não é uma imagem ou vídeo válido`, 'error');
-      throw new Error('Invalid MIME type');
-    }
-
-    if (!supabaseClient || !currentEventId || !currentGuestId) {
-      throw new Error('Missing required data');
-    }
-
-    const { data: eventData } = await supabaseClient
-      .from('events')
-      .select('enable_guest_limit, guest_max_photos, max_photos, photos_enabled, videos_enabled')
-      .eq('id', currentEventId)
-      .single();
-
-    if (!eventData) {
-      throw new Error('Event not found');
-    }
-
-    const isVideo = VIDEO_CONFIG.allowedFormats.includes(file.type);
-    if (isVideo && eventData.videos_enabled === false) {
-      showToast('❌ Uploads de vídeos estão bloqueados para este evento', 'error');
-      throw new Error('Video uploads disabled');
-    }
-
-    if (!isVideo && eventData.photos_enabled === false) {
-      showToast('❌ Uploads de fotos estão bloqueados para este evento', 'error');
-      throw new Error('Photo uploads disabled');
-    }
-
-    const { data: existingUploads } = await supabaseClient
-      .from('uploads')
-      .select('id', { count: 'exact' })
-      .eq('event_id', currentEventId);
-
-    const uploadCount = existingUploads?.length || 0;
-    if (uploadCount >= eventData.max_photos) {
-      showToast(`❌ Limite de ${eventData.max_photos} ficheiros para este evento atingido`, 'error');
-      throw new Error('Event upload limit exceeded');
-    }
-
-    if (eventData.enable_guest_limit) {
-      const { data: guestUploads, count: guestCount } = await supabaseClient
-        .from('uploads')
-        .select('id', { count: 'exact' })
-        .eq('event_id', currentEventId)
-        .eq('guest_id', currentGuestId);
-
-      if (guestCount >= eventData.guest_max_photos) {
-        showToast(`❌ Você já atingiu o limite de ${eventData.guest_max_photos} ficheiro(s) neste evento`, 'error');
-        throw new Error('Guest upload limit exceeded');
+  function uploadFile(file, index) {
+    return new Promise((resolve, reject) => {
+      if (!file.type.startsWith('image/') && !VIDEO_CONFIG.allowedFormats.includes(file.type)) {
+        showToast(`❌ ${file.name} não é uma imagem ou vídeo válido`, 'error');
+        reject(new Error('Invalid MIME type'));
+        return;
       }
-    }
 
-    let finalBlob = file;
-    let fileType = file.type;
+      if (!supabaseClient || !currentEventId || !currentGuestId) {
+        reject(new Error('Missing required data'));
+        return;
+      }
 
+      supabaseClient
+        .from('events')
+        .select('enable_guest_limit, guest_max_photos, max_photos, photos_enabled, videos_enabled')
+        .eq('id', currentEventId)
+        .single()
+        .then(({ data: eventData }) => {
+          if (!eventData) {
+            reject(new Error('Event not found'));
+            return;
+          }
+
+          const isVideo = VIDEO_CONFIG.allowedFormats.includes(file.type);
+          if (isVideo && eventData.videos_enabled === false) {
+            showToast('❌ Uploads de vídeos estão bloqueados para este evento', 'error');
+            reject(new Error('Video uploads disabled'));
+            return;
+          }
+
+          if (!isVideo && eventData.photos_enabled === false) {
+            showToast('❌ Uploads de fotos estão bloqueados para este evento', 'error');
+            reject(new Error('Photo uploads disabled'));
+            return;
+          }
+
+          supabaseClient
+            .from('uploads')
+            .select('id', { count: 'exact' })
+            .eq('event_id', currentEventId)
+            .then(({ data: existingUploads, count: uploadCount }) => {
+              const totalUploads = uploadCount || 0;
+              if (totalUploads >= eventData.max_photos) {
+                showToast(`❌ Limite de ${eventData.max_photos} ficheiros para este evento atingido`, 'error');
+                reject(new Error('Event upload limit exceeded'));
+                return;
+              }
+
+              if (eventData.enable_guest_limit) {
+                supabaseClient
+                  .from('uploads')
+                  .select('id', { count: 'exact' })
+                  .eq('event_id', currentEventId)
+                  .eq('guest_id', currentGuestId)
+                  .then(({ data: guestUploads, count: guestCount }) => {
+                    if (guestCount >= eventData.guest_max_photos) {
+                      showToast(`❌ Você já atingiu o limite de ${eventData.guest_max_photos} ficheiro(s) neste evento`, 'error');
+                      reject(new Error('Guest upload limit exceeded'));
+                      return;
+                    }
+                    processFileUpload(file, isVideo, eventData, resolve, reject);
+                  });
+              } else {
+                processFileUpload(file, isVideo, eventData, resolve, reject);
+              }
+            });
+        });
+    });
+  }
+
+  function processFileUpload(file, isVideo, eventData, resolve, reject) {
     if (isVideo) {
       if (file.size > VIDEO_CONFIG.maxSizeMB * 1024 * 1024) {
         showToast(`❌ ${file.name} ultrapassa ${VIDEO_CONFIG.maxSizeMB}MB`, 'error');
-        throw new Error('Video file too large');
+        reject(new Error('Video file too large'));
+        return;
       }
-      finalBlob = file;
-      fileType = file.type;
+      uploadToR2(file, file.type, eventData, resolve, reject);
     } else {
-      const { blob } = await compressImage(file);
-
-      if (blob.size > STORAGE_LIMITS.MAX_FILE_SIZE_MB * 1024 * 1024) {
-        showToast(`❌ ${file.name} ultrapassa ${STORAGE_LIMITS.MAX_FILE_SIZE_MB}MB após compressão`, 'error');
-        throw new Error('File too large');
-      }
-      finalBlob = blob;
-      fileType = 'image/jpeg';
-    }
-
-    const { data: allUploads } = await supabaseClient
-      .from('uploads')
-      .select('file_size_mb')
-      .eq('event_id', currentEventId);
-
-    const currentUsage = (allUploads || []).reduce((sum, f) => sum + (f.file_size_mb || 0), 0);
-    const newFileSize = finalBlob.size / 1024 / 1024;
-    const projectedUsage = currentUsage + newFileSize;
-
-    if (projectedUsage > STORAGE_LIMITS.MAX_STORAGE_MB) {
-      showToast(`❌ Limite de ${STORAGE_LIMITS.MAX_STORAGE_MB}MB para este evento ultrapassado`, 'error');
-      throw new Error('Storage limit exceeded');
-    }
-
-    const formData = new FormData();
-    formData.append('file', finalBlob, isVideo ? 'video.mp4' : 'photo.jpg');
-    formData.append('eventId', currentEventId);
-    formData.append('guestId', currentGuestId);
-
-    const workerResponse = await fetch(WORKER_URL, {
-      method: 'POST',
-      body: formData
-    });
-
-    if (!workerResponse.ok) {
-      throw new Error(`Worker error: ${workerResponse.status}`);
-    }
-
-    const workerData = await workerResponse.json();
-
-    if (!workerData.success) {
-      throw new Error(workerData.error || 'Upload failed');
-    }
-
-    const storagePath = workerData.path;
-    const fileUrl = R2_PUBLIC_URL + "/" + storagePath;
-    const fileSizeMB = (finalBlob.size / 1024 / 1024).toFixed(1);
-
-    const uploadRecord = {
-      id: 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-      event_id: currentEventId,
-      guest_id: currentGuestId,
-      guest_name: currentGuestName,
-      file_name: file.name,
-      file_size_mb: parseFloat(fileSizeMB),
-      file_type: fileType,
-      uploaded_at: new Date().toISOString(),
-      storage_path: storagePath,
-      file_url: fileUrl
-    };
-
-    const { error } = await supabaseClient
-      .from('uploads')
-      .insert([uploadRecord]);
-
-    if (error) {
-      console.error('Erro ao salvar metadados:', error);
-      throw new Error(`Falha ao salvar metadados: ${error.message}`);
+      compressImage(file).then(({ blob }) => {
+        if (blob.size > STORAGE_LIMITS.MAX_FILE_SIZE_MB * 1024 * 1024) {
+          showToast(`❌ ${file.name} ultrapassa ${STORAGE_LIMITS.MAX_FILE_SIZE_MB}MB após compressão`, 'error');
+          reject(new Error('File too large'));
+          return;
+        }
+        uploadToR2(blob, 'image/jpeg', eventData, resolve, reject);
+      }).catch(reject);
     }
   }
 
-  async function compressImage(file) {
+  function uploadToR2(fileOrBlob, mimeType, eventData, resolve, reject) {
+    supabaseClient
+      .from('uploads')
+      .select('file_size_mb')
+      .eq('event_id', currentEventId)
+      .then(({ data: allUploads }) => {
+        const currentUsage = (allUploads || []).reduce((sum, f) => sum + (f.file_size_mb || 0), 0);
+        const newFileSize = fileOrBlob.size / 1024 / 1024;
+        const projectedUsage = currentUsage + newFileSize;
+
+        if (projectedUsage > STORAGE_LIMITS.MAX_STORAGE_MB) {
+          showToast(`❌ Limite de ${STORAGE_LIMITS.MAX_STORAGE_MB}MB para este evento ultrapassado`, 'error');
+          reject(new Error('Storage limit exceeded'));
+          return;
+        }
+
+        const formData = new FormData();
+        const isBlob = fileOrBlob instanceof Blob;
+        const fileName = isBlob ? 'photo.jpg' : fileOrBlob.name;
+        formData.append('file', fileOrBlob, fileName);
+        formData.append('eventId', currentEventId);
+        formData.append('guestId', currentGuestId);
+
+        fetch(WORKER_URL, {
+          method: 'POST',
+          body: formData
+        })
+          .then(workerResponse => {
+            if (!workerResponse.ok) {
+              throw new Error(`Worker error: ${workerResponse.status}`);
+            }
+            return workerResponse.json();
+          })
+          .then(workerData => {
+            if (!workerData.success) {
+              throw new Error(workerData.error || 'Upload failed');
+            }
+
+            const storagePath = workerData.path;
+            const fileUrl = R2_PUBLIC_URL + "/" + storagePath;
+            const fileSizeMB = (fileOrBlob.size / 1024 / 1024).toFixed(1);
+            const originalFileName = !isBlob ? fileOrBlob.name : 'photo.jpg';
+
+            const uploadRecord = {
+              id: 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+              event_id: currentEventId,
+              guest_id: currentGuestId,
+              guest_name: currentGuestName,
+              file_name: originalFileName,
+              file_size_mb: parseFloat(fileSizeMB),
+              file_type: mimeType,
+              uploaded_at: new Date().toISOString(),
+              storage_path: storagePath,
+              file_url: fileUrl
+            };
+
+            supabaseClient
+              .from('uploads')
+              .insert([uploadRecord])
+              .then(({ error }) => {
+                if (error) {
+                  console.error('Erro ao salvar metadados:', error);
+                  reject(new Error(`Falha ao salvar metadados: ${error.message}`));
+                  return;
+                }
+                resolve();
+              });
+          })
+          .catch(reject);
+      });
+  }
+
+  function compressImage(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -2481,33 +2614,33 @@
     });
   }
 
-  async function downloadFile(fileId, fileName) {
-    try {
-      showToast('⏳ A preparar descarregamento...', 'info');
+  function downloadFile(fileId, fileName) {
+    showToast('⏳ A preparar descarregamento...', 'info');
 
-      const { data: file } = await supabaseClient
-        .from('uploads')
-        .select('file_url')
-        .eq('id', fileId)
-        .single();
+    supabaseClient
+      .from('uploads')
+      .select('file_url')
+      .eq('id', fileId)
+      .single()
+      .then(({ data: file }) => {
+        if (!file) {
+          showToast('Ficheiro não encontrado', 'error');
+          return;
+        }
 
-      if (!file) {
-        showToast('Ficheiro não encontrado', 'error');
-        return;
-      }
+        const link = document.createElement('a');
+        link.href = file.file_url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
 
-      const link = document.createElement('a');
-      link.href = file.file_url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-
-      showToast('✅ Ficheiro descarregado!', 'success');
-    } catch (err) {
-      console.error('Erro:', err);
-      showToast('Erro ao descarregar', 'error');
-    }
+        showToast('✅ Ficheiro descarregado!', 'success');
+      })
+      .catch(err => {
+        console.error('Erro:', err);
+        showToast('Erro ao descarregar', 'error');
+      });
   }
 
   function showToast(message, type = 'info') {
@@ -2525,6 +2658,6 @@
   }
 
   lucide.createIcons();
-  </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e6ed38a00603e9a',t:'MTc3NTI5MDExOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e6ef2e562b53e9a',t:'MTc3NTI5MTQwMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
