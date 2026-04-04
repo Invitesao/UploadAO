@@ -289,7 +289,7 @@
      </div>
     </section>
     <section class="px-4 max-w-3xl mx-auto pb-4 fade-in stagger-3">
-     <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;width:100%;"><input type="text" id="gallery-search-input" placeholder="🔍 Pesquisar convidado..." style="flex:1;min-width:120px;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;"> <button onclick="filterGalleryByGuest()" style="background:#2563eb;color:#fff;border:none;padding:8px 12px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:12px;display:flex;gap:4px;align-items:center;transition:all 0.3s;white-space:nowrap;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> <i data-lucide="search" style="width:12px;height:12px;"></i> </button> <button onclick="clearGalleryFilter()" style="background:#95a5a6;color:#fff;border:none;padding:8px 12px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:12px;display:none;white-space:nowrap;" id="clear-filter-btn" onmouseover="this.style.background='#7f8c8d'" onmouseout="this.style.background='#95a5a6'">Limpar</button>
+     <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;width:100%;"><input type="text" id="gallery-search-input" placeholder="🔍 Pesquisar convidado..." style="flex:1;min-width:120px;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;"> <button onclick="filterGalleryByGuest()" style="background:#2563eb;color:#fff;border:none;padding:8px 12px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:12px;display:flex;gap:4px;align-items:center;transition:all 0.3s;white-space:nowrap;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> <i data-lucide="search" style="width:12px;height:12px;"></i> </button> <button onclick="clearGalleryFilter()" style="background:#95a5a6;color:#fff;border:none;padding:8px 12px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:12px;display:none;white-space:nowrap;" id="clear-filter-btn" onmouseover="this.style.background='#7f8c8d'" onmouseout="this.style.background='#95a5a6'">Limpar</button> <button id="download-all-zip-btn" onclick="downloadAllPhotosAsZip()" style="background:#27ae60;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:12px;display:flex;gap:6px;align-items:center;transition:all 0.3s;white-space:nowrap;" onmouseover="this.style.background='#229954'" onmouseout="this.style.background='#27ae60'"> <i data-lucide="download" style="width:12px;height:12px;"></i> ZIP Tudo </button>
      </div>
      <section id="gallery-grid" style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;padding-bottom:12px;"></section>
      <div id="gallery-empty" style="text-align:center;padding:40px 20px;opacity:0.5;">
@@ -1858,6 +1858,79 @@
     // Função removida - download em massa desativado
   }
 
+  // --- ZIP DOWNLOAD ULTRA-RÁPIDO ---
+  let isZipDownloading = false;
+
+  async function downloadAllPhotosAsZip() {
+    if (isZipDownloading || allGalleryPhotos.length === 0) return;
+
+    isZipDownloading = true;
+    const btn = document.getElementById('download-all-zip-btn');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.style.opacity = '0.6';
+    btn.innerHTML = '<svg class="animate-spin" style="width:12px;height:12px;" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25"></circle><path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path></svg> Preparando...';
+
+    try {
+      const photosToDownload = galleryFilteredPhotos || allGalleryPhotos;
+      const totalPhotos = photosToDownload.length;
+      const totalSizeMB = photosToDownload.reduce((sum, p) => sum + (p.file_size_mb || 0.5), 0);
+
+      if (totalSizeMB > 500) {
+        showToast(`⚠️ Aviso: ~${totalSizeMB.toFixed(0)}MB para descarregar (pode demorar)`, 'warning');
+      }
+
+      // 🚀 Chamar Worker para gerar ZIP direto no R2
+      showToast(`📦 A gerar ZIP com ${totalPhotos} fotos...`, 'info');
+
+      const photosPaths = photosToDownload.map(p => p.storage_path);
+      const eventTitle = allEvents.find(e => e.id === currentEventId)?.event_title || 'evento';
+
+      const response = await fetch(WORKER_URL + '?action=generateZip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          paths: photosPaths,
+          eventId: currentEventId,
+          eventTitle: eventTitle.replace(/[^a-zA-Z0-9]/g, '_')
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Worker error: ${response.status}`);
+      }
+
+      const zipData = await response.json();
+
+      if (!zipData.success || !zipData.zipUrl) {
+        throw new Error(zipData.error || 'Erro ao gerar ZIP');
+      }
+
+      // Download direto do link temporário
+      showToast(`✅ ZIP gerado! A descarregar...`, 'success');
+
+      setTimeout(() => {
+        const link = document.createElement('a');
+        link.href = zipData.zipUrl;
+        link.download = `${eventTitle.replace(/[^a-zA-Z0-9]/g, '_')}_fotos_${new Date().toISOString().split('T')[0]}.zip`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        showToast(`📥 ${totalPhotos} foto(s) descarregadas em ZIP!`, 'success');
+      }, 500);
+
+    } catch (error) {
+      console.error('Erro ao gerar ZIP:', error);
+      showToast(`❌ ${error.message || 'Erro ao gerar ZIP'}`, 'error');
+    } finally {
+      isZipDownloading = false;
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.innerHTML = originalText;
+    }
+  }
+
   function downloadCurrentPhoto() {
     const img = document.getElementById('photo-viewer-image');
     const fileId = img.dataset.fileId;
@@ -1956,7 +2029,6 @@
           return;
         }
 
-        // Atualizar dados globais
         allGalleryPhotos = uploads;
         
         if (!galleryFilteredPhotos) {
@@ -1970,7 +2042,6 @@
 
         empty.style.display = 'none';
 
-        // Atualizar paginação
         const totalPages = Math.ceil(photosToShow.length / PHOTOS_PER_PAGE);
         const pageInfo = document.getElementById('gallery-page-info');
         const prevBtn = document.getElementById('gallery-prev-btn');
@@ -1981,7 +2052,6 @@
         nextBtn.style.display = galleryCurrentPage < totalPages - 1 ? 'inline-flex' : 'none';
         pagination.style.display = totalPages > 1 ? 'flex' : 'none';
 
-        // Obter fotos visíveis para a página atual
         const start = galleryCurrentPage * PHOTOS_PER_PAGE;
         const end = start + PHOTOS_PER_PAGE;
         const visiblePhotos = photosToShow.slice(start, end);
@@ -1989,31 +2059,31 @@
         const config = window.elementSdk?.config || defaultConfig;
         const primary = config.primary_action || defaultConfig.primary_action;
 
-        // Limpar grid
         grid.innerHTML = '';
 
-        // Renderizar cada foto
-        visiblePhotos.forEach((file, indexInPage) => {
+        visiblePhotos.forEach((file) => {
           const card = document.createElement('div');
           card.setAttribute('data-file-id', file.id);
           card.style.cssText = `position:relative;border-radius:12px;overflow:hidden;aspect-ratio:1;background:linear-gradient(135deg, ${primary}20, ${primary}05);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.2s;`;
           
           const publicUrl = R2_PUBLIC_URL + "/" + file.storage_path;
           
-          saveUrlToCache(file.storage_path, publicUrl);
-          galleryPhotosCache.set(file.storage_path, publicUrl);
-          
-          const imgContainer = document.createElement('div');
-          imgContainer.style.cssText = 'width:100%;height:100%;position:relative;';
-          
           const img = document.createElement('img');
           img.src = publicUrl;
           img.loading = 'lazy';
           img.style.cssText = `width:100%;height:100%;object-fit:cover;`;
-          img.onerror = () => {
+          img.alt = file.file_name;
+          
+          img.onerror = function() {
+            console.error('Erro ao carregar imagem:', publicUrl);
             img.style.display = 'none';
-            card.innerHTML = `<i data-lucide="image" style="width:40px;height:40px;color:${primary};opacity:0.5;"></i>`;
+            card.innerHTML = `<div style="text-align:center;"><i data-lucide="image" style="width:40px;height:40px;color:${primary};opacity:0.5;display:block;margin:0 auto;"></i><p style="font-size:11px;opacity:0.5;margin:4px 0 0 0;">Erro ao carregar</p></div>`;
             lucide.createIcons();
+          };
+          
+          img.onload = function() {
+            saveUrlToCache(file.storage_path, publicUrl);
+            galleryPhotosCache.set(file.storage_path, publicUrl);
           };
           
           const downloadIndicator = document.createElement('div');
@@ -2021,12 +2091,9 @@
           downloadIndicator.style.cssText = `position:absolute;top:8px;left:8px;width:28px;height:28px;border-radius:50%;background:rgba(39,174,96,0.95);display:flex;align-items:center;justify-content:center;z-index:10;${isPhotoDownloaded(file.id) ? 'flex' : 'none'};box-shadow:0 2px 8px rgba(39,174,96,0.4);`;
           downloadIndicator.innerHTML = `<i data-lucide="download-cloud" style="width:16px;height:16px;color:#fff;"></i>`;
           
-          imgContainer.appendChild(img);
-          imgContainer.appendChild(downloadIndicator);
+          card.appendChild(img);
+          card.appendChild(downloadIndicator);
           
-          card.appendChild(imgContainer);
-          
-          // Calcular índice correto na galeria completa
           const fileIndex = allGalleryPhotos.findIndex(p => p.id === file.id);
           card.onclick = () => openPhotoViewer(file.id, fileIndex);
           
@@ -2370,57 +2437,80 @@
     }
   }
 
-  function uploadToR2(fileOrBlob, mimeType, resolve, reject) {
-    const formData = new FormData();
-    const isBlob = fileOrBlob instanceof Blob;
-    const fileName = isBlob ? 'photo.jpg' : fileOrBlob.name;
-    formData.append('file', fileOrBlob, fileName);
-    formData.append('eventId', currentEventId);
-    formData.append('guestId', currentGuestId);
-    formData.append('guestName', currentGuestName);
+  // --- DEDUPLICATION SYSTEM ---
+  const fileHashCache = new Map();
 
-    // 🚀 TUDO É VALIDADO NO WORKER
-    // - Limite de fotos do evento
-    // - Limite de fotos por convidado
-    // - Limite de armazenamento
-    // - Status do evento (ativo/inativo)
-    // - Fotos/Vídeos habilitados
-    // - Rate limiting por IP
-    fetch(WORKER_URL, {
-      method: 'POST',
-      body: formData
-    })
-      .then(workerResponse => {
-        if (!workerResponse.ok) {
-          throw new Error(`Worker error: ${workerResponse.status}`);
+  function calculateFileHash(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const buffer = e.target.result;
+          const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+          const hashArray = Array.from(new Uint8Array(hashBuffer));
+          const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+          resolve(hashHex);
+        } catch (err) {
+          reject(err);
         }
-        return workerResponse.json();
-      })
-      .then(workerData => {
-        if (!workerData.success) {
-          // Erros do Worker são retornados aqui
-          const errorMsg = workerData.error || 'Upload failed';
-          showToast(`❌ ${errorMsg}`, 'error');
-          throw new Error(errorMsg);
-        }
+      };
+      reader.onerror = () => reject(new Error('Erro ao ler ficheiro'));
+      reader.readAsArrayBuffer(file);
+    });
+  }
 
-        const storagePath = workerData.path;
-        const fileUrl = R2_PUBLIC_URL + "/" + storagePath;
+  async function checkForDuplicateInR2(fileHash, eventId) {
+    try {
+      // Verificar se hash já existe no R2 para este evento
+      const result = await fetch(WORKER_URL + '?action=checkHash', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hash: fileHash, eventId })
+      });
+
+      if (!result.ok) return null;
+      
+      const data = await result.json();
+      return data.exists ? data.existingPath : null;
+    } catch (err) {
+      console.warn('Erro ao verificar duplicação:', err);
+      return null;
+    }
+  }
+
+  async function uploadToR2(fileOrBlob, mimeType, resolve, reject) {
+    try {
+      const isBlob = fileOrBlob instanceof Blob;
+      const fileName = isBlob ? 'photo.jpg' : fileOrBlob.name;
+      
+      // 1. CALCULAR HASH DO FICHEIRO
+      const fileHash = await calculateFileHash(fileOrBlob);
+      fileHashCache.set(fileName, fileHash);
+
+      // 2. VERIFICAR SE JÁ EXISTE NO R2
+      const existingPath = await checkForDuplicateInR2(fileHash, currentEventId);
+      
+      if (existingPath) {
+        // Ficheiro duplicado! Reutilizar referência
+        showToast(`♻️ Foto duplicada encontrada - referência reutilizada!`, 'info');
+        
+        const fileUrl = R2_PUBLIC_URL + "/" + existingPath;
         const fileSizeMB = (fileOrBlob.size / 1024 / 1024).toFixed(1);
         const originalFileName = !isBlob ? fileOrBlob.name : 'photo.jpg';
 
-        // Salvar metadados no Supabase
         const uploadRecord = {
           id: 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
           event_id: currentEventId,
           guest_id: currentGuestId,
           guest_name: currentGuestName,
           file_name: originalFileName,
-          file_size_mb: parseFloat(fileSizeMB),
+          file_size_mb: 0, // Não conta para quota (referência)
           file_type: mimeType,
           uploaded_at: new Date().toISOString(),
-          storage_path: storagePath,
-          file_url: fileUrl
+          storage_path: existingPath,
+          file_url: fileUrl,
+          is_duplicate_reference: true,
+          file_hash: fileHash
         };
 
         supabaseClient
@@ -2428,14 +2518,90 @@
           .insert([uploadRecord])
           .then(({ error }) => {
             if (error) {
-              console.error('Erro ao salvar metadados:', error);
-              reject(new Error(`Falha ao salvar metadados: ${error.message}`));
+              console.error('Erro ao salvar referência de duplicado:', error);
+              reject(new Error(`Falha ao salvar: ${error.message}`));
               return;
             }
             resolve();
           });
+        return;
+      }
+
+      // 3. FICHEIRO NOVO - ENVIAR AO WORKER
+      const formData = new FormData();
+      formData.append('file', fileOrBlob, fileName);
+      formData.append('eventId', currentEventId);
+      formData.append('guestId', currentGuestId);
+      formData.append('guestName', currentGuestName);
+      formData.append('fileHash', fileHash); // Worker precisa do hash
+
+      // 🚀 WORKER AGORA:
+      // - Valida tudo (ativação, limite fotos, limite storage, etc)
+      // - COMPRIME imagens automaticamente no R2
+      // - Gera thumbnails
+      // - Armazena hash para deduplicação futura
+      fetch(WORKER_URL, {
+        method: 'POST',
+        body: formData
       })
-      .catch(reject);
+        .then(workerResponse => {
+          if (!workerResponse.ok) {
+            throw new Error(`Worker error: ${workerResponse.status}`);
+          }
+          return workerResponse.json();
+        })
+        .then(workerData => {
+          if (!workerData.success) {
+            const errorMsg = workerData.error || 'Upload failed';
+            showToast(`❌ ${errorMsg}`, 'error');
+            throw new Error(errorMsg);
+          }
+
+          const storagePath = workerData.path;
+          const fileUrl = R2_PUBLIC_URL + "/" + storagePath;
+          const compressedSizeMB = workerData.compressedSizeMB || (fileOrBlob.size / 1024 / 1024).toFixed(1);
+          const originalFileName = !isBlob ? fileOrBlob.name : 'photo.jpg';
+          const compressionRatio = workerData.compressionRatio || 0;
+
+          if (compressionRatio > 0) {
+            const saved = ((1 - compressionRatio) * 100).toFixed(0);
+            showToast(`✨ Foto comprimida (-${saved}%)`, 'info');
+          }
+
+          // Salvar metadados
+          const uploadRecord = {
+            id: 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+            event_id: currentEventId,
+            guest_id: currentGuestId,
+            guest_name: currentGuestName,
+            file_name: originalFileName,
+            file_size_mb: parseFloat(compressedSizeMB),
+            file_type: mimeType,
+            uploaded_at: new Date().toISOString(),
+            storage_path: storagePath,
+            file_url: fileUrl,
+            is_duplicate_reference: false,
+            file_hash: fileHash,
+            compression_ratio: compressionRatio
+          };
+
+          supabaseClient
+            .from('uploads')
+            .insert([uploadRecord])
+            .then(({ error }) => {
+              if (error) {
+                console.error('Erro ao salvar metadados:', error);
+                reject(new Error(`Falha ao salvar metadados: ${error.message}`));
+                return;
+              }
+              resolve();
+            });
+        })
+        .catch(reject);
+    } catch (err) {
+      console.error('Erro no upload:', err);
+      reject(err);
+    }
   }
 
   function compressImage(file) {
@@ -2519,5 +2685,5 @@
 
   lucide.createIcons();
 </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e70cdb417513e9a',t:'MTc3NTMxMDg1MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e70edfac6273e9a',t:'MTc3NTMxMjE3NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
