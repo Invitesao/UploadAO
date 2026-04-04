@@ -73,73 +73,93 @@
   <div id="app" class="h-full w-full overflow-auto" style="background: #ffffff; color: #1a1a1a;">
    <div id="toast-container" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 items-center pointer-events-none"></div><!-- PHOTO VIEWER MODAL -->
    <div id="photo-viewer-modal" style="background:rgba(0,0,0,0.95);flex-direction:column;align-items:center;justify-content:center;display:none;">
-    <header style="position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:12px;background:rgba(0,0,0,0.5);z-index:100000;"><span id="photo-counter" style="color:#fff;font-size:13px;font-weight:600;"></span> <button onclick="closePhotoViewer()" style="background:none;border:none;color:#fff;cursor:pointer;padding:8px;z-index:100001;"> <i data-lucide="x" style="width:24px;height:24px;"></i> </button>
+    <header style="position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:12px;background:rgba(0,0,0,0.5);z-index:100000;">
+     <span id="photo-counter" style="color:#fff;font-size:13px;font-weight:600;"></span> <button onclick="closePhotoViewer()" style="background:none;border:none;color:#fff;cursor:pointer;padding:8px;z-index:100001;"> <i data-lucide="x" style="width:24px;height:24px;"></i> </button>
     </header>
-    <div style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:100%;padding:60px 8px 70px 8px;overflow:hidden;"><button onclick="previousPhoto()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s;flex-shrink:0;z-index:100001;margin:0;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'"> <i data-lucide="chevron-left" style="width:20px;height:20px;"></i> </button> <img id="photo-viewer-image" src="" style="max-width:100%;max-height:100%;border-radius:8px;object-fit:contain;z-index:100000;margin:0;"> <button onclick="nextPhoto()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s;flex-shrink:0;z-index:100001;margin:0;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'"> <i data-lucide="chevron-right" style="width:20px;height:20px;"></i> </button>
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:100%;padding:60px 8px 70px 8px;overflow:hidden;">
+     <button onclick="previousPhoto()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s;flex-shrink:0;z-index:100001;margin:0;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'"> <i data-lucide="chevron-left" style="width:20px;height:20px;"></i> </button> <img id="photo-viewer-image" src="" style="max-width:100%;max-height:100%;border-radius:8px;object-fit:contain;z-index:100000;margin:0;"> <button onclick="nextPhoto()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s;flex-shrink:0;z-index:100001;margin:0;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'"> <i data-lucide="chevron-right" style="width:20px;height:20px;"></i> </button>
     </div>
-    <footer style="position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:center;gap:12px;padding:12px;background:rgba(0,0,0,0.5);z-index:100000;"><button onclick="downloadCurrentPhoto()" style="background:#2563eb;color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;display:flex;gap:6px;align-items:center;font-size:12px;z-index:100001;"> <i data-lucide="download" style="width:16px;height:16px;"></i> <span style="display:none;">Descarregar</span> </button>
+    <footer style="position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:center;gap:12px;padding:12px;background:rgba(0,0,0,0.5);z-index:100000;">
+     <button onclick="downloadCurrentPhoto()" style="background:#2563eb;color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;display:flex;gap:6px;align-items:center;font-size:12px;z-index:100001;"> <i data-lucide="download" style="width:16px;height:16px;"></i> <span style="display:none;">Descarregar</span> </button>
     </footer>
    </div><!-- LOGIN VIEW -->
    <div id="login-view" class="h-full w-full flex flex-col items-center justify-center px-4">
     <div class="w-full max-w-sm">
      <div class="text-center mb-8">
-      <div style="width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:#2563eb;color:#fff;margin:0 auto 20px;"><i data-lucide="lock" style="width:32px;height:32px;"></i>
+      <div style="width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:#2563eb;color:#fff;margin:0 auto 20px;">
+       <i data-lucide="lock" style="width:32px;height:32px;"></i>
       </div>
       <h1 style="font-family:'Poppins',sans-serif;font-size:28px;font-weight:700;margin:0 0 8px 0;">UploadAO</h1>
       <p style="font-size:14px;opacity:0.5;margin:0;">Painel de Administrador</p>
      </div>
      <div class="space-y-4">
-      <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Senha</label> <input type="password" id="admin-password" placeholder="Digite sua senha" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;transition:all 0.3s;" onkeypress="if(event.key==='Enter') adminLogin();">
+      <div>
+       <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Senha</label> <input type="password" id="admin-password" placeholder="Digite sua senha" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;transition:all 0.3s;" onkeypress="if(event.key==='Enter') adminLogin();">
       </div><button onclick="adminLogin()" style="width:100%;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> Entrar no Painel </button>
      </div>
     </div>
    </div><!-- ADMIN VIEW -->
    <div id="admin-view" style="display:none;" class="h-full w-full overflow-auto">
     <header style="background:#f5f5f5;border-bottom:1px solid rgba(26,26,26,0.1);padding:16px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;">
-     <div style="display:flex;align-items:center;gap:12px;"><i data-lucide="settings" style="width:20px;height:20px;"></i> <span style="font-weight:600;">Painel de Administração</span>
+     <div style="display:flex;align-items:center;gap:12px;">
+      <i data-lucide="settings" style="width:20px;height:20px;"></i> <span style="font-weight:600;">Painel de Administração</span>
      </div><button onclick="adminLogout()" style="background:none;border:none;cursor:pointer;display:flex;gap:6px;align-items:center;opacity:0.6;font-family:'Poppins',sans-serif;font-size:13px;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'"> <i data-lucide="log-out" style="width:18px;height:18px;"></i> <span>Sair</span> </button>
     </header>
     <div style="padding:24px;max-width:900px;margin:0 auto;">
      <div style="background:#fff;border:1px solid rgba(26,26,26,0.1);border-radius:16px;padding:24px;margin-bottom:24px;">
       <h2 style="font-size:18px;font-weight:600;margin:0 0 20px 0;">Criar Novo Evento</h2>
-      <div style="display:flex;gap:12px;margin-bottom:16px;"><input type="text" id="search-events" placeholder="🔍 Buscar eventos..." style="flex:1;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;"> <button onclick="showAllEvents()" style="background:#e74c3c;color:#fff;border:none;padding:12px 16px;border-radius:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Limpar</button>
+      <div style="display:flex;gap:12px;margin-bottom:16px;">
+       <input type="text" id="search-events" placeholder="🔍 Buscar eventos..." style="flex:1;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;"> <button onclick="showAllEvents()" style="background:#e74c3c;color:#fff;border:none;padding:12px 16px;border-radius:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Limpar</button>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-       <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Nome do Evento</label> <input type="text" id="new-event-title" placeholder="Ex: João &amp; Maria" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;">
+       <div>
+        <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Nome do Evento</label> <input type="text" id="new-event-title" placeholder="Ex: João &amp; Maria" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;">
        </div>
-       <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Data do Evento</label> <input type="date" id="new-event-date" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;">
+       <div>
+        <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Data do Evento</label> <input type="date" id="new-event-date" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;">
        </div>
       </div>
-      <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Mensagem Personalizada</label> <input type="text" id="new-event-message" placeholder="Ex: Partilha as tuas fotos!" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;margin-bottom:16px;">
+      <div>
+       <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Mensagem Personalizada</label> <input type="text" id="new-event-message" placeholder="Ex: Partilha as tuas fotos!" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;margin-bottom:16px;">
       </div>
       <div id="edit-event-fields" style="display:none;padding:16px;background:#f0f8ff;border-radius:12px;border:1px solid #2563eb33;margin-bottom:16px;">
        <h3 style="font-size:14px;font-weight:600;margin:0 0 12px 0;">✏️ Editar Evento</h3><input type="text" id="edit-event-title" placeholder="Novo nome" style="width:100%;padding:10px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;margin-bottom:8px;"> <input type="date" id="edit-event-date" style="width:100%;padding:10px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;margin-bottom:8px;"> <input type="text" id="edit-event-message" placeholder="Nova mensagem" style="width:100%;padding:10px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;margin-bottom:8px;">
-       <div><label style="display:block;font-size:12px;font-weight:600;margin:0 0 6px 0;opacity:0.7;">📊 Limite Total de Fotos do Evento</label>
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;"><input type="number" id="edit-event-max-photos" min="1" placeholder="Fotos" style="width:80px;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;"> <span id="edit-event-storage-display" style="font-size:11px;opacity:0.6;">Tamanho: 0 MB</span>
+       <div>
+        <label style="display:block;font-size:12px;font-weight:600;margin:0 0 6px 0;opacity:0.7;">📊 Limite Total de Fotos do Evento</label>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
+         <input type="number" id="edit-event-max-photos" min="1" placeholder="Fotos" style="width:80px;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;"> <span id="edit-event-storage-display" style="font-size:11px;opacity:0.6;">Tamanho: 0 MB</span>
         </div>
        </div>
-       <div><label style="display:block;font-size:12px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">👥 Limite por Convidado</label>
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;"><input type="checkbox" id="edit-event-enable-guest-limit" style="cursor:pointer;"> <label for="edit-event-enable-guest-limit" style="cursor:pointer;font-size:12px;flex:1;">Ativar limite de fotos por convidado</label>
+       <div>
+        <label style="display:block;font-size:12px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">👥 Limite por Convidado</label>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
+         <input type="checkbox" id="edit-event-enable-guest-limit" style="cursor:pointer;"> <label for="edit-event-enable-guest-limit" style="cursor:pointer;font-size:12px;flex:1;">Ativar limite de fotos por convidado</label>
         </div>
-        <div id="guest-limit-config" style="display:none;background:#fff;padding:12px;border-radius:8px;border:1px solid rgba(37,99,235,0.2);"><input type="number" id="edit-event-guest-max-photos" min="1" placeholder="Máx fotos por convidado" style="width:100%;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;">
+        <div id="guest-limit-config" style="display:none;background:#fff;padding:12px;border-radius:8px;border:1px solid rgba(37,99,235,0.2);">
+         <input type="number" id="edit-event-guest-max-photos" min="1" placeholder="Máx fotos por convidado" style="width:100%;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;">
          <p style="font-size:11px;opacity:0.6;margin:8px 0 0 0;">Cada convidado poderá enviar no máximo este número de fotos.</p>
         </div>
        </div>
-       <div><label style="display:block;font-size:12px;font-weight:600;margin:0 0 6px 0;opacity:0.7;">⏳ Duração do Evento</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;"><button onclick="setEventExpiration(15)" style="background:#fff;border:2px solid #2563eb;color:#2563eb;padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;transition:all 0.3s;" id="btn-exp-15">15 dias</button> <button onclick="setEventExpiration(20)" style="background:#fff;border:2px solid #2563eb;color:#2563eb;padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;transition:all 0.3s;" id="btn-exp-20">20 dias</button> <button onclick="setEventExpiration(30)" style="background:#fff;border:2px solid #2563eb;color:#2563eb;padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;transition:all 0.3s;" id="btn-exp-30">30 dias</button>
+       <div>
+        <label style="display:block;font-size:12px;font-weight:600;margin:0 0 6px 0;opacity:0.7;">⏳ Duração do Evento</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
+         <button onclick="setEventExpiration(15)" style="background:#fff;border:2px solid #2563eb;color:#2563eb;padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;transition:all 0.3s;" id="btn-exp-15">15 dias</button> <button onclick="setEventExpiration(20)" style="background:#fff;border:2px solid #2563eb;color:#2563eb;padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;transition:all 0.3s;" id="btn-exp-20">20 dias</button> <button onclick="setEventExpiration(30)" style="background:#fff;border:2px solid #2563eb;color:#2563eb;padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;transition:all 0.3s;" id="btn-exp-30">30 dias</button>
         </div>
-        <div style="display:flex;gap:8px;align-items:center;"><input type="number" id="extend-event-days" min="1" max="60" placeholder="Dias" style="width:60px;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;"> <button onclick="extendEventExpiration()" style="background:#f39c12;color:#fff;border:none;padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;flex:1;">Estender +</button>
+        <div style="display:flex;gap:8px;align-items:center;">
+         <input type="number" id="extend-event-days" min="1" max="60" placeholder="Dias" style="width:60px;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;"> <button onclick="extendEventExpiration()" style="background:#f39c12;color:#fff;border:none;padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;flex:1;">Estender +</button>
         </div>
         <p id="expiration-info" style="font-size:11px;opacity:0.6;margin:8px 0 0 0;">Duração atual: 15 dias</p>
        </div>
-       <div style="display:flex;gap:8px;"><button onclick="saveEventChanges()" style="background:#2563eb;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Guardar</button> <button onclick="cancelEditEvent()" style="background:#e0e0e0;border:none;padding:8px 16px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Cancelar</button>
+       <div style="display:flex;gap:8px;">
+        <button onclick="saveEventChanges()" style="background:#2563eb;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Guardar</button> <button onclick="cancelEditEvent()" style="background:#e0e0e0;border:none;padding:8px 16px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Cancelar</button>
        </div>
       </div><button onclick="addNewEvent()" style="background:#2563eb;color:#fff;border:none;padding:12px 24px;border-radius:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;width:100%;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> <i data-lucide="plus" style="width:16px;height:16px;display:inline;margin-right:8px;vertical-align:-2px;"></i> Criar Evento </button>
      </div>
      <div style="background:#fff;border:1px solid rgba(26,26,26,0.1);border-radius:16px;padding:24px;">
       <h2 style="font-size:18px;font-weight:600;margin:0 0 20px 0;">Meus Eventos (<span id="event-count">0</span>)</h2>
       <div id="events-list" style="display:flex;flex-direction:column;gap:12px;"></div>
-      <div id="no-events-message" style="text-align:center;padding:24px;opacity:0.5;"><i data-lucide="inbox" style="width:32px;height:32px;margin:0 auto 8px;display:block;opacity:0.3;"></i>
+      <div id="no-events-message" style="text-align:center;padding:24px;opacity:0.5;">
+       <i data-lucide="inbox" style="width:32px;height:32px;margin:0 auto 8px;display:block;opacity:0.3;"></i>
        <p style="font-size:14px;margin:0;">Nenhum evento criado ainda</p>
       </div>
      </div>
@@ -148,13 +168,15 @@
    <div id="guest-login-view" style="display:none;" class="h-full w-full flex flex-col items-center justify-center px-4">
     <div class="w-full max-w-sm">
      <div class="text-center mb-8">
-      <div style="width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:#2563eb;color:#fff;margin:0 auto 20px;"><i data-lucide="user-plus" style="width:32px;height:32px;"></i>
+      <div style="width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:#2563eb;color:#fff;margin:0 auto 20px;">
+       <i data-lucide="user-plus" style="width:32px;height:32px;"></i>
       </div>
       <h1 id="guest-login-title" style="font-family:'Poppins',sans-serif;font-size:28px;font-weight:700;margin:0 0 8px 0;"></h1>
       <p style="font-size:14px;opacity:0.5;margin:0;">Qual é o teu nome?</p>
      </div>
      <div class="space-y-4">
-      <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Teu Nome</label> <input type="text" id="guest-name-input" placeholder="Ex: João Silva" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;transition:all 0.3s;" onkeypress="if(event.key==='Enter') confirmGuestName();">
+      <div>
+       <label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Teu Nome</label> <input type="text" id="guest-name-input" placeholder="Ex: João Silva" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;transition:all 0.3s;" onkeypress="if(event.key==='Enter') confirmGuestName();">
       </div><button onclick="confirmGuestName()" style="width:100%;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> Continuar </button>
      </div>
     </div>
@@ -162,7 +184,8 @@
    <div id="guest-view" style="display:none;" class="h-full w-full overflow-auto">
     <header class="text-center pt-6 pb-3 px-4 fade-in stagger-1" style="border-bottom:1px solid rgba(26,26,26,0.1);">
      <div class="inline-flex items-center gap-2 mb-3">
-      <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;" id="logo-box"><i data-lucide="camera" style="width:20px;height:20px;"></i>
+      <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;" id="logo-box">
+       <i data-lucide="camera" style="width:20px;height:20px;"></i>
       </div><span id="brand-name" style="font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;letter-spacing:0.5px;">UploadAO</span>
      </div>
      <p id="guest-name-display" style="font-size:14px;font-weight:600;margin:0;opacity:0.7;"></p>
@@ -182,9 +205,11 @@
      </div>
     </section>
     <section class="px-4 max-w-lg mx-auto pb-6 fade-in stagger-3">
-     <div id="drop-zone" class="drop-zone relative rounded-2xl border-2 border-dashed p-8 text-center cursor-pointer transition-all" style="border-color: rgba(26,26,26,0.15); background: rgba(26,26,26,0.03);" onclick="document.getElementById('fileInput').click();"><input type="file" id="fileInput" multiple accept="image/*,video/mp4,video/quicktime,video/webm" class="hidden">
+     <div id="drop-zone" class="drop-zone relative rounded-2xl border-2 border-dashed p-8 text-center cursor-pointer transition-all" style="border-color: rgba(26,26,26,0.15); background: rgba(26,26,26,0.03);" onclick="document.getElementById('fileInput').click();">
+      <input type="file" id="fileInput" multiple accept="image/*,video/mp4,video/quicktime,video/webm" class="hidden">
       <div class="mb-4">
-       <div class="inline-flex items-center justify-center w-16 h-16 rounded-full" id="upload-icon-circle" style="background: rgba(26,26,26,0.08);"><i data-lucide="upload-cloud" id="upload-icon" style="width:28px;height:28px;"></i>
+       <div class="inline-flex items-center justify-center w-16 h-16 rounded-full" id="upload-icon-circle" style="background: rgba(26,26,26,0.08);">
+        <i data-lucide="upload-cloud" id="upload-icon" style="width:28px;height:28px;"></i>
        </div>
       </div>
       <p style="font-size:16px;font-weight:500;margin:0 0 4px 0;">Toque para selecionar</p>
@@ -193,11 +218,14 @@
      <div id="file-list" class="mt-4 flex flex-col gap-2"></div><button id="upload-btn" class="w-full mt-5 py-4 rounded-xl font-semibold text-base tracking-wide transition-all duration-300 hidden" style="border:none;cursor:pointer;" onclick="startUpload()"> <span id="upload-btn-text" class="flex items-center justify-center gap-2"> <i data-lucide="send" style="width:18px;height:18px;"></i> <span id="btn-label">Enviar Fotos</span> </span> </button>
     </section>
     <div class="grid grid-cols-3 gap-3 text-center" style="font-size:12px;opacity:0.35;">
-     <div><i data-lucide="smartphone" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Abre o link
+     <div>
+      <i data-lucide="smartphone" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Abre o link
      </div>
-     <div><i data-lucide="image-plus" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Escolhe fotos
+     <div>
+      <i data-lucide="image-plus" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Escolhe fotos
      </div>
-     <div><i data-lucide="cloud-lightning" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Enviado!
+     <div>
+      <i data-lucide="cloud-lightning" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Enviado!
      </div>
     </div>
     <footer style="text-align:center;padding:12px 16px;margin-top:24px;border-top:1px solid rgba(26,26,26,0.08);font-size:12px;">
@@ -207,7 +235,8 @@
    <div id="gallery-view" style="display:none;" class="h-full w-full overflow-auto">
     <header class="text-center pt-10 pb-4 px-4 fade-in stagger-1">
      <div class="inline-flex items-center gap-2 mb-3">
-      <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;" id="gallery-logo-box"><i data-lucide="image" style="width:20px;height:20px;"></i>
+      <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;" id="gallery-logo-box">
+       <i data-lucide="image" style="width:20px;height:20px;"></i>
       </div><span id="gallery-brand-name" style="font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;letter-spacing:0.5px;">Galeria</span>
      </div>
     </header>
@@ -221,20 +250,23 @@
     </section>
     <section class="px-4 max-w-3xl mx-auto pb-4 fade-in stagger-3">
      <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
-      <div style="display:flex;gap:8px;align-items:center;flex:1;">
-       <input type="text" id="gallery-search-input" placeholder="🔍 Pesquisar convidado..." style="flex:1;min-width:150px;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;"> <button onclick="filterGalleryByGuest()" style="background:#2563eb;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:flex;gap:6px;align-items:center;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> <i data-lucide="search" style="width:14px;height:14px;"></i> Pesquisar </button> <button onclick="clearGalleryFilter()" style="background:#95a5a6;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:none;" id="clear-filter-btn" onmouseover="this.style.background='#7f8c8d'" onmouseout="this.style.background='#95a5a6'"> Limpar </button>
+      <div style="display:flex;gap:8px;align-items:center;flex:1;"><input type="text" id="gallery-search-input" placeholder="🔍 Pesquisar convidado..." style="flex:1;min-width:150px;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;"> <button onclick="filterGalleryByGuest()" style="background:#2563eb;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:flex;gap:6px;align-items:center;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> <i data-lucide="search" style="width:14px;height:14px;"></i> Pesquisar </button> <button onclick="clearGalleryFilter()" style="background:#95a5a6;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:none;" id="clear-filter-btn" onmouseover="this.style.background='#7f8c8d'" onmouseout="this.style.background='#95a5a6'"> Limpar </button>
       </div>
-      <div style="display:flex;gap:8px;align-items:center;"><button id="select-all-photos-btn" onclick="toggleSelectAllPhotos()" style="background:#f39c12;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:none;transition:all 0.3s;" onmouseover="this.style.background='#e67e22'" onmouseout="this.style.background='#f39c12'"> Marcar Todas </button> <span id="photo-selection-count" style="font-size:13px;font-weight:600;opacity:0.6;display:none;">0 selecionadas</span>
+      <div style="display:flex;gap:8px;align-items:center;">
+       <button id="select-all-photos-btn" onclick="toggleSelectAllPhotos()" style="background:#f39c12;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:none;transition:all 0.3s;" onmouseover="this.style.background='#e67e22'" onmouseout="this.style.background='#f39c12'"> Marcar Todas </button> <span id="photo-selection-count" style="font-size:13px;font-weight:600;opacity:0.6;display:none;">0 selecionadas</span>
       </div><button id="download-selected-btn" onclick="downloadSelectedPhotos()" style="background:#27ae60;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:none;transition:all 0.3s;" onmouseover="this.style.background='#229954'" onmouseout="this.style.background='#27ae60'"> <i data-lucide="download" style="width:14px;height:14px;display:inline;margin-right:4px;vertical-align:-1px;"></i> Descarregar Selecionadas </button>
      </div>
      <section id="gallery-grid" style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;padding-bottom:12px;"></section>
-     <div id="gallery-empty" style="text-align:center;padding:40px 20px;opacity:0.5;"><i data-lucide="inbox" style="width:48px;height:48px;margin:0 auto 16px;display:block;opacity:0.3;"></i>
+     <div id="gallery-empty" style="text-align:center;padding:40px 20px;opacity:0.5;">
+      <i data-lucide="inbox" style="width:48px;height:48px;margin:0 auto 16px;display:block;opacity:0.3;"></i>
       <p style="font-size:16px;margin:0;">Nenhuma foto foi partilhada ainda 📷</p>
      </div>
-     <div id="gallery-pagination" style="display:flex;gap:12px;justify-content:center;margin-top:24px;align-items:center;"><button id="gallery-prev-btn" onclick="previousGalleryPage()" style="background:#95a5a6;color:#fff;border:none;padding:10px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:none;transition:all 0.3s;display:flex;gap:6px;align-items:center;" onmouseover="this.style.background='#7f8c8d'" onmouseout="this.style.background='#95a5a6'"> <i data-lucide="chevron-left" style="width:16px;height:16px;"></i> Voltar </button> <span id="gallery-page-info" style="font-size:13px;font-weight:600;opacity:0.6;min-width:80px;text-align:center;"></span> <button id="gallery-next-btn" onclick="nextGalleryPage()" style="background:#2563eb;color:#fff;border:none;padding:10px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:none;transition:all 0.3s;display:flex;gap:6px;align-items:center;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> Ver Próximas <i data-lucide="chevron-right" style="width:16px;height:16px;"></i> </button>
+     <div id="gallery-pagination" style="display:flex;gap:12px;justify-content:center;margin-top:24px;align-items:center;">
+      <button id="gallery-prev-btn" onclick="previousGalleryPage()" style="background:#95a5a6;color:#fff;border:none;padding:10px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:none;transition:all 0.3s;display:flex;gap:6px;align-items:center;" onmouseover="this.style.background='#7f8c8d'" onmouseout="this.style.background='#95a5a6'"> <i data-lucide="chevron-left" style="width:16px;height:16px;"></i> Voltar </button> <span id="gallery-page-info" style="font-size:13px;font-weight:600;opacity:0.6;min-width:80px;text-align:center;"></span> <button id="gallery-next-btn" onclick="nextGalleryPage()" style="background:#2563eb;color:#fff;border:none;padding:10px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:none;transition:all 0.3s;display:flex;gap:6px;align-items:center;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> Ver Próximas <i data-lucide="chevron-right" style="width:16px;height:16px;"></i> </button>
      </div>
     </section>
-    <section class="px-4 max-w-3xl mx-auto pb-10 text-center"><button id="download-all-btn" onclick="downloadAllPhotosGallery()" style="background:#27ae60;color:#fff;border:none;padding:12px 24px;border-radius:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;display:flex;gap:8px;align-items:center;justify-content:center;margin:0 auto;transition:all 0.3s;" onmouseover="this.style.background='#229954'" onmouseout="this.style.background='#27ae60'"> <i data-lucide="download" style="width:18px;height:18px;"></i> <span>Descarregar Todas</span> </button>
+    <section class="px-4 max-w-3xl mx-auto pb-10 text-center">
+     <button id="download-all-btn" onclick="downloadAllPhotosGallery()" style="background:#27ae60;color:#fff;border:none;padding:12px 24px;border-radius:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;display:flex;gap:8px;align-items:center;justify-content:center;margin:0 auto;transition:all 0.3s;" onmouseover="this.style.background='#229954'" onmouseout="this.style.background='#27ae60'"> <i data-lucide="download" style="width:18px;height:18px;"></i> <span>Descarregar Todas</span> </button>
     </section>
     <footer class="text-center pb-8 px-4" style="font-size:11px;opacity:0.25;">
      Created by <strong>Invites</strong>
@@ -809,7 +841,7 @@
       return;
     }
 
-    // Atualizar estado local ANTES de mostrar mensagem
+    // Atualizar estado local IMEDIATAMENTE
     const eventIndex = allEvents.findIndex(e => e.id === eventId);
     if (eventIndex !== -1) {
       if (type === 'photos') {
@@ -823,7 +855,7 @@
     const typeLabel = type === 'photos' ? 'Fotos' : 'Vídeos';
     showToast(`✅ ${typeLabel} ${status}!`, 'success');
     
-    // Renderizar lista sem recarregar do servidor
+    // Renderizar lista SEM recarregar do servidor
     renderEventsList();
   }
 
@@ -2344,5 +2376,5 @@
 
   lucide.createIcons();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e6e87c5e2853e9a',t:'MTc3NTI4NzAxNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e6e8e1145cb3e9a',t:'MTc3NTI4NzI3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
