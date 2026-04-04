@@ -1946,22 +1946,17 @@
         const photoCount = document.getElementById('gallery-photo-count');
 
         if (!uploads || uploads.length === 0) {
-          if (grid.innerHTML === '') {
-            empty.style.display = 'block';
-          }
+          grid.innerHTML = '';
+          empty.style.display = 'block';
           photoCount.textContent = '📷 0 fotos partilhadas';
           allGalleryPhotos = [];
           galleryFilteredPhotos = null;
           galleryCurrentPage = 0;
           pagination.style.display = 'none';
-          updateGallerySelectionUI();
           return;
         }
 
-        const displayCount = galleryFilteredPhotos ? galleryFilteredPhotos.length : uploads.length;
-        photoCount.textContent = `📷 ${displayCount} ${displayCount === 1 ? 'foto' : 'fotos'} partilhada${displayCount === 1 ? '' : 's'}`;
-
-        empty.style.display = 'none';
+        // Atualizar dados globais
         allGalleryPhotos = uploads;
         
         if (!galleryFilteredPhotos) {
@@ -1969,7 +1964,13 @@
         }
 
         const photosToShow = galleryFilteredPhotos || allGalleryPhotos;
+        const displayCount = photosToShow.length;
+        
+        photoCount.textContent = `📷 ${displayCount} ${displayCount === 1 ? 'foto' : 'fotos'} partilhada${displayCount === 1 ? '' : 's'}`;
 
+        empty.style.display = 'none';
+
+        // Atualizar paginação
         const totalPages = Math.ceil(photosToShow.length / PHOTOS_PER_PAGE);
         const pageInfo = document.getElementById('gallery-page-info');
         const prevBtn = document.getElementById('gallery-prev-btn');
@@ -1980,71 +1981,57 @@
         nextBtn.style.display = galleryCurrentPage < totalPages - 1 ? 'inline-flex' : 'none';
         pagination.style.display = totalPages > 1 ? 'flex' : 'none';
 
-        const visiblePhotos = getVisiblePhotos();
+        // Obter fotos visíveis para a página atual
+        const start = galleryCurrentPage * PHOTOS_PER_PAGE;
+        const end = start + PHOTOS_PER_PAGE;
+        const visiblePhotos = photosToShow.slice(start, end);
 
         const config = window.elementSdk?.config || defaultConfig;
         const primary = config.primary_action || defaultConfig.primary_action;
 
-        const existingCards = new Map(
-          [...grid.children].map(card => [card.getAttribute('data-file-id'), card])
-        );
+        // Limpar grid
+        grid.innerHTML = '';
 
-        visiblePhotos.forEach((file, index) => {
-          let card = existingCards.get(file.id);
-
-          if (!card) {
-            card = document.createElement('div');
-            card.setAttribute('data-file-id', file.id);
-            card.style.cssText = `position:relative;border-radius:12px;overflow:hidden;aspect-ratio:1;background:linear-gradient(135deg, ${primary}20, ${primary}05);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.2s;opacity:0.7;`;
-            
-            const photoClickHandler = () => openPhotoViewer(file.id, allGalleryPhotos.findIndex(p => p.id === file.id));
-            
-            card.onclick = photoClickHandler;
-          }
-
-          if (card.querySelector('img') === null && !card.dataset.loadingStarted) {
-            card.dataset.loadingStarted = 'true';
-            
-            const publicUrl = R2_PUBLIC_URL + "/" + file.storage_path;
-            
-            saveUrlToCache(file.storage_path, publicUrl);
-            galleryPhotosCache.set(file.storage_path, publicUrl);
-            
-            if (card.querySelector('img') === null) {
-              const imgContainer = document.createElement('div');
-              imgContainer.style.cssText = 'width:100%;height:100%;position:relative;';
-              
-              const img = document.createElement('img');
-              img.src = publicUrl;
-              img.loading = 'lazy';
-              img.style.cssText = `width:100%;height:100%;object-fit:cover;`;
-              img.onerror = () => {
-                img.style.display = 'none';
-                card.innerHTML = `<i data-lucide="image" style="width:40px;height:40px;color:${primary};opacity:0.5;"></i>`;
-                lucide.createIcons();
-              };
-              
-              const downloadIndicator = document.createElement('div');
-              downloadIndicator.setAttribute('data-download-indicator', 'true');
-              downloadIndicator.style.cssText = `position:absolute;top:8px;left:8px;width:28px;height:28px;border-radius:50%;background:rgba(39,174,96,0.95);display:flex;align-items:center;justify-content:center;z-index:10;${isPhotoDownloaded(file.id) ? 'flex' : 'none'};box-shadow:0 2px 8px rgba(39,174,96,0.4);`;
-              downloadIndicator.innerHTML = `<i data-lucide="download-cloud" style="width:16px;height:16px;color:#fff;"></i>`;
-              
-              imgContainer.appendChild(img);
-              imgContainer.appendChild(downloadIndicator);
-              
-              card.innerHTML = '';
-              card.appendChild(imgContainer);
-              
-              card.onclick = () => openPhotoViewer(file.id, allGalleryPhotos.findIndex(p => p.id === file.id));
-              
-              lucide.createIcons();
-            }
-          }
-
-          existingCards.delete(file.id);
+        // Renderizar cada foto
+        visiblePhotos.forEach((file, indexInPage) => {
+          const card = document.createElement('div');
+          card.setAttribute('data-file-id', file.id);
+          card.style.cssText = `position:relative;border-radius:12px;overflow:hidden;aspect-ratio:1;background:linear-gradient(135deg, ${primary}20, ${primary}05);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.2s;`;
+          
+          const publicUrl = R2_PUBLIC_URL + "/" + file.storage_path;
+          
+          saveUrlToCache(file.storage_path, publicUrl);
+          galleryPhotosCache.set(file.storage_path, publicUrl);
+          
+          const imgContainer = document.createElement('div');
+          imgContainer.style.cssText = 'width:100%;height:100%;position:relative;';
+          
+          const img = document.createElement('img');
+          img.src = publicUrl;
+          img.loading = 'lazy';
+          img.style.cssText = `width:100%;height:100%;object-fit:cover;`;
+          img.onerror = () => {
+            img.style.display = 'none';
+            card.innerHTML = `<i data-lucide="image" style="width:40px;height:40px;color:${primary};opacity:0.5;"></i>`;
+            lucide.createIcons();
+          };
+          
+          const downloadIndicator = document.createElement('div');
+          downloadIndicator.setAttribute('data-download-indicator', 'true');
+          downloadIndicator.style.cssText = `position:absolute;top:8px;left:8px;width:28px;height:28px;border-radius:50%;background:rgba(39,174,96,0.95);display:flex;align-items:center;justify-content:center;z-index:10;${isPhotoDownloaded(file.id) ? 'flex' : 'none'};box-shadow:0 2px 8px rgba(39,174,96,0.4);`;
+          downloadIndicator.innerHTML = `<i data-lucide="download-cloud" style="width:16px;height:16px;color:#fff;"></i>`;
+          
+          imgContainer.appendChild(img);
+          imgContainer.appendChild(downloadIndicator);
+          
+          card.appendChild(imgContainer);
+          
+          // Calcular índice correto na galeria completa
+          const fileIndex = allGalleryPhotos.findIndex(p => p.id === file.id);
+          card.onclick = () => openPhotoViewer(file.id, fileIndex);
+          
+          grid.appendChild(card);
         });
-
-        existingCards.forEach(card => card.remove());
 
         lucide.createIcons();
       });
@@ -2532,5 +2519,5 @@
 
   lucide.createIcons();
 </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e70c212737f3e9a',t:'MTc3NTMxMDM3NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e70cdb417513e9a',t:'MTc3NTMxMDg1MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
