@@ -229,7 +229,9 @@
      </div>
     </section>
     <section class="px-4 max-w-3xl mx-auto pb-4 fade-in stagger-3">
-     <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-bottom:12px;">
+     <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+      <div style="display:flex;gap:8px;align-items:center;flex:1;"><input type="text" id="gallery-search-input" placeholder="🔍 Pesquisar convidado..." style="flex:1;min-width:150px;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;"> <button onclick="filterGalleryByGuest()" style="background:#2563eb;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:flex;gap:6px;align-items:center;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> <i data-lucide="search" style="width:14px;height:14px;"></i> Pesquisar </button> <button onclick="clearGalleryFilter()" style="background:#95a5a6;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:none;" id="clear-filter-btn" onmouseover="this.style.background='#7f8c8d'" onmouseout="this.style.background='#95a5a6'"> Limpar </button>
+      </div>
       <div style="display:flex;gap:8px;align-items:center;">
        <button id="select-all-photos-btn" onclick="toggleSelectAllPhotos()" style="background:#f39c12;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:none;transition:all 0.3s;" onmouseover="this.style.background='#e67e22'" onmouseout="this.style.background='#f39c12'"> Marcar Todas </button> <span id="photo-selection-count" style="font-size:13px;font-weight:600;opacity:0.6;display:none;">0 selecionadas</span>
       </div><button id="download-selected-btn" onclick="downloadSelectedPhotos()" style="background:#27ae60;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:none;transition:all 0.3s;" onmouseover="this.style.background='#229954'" onmouseout="this.style.background='#27ae60'"> <i data-lucide="download" style="width:14px;height:14px;display:inline;margin-right:4px;vertical-align:-1px;"></i> Descarregar Selecionadas </button>
@@ -255,14 +257,17 @@
   // --- SUPABASE & COMPRESSION CONFIG ---
   const SUPABASE_URL = "https://gysvyobbjetlhpakwatc.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5c3Z5b2JiamV0bGhwYWt3YXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNzYzMjksImV4cCI6MjA5MDc1MjMyOX0.3FLSilwG7-hI1ZPZQwa-HHXsxPR4t1XYrUpP24yPg7c";
-  const STORAGE_BUCKET = "upload-ao-photos";
   const ADMIN_PASSWORD = "adkira2026invites!!@";
+  
+  // --- CLOUDFLARE R2 CONFIG ---
+  const WORKER_URL = "https://frosty-rain-fad9.araujocataca16.workers.dev";
+  const R2_PUBLIC_URL = "https://pub-3a468df4dbe6438aaa7bab238a2e8d32.r2.dev";
 
   const STORAGE_LIMITS = {
-    MAX_STORAGE_MB: 65,
-    MAX_STORAGE_BYTES: 65 * 1024 * 1024,
+    MAX_STORAGE_MB: 500,
+    MAX_STORAGE_BYTES: 500 * 1024 * 1024,
     MAX_FILE_SIZE_MB: 1,
-    MAX_FILES_PER_EVENT: 600,
+    MAX_FILES_PER_EVENT: 2000,
     WARNING_THRESHOLD: 0.85
   };
 
@@ -292,34 +297,34 @@
   let editingEventId = null;
   let galleryPhotosLoaded = false;
   let galleryCurrentPage = 0;
+  let galleryFilteredPhotos = null; // null = mostrar todas, array = fotos filtradas
   const PHOTOS_PER_PAGE = 18; // 3 colunas × 6 linhas
 
   // --- CACHE CONFIG ---
   const CACHE_CONFIG = {
-    PREFIX: 'uploadao_url_cache_',
-    EXPIRATION_MS: 3600000, // 1 hora (mesma validade da URL assinada)
+    PREFIX: 'uploadao_r2_cache_',
+    EXPIRATION_MS: 3600000, // 1 hora
     MAX_CACHE_SIZE_KB: 5000 // 5MB máximo de cache
   };
 
   // --- CACHE FUNCTIONS ---
-  function getCacheKey(fileId) {
-    return CACHE_CONFIG.PREFIX + fileId;
+  function getCacheKey(storagePath) {
+    return CACHE_CONFIG.PREFIX + storagePath;
   }
 
-  function saveUrlToCache(fileId, signedUrl) {
+  function saveUrlToCache(storagePath, publicUrl) {
     try {
       const cacheData = {
-        url: signedUrl,
+        url: publicUrl,
         timestamp: Date.now(),
         expires: Date.now() + CACHE_CONFIG.EXPIRATION_MS
       };
-      localStorage.setItem(getCacheKey(fileId), JSON.stringify(cacheData));
+      localStorage.setItem(getCacheKey(storagePath), JSON.stringify(cacheData));
     } catch (err) {
-      // localStorage cheio - limpar cache antigo
       if (err.name === 'QuotaExceededError') {
         cleanOldCache();
         try {
-          localStorage.setItem(getCacheKey(fileId), JSON.stringify(cacheData));
+          localStorage.setItem(getCacheKey(storagePath), JSON.stringify(cacheData));
         } catch (e) {
           console.warn('Não foi possível guardar em cache:', e);
         }
@@ -327,16 +332,16 @@
     }
   }
 
-  function getUrlFromCache(fileId) {
+  function getUrlFromCache(storagePath) {
     try {
-      const cached = localStorage.getItem(getCacheKey(fileId));
+      const cached = localStorage.getItem(getCacheKey(storagePath));
       if (!cached) return null;
 
       const data = JSON.parse(cached);
       
       // Verificar se ainda é válido
       if (Date.now() > data.expires) {
-        localStorage.removeItem(getCacheKey(fileId));
+        localStorage.removeItem(getCacheKey(storagePath));
         return null;
       }
 
@@ -353,7 +358,6 @@
       let totalSize = 0;
       const entries = [];
 
-      // Recolher todas as entradas de cache
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key && key.startsWith(CACHE_CONFIG.PREFIX)) {
@@ -371,7 +375,6 @@
         }
       }
 
-      // Se passou do limite, remover os mais antigos
       if (totalSize > CACHE_CONFIG.MAX_CACHE_SIZE_KB * 1024) {
         entries.sort((a, b) => a.timestamp - b.timestamp);
         let removed = 0;
@@ -384,7 +387,6 @@
         console.log(`Cache: removidos ${removed} items antigos`);
       }
 
-      // Remover expirados
       for (let i = localStorage.length - 1; i >= 0; i--) {
         const key = localStorage.key(i);
         if (key && key.startsWith(CACHE_CONFIG.PREFIX)) {
@@ -403,7 +405,6 @@
     }
   }
 
-  // Limpar cache expirado ao iniciar
   window.addEventListener('load', () => {
     setTimeout(cleanOldCache, 1000);
   });
@@ -601,6 +602,11 @@
     const defaultMaxPhotos = calculatePhotosFromStorage(STORAGE_LIMITS.MAX_STORAGE_MB);
     const defaultMaxStorage = STORAGE_LIMITS.MAX_STORAGE_MB;
 
+    // Gerar URLs do evento
+    const currentUrl = window.location.origin + window.location.pathname;
+    const uploadUrl = currentUrl + '?event=' + eventId;
+    const galleryUrl = currentUrl + '?gallery=' + eventId;
+
     const { error } = await supabaseClient
       .from('events')
       .insert([{
@@ -608,15 +614,16 @@
         event_title: title,
         event_date: formattedDate,
         event_message: message || "Partilha as tuas fotos!",
-        upload_url: `https://invitesao.github.io/UploadAO/?event=${eventId}`,
-        gallery_url: `https://invitesao.github.io/UploadAO/?gallery=${eventId}`,
         max_photos: defaultMaxPhotos,
         max_storage_mb: defaultMaxStorage,
+        upload_url: uploadUrl,
+        gallery_url: galleryUrl,
         created_at: new Date().toISOString()
       }]);
 
     if (error) {
-      showToast('Erro ao criar evento', 'error');
+      console.error('Erro Supabase:', error);
+      showToast('Erro ao criar evento: ' + (error.message || 'desconhecido'), 'error');
       return;
     }
 
@@ -670,9 +677,9 @@
         }
       }
 
-      // Eliminar eventos expirados e suas fotos
+      // Eliminar eventos expirados e suas fotos do R2
       for (const eventId of eventsToDelete) {
-        // Primeiro, eliminar todas as fotos do storage
+        // Primeiro, eliminar todas as fotos
         const { data: uploads } = await supabaseClient
           .from('uploads')
           .select('storage_path')
@@ -681,12 +688,14 @@
         if (uploads && uploads.length > 0) {
           for (const upload of uploads) {
             try {
-              await supabaseClient
-                .storage
-                .from(STORAGE_BUCKET)
-                .remove([upload.storage_path]);
+              // Chamar o Worker para deletar do R2
+              await fetch(WORKER_URL, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: upload.storage_path })
+              });
             } catch (err) {
-              console.warn('Erro ao remover arquivo:', err);
+              console.warn('Erro ao remover arquivo do R2:', err);
             }
           }
         }
@@ -766,17 +775,81 @@
   }
 
   function deleteEvent(eventId) {
-    if (!confirm('Apagar este evento?')) return;
-    supabaseClient
-      .from('events')
-      .delete()
-      .eq('id', eventId)
-      .then(({ error }) => {
-        if (!error) {
-          loadEvents();
-          showToast('Evento apagado', 'success');
+    if (!confirm('⚠️ Isto vai apagar TODAS as fotos no R2 e metadados. Tem a certeza?')) return;
+    
+    deleteEventWithPhotos(eventId);
+  }
+
+  async function deleteEventWithPhotos(eventId) {
+    try {
+      showToast('⏳ A apagar evento e fotos...', 'info');
+
+      // 1. Buscar TODAS as fotos (sem limite de 1000)
+      let allUploads = [];
+      let offset = 0;
+      const pageSize = 1000;
+      let hasMore = true;
+
+      while (hasMore) {
+        const { data, error } = await supabaseClient
+          .from('uploads')
+          .select('storage_path')
+          .eq('event_id', eventId)
+          .range(offset, offset + pageSize - 1);
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          allUploads = allUploads.concat(data);
+          offset += pageSize;
+          hasMore = data.length === pageSize;
+        } else {
+          hasMore = false;
         }
-      });
+      }
+
+      // 2. Eliminar fotos do R2 EM BATCH
+      if (allUploads.length > 0) {
+        const paths = allUploads.map(u => u.storage_path);
+        
+        // Enviar em chunks de 100 para não sobrecarregar
+        for (let i = 0; i < paths.length; i += 100) {
+          const chunk = paths.slice(i, i + 100);
+          
+          try {
+            await fetch(WORKER_URL, {
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ paths: chunk })
+            });
+          } catch (err) {
+            console.warn('Erro ao remover chunk do R2:', err);
+          }
+        }
+      }
+
+      // 3. Apagar metadados do Supabase
+      const { error: deleteUploadsError } = await supabaseClient
+        .from('uploads')
+        .delete()
+        .eq('event_id', eventId);
+
+      if (deleteUploadsError) throw deleteUploadsError;
+
+      // 4. Apagar evento
+      const { error: deleteEventError } = await supabaseClient
+        .from('events')
+        .delete()
+        .eq('id', eventId);
+
+      if (deleteEventError) throw deleteEventError;
+
+      loadEvents();
+      showToast(`✅ Evento apagado! ${allUploads.length} foto(s) eliminada(s) do R2`, 'success');
+    } catch (err) {
+      console.error('Erro ao apagar evento:', err);
+      showToast('❌ Erro ao apagar evento', 'error');
+    }
   }
 
   function setupSearchEvents() {
@@ -934,7 +1007,7 @@
 
     const { data: uploadsFull } = await supabaseClient
       .from('uploads')
-      .select('id, file_name, storage_path')
+      .select('id, file_name, file_url')
       .eq('event_id', eventId);
 
     if (!uploadsFull || uploadsFull.length === 0) {
@@ -947,20 +1020,11 @@
 
     for (const file of uploadsFull) {
       try {
-        const { data, error } = await supabaseClient
-          .storage
-          .from(STORAGE_BUCKET)
-          .download(file.storage_path);
-
-        if (error) continue;
-
-        const url = window.URL.createObjectURL(data);
         const link = document.createElement('a');
-        link.href = url;
+        link.href = file.file_url;
         link.download = file.file_name;
         document.body.appendChild(link);
         link.click();
-        window.URL.revokeObjectURL(url);
         link.remove();
         
         downloaded++;
@@ -1184,36 +1248,26 @@
       const photo = allGalleryPhotos[idx];
       
       // Se já tem em cache, skip
-      if (galleryPhotosCache.has(photo.id) || getUrlFromCache(photo.id)) {
+      if (galleryPhotosCache.has(photo.storage_path) || getUrlFromCache(photo.storage_path)) {
         continue;
       }
       
-      // Preload em background (sem bloquear)
+      // Preload em background
       setTimeout(async () => {
         try {
-          const { data: file } = await supabaseClient
-            .from('uploads')
-            .select('storage_path')
-            .eq('id', photo.id)
-            .single();
-
-          if (!file) return;
-
-          // Verificar se já tem cache (outro preload pode ter feito)
-          if (galleryPhotosCache.has(photo.id) || getUrlFromCache(photo.id)) {
+          // Verificar cache localStorage
+          const cachedUrl = getUrlFromCache(photo.storage_path);
+          if (cachedUrl) {
+            galleryPhotosCache.set(photo.storage_path, cachedUrl);
             return;
           }
 
-          const { data: signedData } = await supabaseClient
-            .storage
-            .from(STORAGE_BUCKET)
-            .createSignedUrl(file.storage_path, 3600);
-
-          if (signedData?.signedUrl) {
-            // Guardar em cache
-            saveUrlToCache(photo.id, signedData.signedUrl);
-            galleryPhotosCache.set(photo.id, signedData.signedUrl);
-          }
+          // Se não tem cache, construir URL pública do R2
+          const publicUrl = R2_PUBLIC_URL + "/" + photo.storage_path;
+          
+          // Guardar em cache
+          saveUrlToCache(photo.storage_path, publicUrl);
+          galleryPhotosCache.set(photo.storage_path, publicUrl);
         } catch (err) {
           console.warn('Erro ao pré-carregar foto:', err);
         }
@@ -1224,42 +1278,35 @@
   async function openPhotoViewer(fileId, index) {
     currentPhotoIndex = index;
     
-    // Verificar cache localStorage primeiro (NOVO!)
-    const cachedUrl = getUrlFromCache(fileId);
+    const photo = allGalleryPhotos[index];
+    
+    // Verificar cache localStorage primeiro
+    const cachedUrl = getUrlFromCache(photo.storage_path);
     if (cachedUrl) {
       document.getElementById('photo-viewer-image').src = cachedUrl;
       document.getElementById('photo-viewer-image').dataset.fileId = fileId;
+      document.getElementById('photo-viewer-image').dataset.fileName = photo.file_name;
+      document.getElementById('photo-viewer-modal').style.display = 'flex';
       updatePhotoCounter();
-      preloadNextPhotos(index); // Pré-carregar próximas 3
+      preloadNextPhotos(index);
+      lucide.createIcons();
       return;
     }
 
-    // Se não tem cache, carregar do Supabase e guardar
-    const { data: file } = await supabaseClient
-      .from('uploads')
-      .select('storage_path, file_name')
-      .eq('id', fileId)
-      .single();
-
-    if (!file) return;
-
-    const { data: signedData } = await supabaseClient
-      .storage
-      .from(STORAGE_BUCKET)
-      .createSignedUrl(file.storage_path, 3600);
-
-    if (signedData?.signedUrl) {
-      // Guardar em cache localStorage (NOVO!)
-      saveUrlToCache(fileId, signedData.signedUrl);
-      galleryPhotosCache.set(fileId, signedData.signedUrl);
-      document.getElementById('photo-viewer-image').src = signedData.signedUrl;
-      document.getElementById('photo-viewer-image').dataset.fileId = fileId;
-      document.getElementById('photo-viewer-image').dataset.fileName = file.file_name;
-      document.getElementById('photo-viewer-modal').style.display = 'flex';
-      updatePhotoCounter();
-      preloadNextPhotos(index); // Pré-carregar próximas 3
-      lucide.createIcons();
-    }
+    // Se não tem cache, construir URL pública do R2
+    const publicUrl = R2_PUBLIC_URL + "/" + photo.storage_path;
+    
+    // Guardar em cache localStorage
+    saveUrlToCache(photo.storage_path, publicUrl);
+    galleryPhotosCache.set(photo.storage_path, publicUrl);
+    
+    document.getElementById('photo-viewer-image').src = publicUrl;
+    document.getElementById('photo-viewer-image').dataset.fileId = fileId;
+    document.getElementById('photo-viewer-image').dataset.fileName = photo.file_name;
+    document.getElementById('photo-viewer-modal').style.display = 'flex';
+    updatePhotoCounter();
+    preloadNextPhotos(index);
+    lucide.createIcons();
   }
 
   async function nextPhoto() {
@@ -1286,11 +1333,9 @@
     document.getElementById('photo-viewer-modal').style.display = 'none';
     document.getElementById('photo-viewer-image').src = '';
     // Limpar cache quando fechar para liberar memória
-    if (currentPhotoIndex > 0) {
-      const prevPhoto = allGalleryPhotos[currentPhotoIndex - 1];
-      const nextPhoto = allGalleryPhotos[currentPhotoIndex + 1];
-      galleryPhotosCache.delete(prevPhoto?.id);
-      galleryPhotosCache.delete(nextPhoto?.id);
+    if (currentPhotoIndex > 0 && allGalleryPhotos[currentPhotoIndex]) {
+      const currPhoto = allGalleryPhotos[currentPhotoIndex];
+      galleryPhotosCache.delete(currPhoto.storage_path);
     }
   }
 
@@ -1364,7 +1409,45 @@
   function getVisiblePhotos() {
     const start = galleryCurrentPage * PHOTOS_PER_PAGE;
     const end = start + PHOTOS_PER_PAGE;
-    return allGalleryPhotos.slice(start, end);
+    const photosToShow = galleryFilteredPhotos || allGalleryPhotos;
+    return photosToShow.slice(start, end);
+  }
+
+  function filterGalleryByGuest() {
+    const searchInput = document.getElementById('gallery-search-input');
+    const query = searchInput.value.trim().toLowerCase();
+
+    if (!query) {
+      showToast('Digite o nome do convidado', 'warning');
+      return;
+    }
+
+    // Filtrar por nome de convidado
+    galleryFilteredPhotos = allGalleryPhotos.filter(photo =>
+      photo.guest_name.toLowerCase().includes(query)
+    );
+
+    galleryCurrentPage = 0;
+    gallerySelectedPhotos.clear();
+
+    if (galleryFilteredPhotos.length === 0) {
+      showToast(`Nenhuma foto encontrada de "${query}"`, 'info');
+    } else {
+      showToast(`✅ ${galleryFilteredPhotos.length} foto(s) encontrada(s)`, 'success');
+    }
+
+    document.getElementById('clear-filter-btn').style.display = 'inline-block';
+    renderGalleryPhotos();
+  }
+
+  function clearGalleryFilter() {
+    galleryFilteredPhotos = null;
+    galleryCurrentPage = 0;
+    gallerySelectedPhotos.clear();
+    document.getElementById('gallery-search-input').value = '';
+    document.getElementById('clear-filter-btn').style.display = 'none';
+    renderGalleryPhotos();
+    showToast('Filtro removido', 'info');
   }
 
   function nextGalleryPage() {
@@ -1399,28 +1482,13 @@
 
     for (const photo of photosToDownload) {
       try {
-        const { data: file } = await supabaseClient
-          .from('uploads')
-          .select('file_name, storage_path')
-          .eq('id', photo.id)
-          .single();
-
-        if (!file) continue;
-
-        const { data, error } = await supabaseClient
-          .storage
-          .from(STORAGE_BUCKET)
-          .download(file.storage_path);
-
-        if (error) continue;
-
-        const url = window.URL.createObjectURL(data);
+        const publicUrl = R2_PUBLIC_URL + "/" + photo.storage_path;
+        
         const link = document.createElement('a');
-        link.href = url;
-        link.download = file.file_name;
+        link.href = publicUrl;
+        link.download = photo.file_name;
         document.body.appendChild(link);
         link.click();
-        window.URL.revokeObjectURL(url);
         link.remove();
 
         downloaded++;
@@ -1455,7 +1523,7 @@
 
     const { data: uploads, error } = await supabaseClient
       .from('uploads')
-      .select('id, file_name, storage_path, uploaded_at')
+      .select('id, file_name, storage_path, uploaded_at, guest_name, guest_id')
       .eq('event_id', currentEventId)
       .order('uploaded_at', { ascending: false });
 
@@ -1475,20 +1543,29 @@
       }
       photoCount.textContent = '📷 0 fotos partilhadas';
       allGalleryPhotos = [];
+      galleryFilteredPhotos = null;
       galleryCurrentPage = 0;
       pagination.style.display = 'none';
       updateGallerySelectionUI();
       return;
     }
 
-    // Mostrar contagem de fotos
-    photoCount.textContent = `📷 ${uploads.length} ${uploads.length === 1 ? 'foto' : 'fotos'} partilhada${uploads.length === 1 ? '' : 's'}`;
+    // Mostrar contagem correta (todas as fotos ou filtradas)
+    const displayCount = galleryFilteredPhotos ? galleryFilteredPhotos.length : uploads.length;
+    photoCount.textContent = `📷 ${displayCount} ${displayCount === 1 ? 'foto' : 'fotos'} partilhada${displayCount === 1 ? '' : 's'}`;
 
     empty.style.display = 'none';
     allGalleryPhotos = uploads;
     
+    // Se não tinha filtro antes e ainda não há, limpar
+    if (!galleryFilteredPhotos) {
+      galleryCurrentPage = 0;
+    }
+
+    const photosToShow = galleryFilteredPhotos || allGalleryPhotos;
+
     // Atualizar paginação
-    const totalPages = Math.ceil(allGalleryPhotos.length / PHOTOS_PER_PAGE);
+    const totalPages = Math.ceil(photosToShow.length / PHOTOS_PER_PAGE);
     const pageInfo = document.getElementById('gallery-page-info');
     const prevBtn = document.getElementById('gallery-prev-btn');
     const nextBtn = document.getElementById('gallery-next-btn');
@@ -1530,55 +1607,53 @@
       if (card.querySelector('img') === null && !card.dataset.loadingStarted) {
         card.dataset.loadingStarted = 'true';
         
-        // Carregar URL assinada (cachear automaticamente em localStorage)
-        supabaseClient.storage
-          .from(STORAGE_BUCKET)
-          .createSignedUrl(file.storage_path, 3600)
-          .then(({ data: signedData }) => {
-            if (signedData?.signedUrl && card.querySelector('img') === null) {
-              // Guardar em cache localStorage
-              saveUrlToCache(file.id, signedData.signedUrl);
-              galleryPhotosCache.set(file.id, signedData.signedUrl);
-              
-              const imgContainer = document.createElement('div');
-              imgContainer.style.cssText = 'width:100%;height:100%;position:relative;';
-              
-              const img = document.createElement('img');
-              img.src = signedData.signedUrl;
-              img.style.cssText = `width:100%;height:100%;object-fit:cover;`;
-              img.onerror = () => {
-                img.style.display = 'none';
-                card.innerHTML = `<i data-lucide="image" style="width:40px;height:40px;color:${primary};opacity:0.5;"></i>`;
-                lucide.createIcons();
-              };
-              
-              const checkbox = document.createElement('div');
-              checkbox.style.cssText = `position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;background:${primary};display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;cursor:pointer;z-index:10;`;
-              checkbox.innerHTML = `<i data-lucide="check" style="width:14px;height:14px;color:#fff;"></i>`;
-              checkbox.onclick = (e) => {
-                e.stopPropagation();
-                togglePhotoSelection(file.id);
-              };
-              
-              imgContainer.appendChild(img);
-              imgContainer.appendChild(checkbox);
-              
-              card.innerHTML = '';
-              card.appendChild(imgContainer);
-              
-              // Mostrar checkbox ao hover
-              card.onmouseover = () => { checkbox.style.opacity = '1'; };
-              card.onmouseout = () => { 
-                if (!gallerySelectedPhotos.has(file.id)) {
-                  checkbox.style.opacity = '0';
-                }
-              };
-              
-              card.onclick = () => openPhotoViewer(file.id, allGalleryPhotos.findIndex(p => p.id === file.id));
-              
-              lucide.createIcons();
+        // Construir URL pública do R2 (sem chamar Supabase)
+        const publicUrl = R2_PUBLIC_URL + "/" + file.storage_path;
+        
+        // Guardar em cache localStorage
+        saveUrlToCache(file.storage_path, publicUrl);
+        galleryPhotosCache.set(file.storage_path, publicUrl);
+        
+        if (card.querySelector('img') === null) {
+          const imgContainer = document.createElement('div');
+          imgContainer.style.cssText = 'width:100%;height:100%;position:relative;';
+          
+          const img = document.createElement('img');
+          img.src = publicUrl;
+          img.loading = 'lazy';
+          img.style.cssText = `width:100%;height:100%;object-fit:cover;`;
+          img.onerror = () => {
+            img.style.display = 'none';
+            card.innerHTML = `<i data-lucide="image" style="width:40px;height:40px;color:${primary};opacity:0.5;"></i>`;
+            lucide.createIcons();
+          };
+          
+          const checkbox = document.createElement('div');
+          checkbox.style.cssText = `position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;background:${primary};display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;cursor:pointer;z-index:10;`;
+          checkbox.innerHTML = `<i data-lucide="check" style="width:14px;height:14px;color:#fff;"></i>`;
+          checkbox.onclick = (e) => {
+            e.stopPropagation();
+            togglePhotoSelection(file.id);
+          };
+          
+          imgContainer.appendChild(img);
+          imgContainer.appendChild(checkbox);
+          
+          card.innerHTML = '';
+          card.appendChild(imgContainer);
+          
+          // Mostrar checkbox ao hover
+          card.onmouseover = () => { checkbox.style.opacity = '1'; };
+          card.onmouseout = () => { 
+            if (!gallerySelectedPhotos.has(file.id)) {
+              checkbox.style.opacity = '0';
             }
-          });
+          };
+          
+          card.onclick = () => openPhotoViewer(file.id, allGalleryPhotos.findIndex(p => p.id === file.id));
+          
+          lucide.createIcons();
+        }
       }
 
       existingCards.delete(file.id);
@@ -1599,28 +1674,13 @@
 
     for (const photo of allGalleryPhotos) {
       try {
-        const { data: file } = await supabaseClient
-          .from('uploads')
-          .select('file_name, storage_path')
-          .eq('id', photo.id)
-          .single();
-
-        if (!file) continue;
-
-        const { data, error } = await supabaseClient
-          .storage
-          .from(STORAGE_BUCKET)
-          .download(file.storage_path);
-
-        if (error) continue;
-
-        const url = window.URL.createObjectURL(data);
+        const publicUrl = R2_PUBLIC_URL + "/" + photo.storage_path;
+        
         const link = document.createElement('a');
-        link.href = url;
-        link.download = file.file_name;
+        link.href = publicUrl;
+        link.download = photo.file_name;
         document.body.appendChild(link);
         link.click();
-        window.URL.revokeObjectURL(url);
         link.remove();
 
         downloaded++;
@@ -1852,32 +1912,55 @@
       throw new Error('Storage limit exceeded');
     }
 
-    const ext = 'jpg';
-    const timestamp = Date.now();
-    const randomId = Math.random().toString(36).substr(2, 9);
-    const fileName = `${currentEventId}/${currentGuestId}/${timestamp}_${randomId}.${ext}`;
+    // Preparar FormData para enviar ao Worker
+    const formData = new FormData();
+    formData.append('file', blob, 'photo.jpg');
+    formData.append('eventId', currentEventId);
+    formData.append('guestId', currentGuestId);
 
-    const uploadResult = await supabaseClient
-      .storage
-      .from(STORAGE_BUCKET)
-      .upload(fileName, blob, { contentType: 'image/jpeg', upsert: false });
+    // Enviar ao Worker do Cloudflare
+    const workerResponse = await fetch(WORKER_URL, {
+      method: 'POST',
+      body: formData
+    });
 
-    if (uploadResult.error) throw uploadResult.error;
+    if (!workerResponse.ok) {
+      throw new Error(`Worker error: ${workerResponse.status}`);
+    }
 
+    const workerData = await workerResponse.json();
+
+    if (!workerData.success) {
+      throw new Error(workerData.error || 'Upload failed');
+    }
+
+    // workerData.path = "eventId/guestId_timestamp_filename.jpg"
+    const storagePath = workerData.path;
+    const fileUrl = R2_PUBLIC_URL + "/" + storagePath;
     const fileSizeMB = (blob.size / 1024 / 1024).toFixed(1);
-    await supabaseClient
+
+    // Guardar APENAS metadados no Supabase (fotos estão no R2)
+    const uploadRecord = {
+      id: 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+      event_id: currentEventId,
+      guest_id: currentGuestId,
+      guest_name: currentGuestName,
+      file_name: file.name,
+      file_size_mb: parseFloat(fileSizeMB),
+      file_type: 'image/jpeg',
+      uploaded_at: new Date().toISOString(),
+      storage_path: storagePath,
+      file_url: fileUrl
+    };
+
+    const { error } = await supabaseClient
       .from('uploads')
-      .insert([{
-        id: 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-        event_id: currentEventId,
-        guest_id: currentGuestId,
-        guest_name: currentGuestName,
-        file_name: file.name,
-        file_size_mb: parseFloat(fileSizeMB),
-        file_type: 'image/jpeg',
-        uploaded_at: new Date().toISOString(),
-        storage_path: fileName
-      }]);
+      .insert([uploadRecord]);
+
+    if (error) {
+      console.error('Erro ao salvar metadados:', error);
+      throw new Error(`Falha ao salvar metadados: ${error.message}`);
+    }
   }
 
   async function compressImage(file) {
@@ -1922,7 +2005,7 @@
 
       const { data: file } = await supabaseClient
         .from('uploads')
-        .select('storage_path')
+        .select('file_url')
         .eq('id', fileId)
         .single();
 
@@ -1931,23 +2014,11 @@
         return;
       }
 
-      const { data, error } = await supabaseClient
-        .storage
-        .from(STORAGE_BUCKET)
-        .download(file.storage_path);
-
-      if (error) {
-        showToast('Erro ao descarregar', 'error');
-        return;
-      }
-
-      const url = window.URL.createObjectURL(data);
       const link = document.createElement('a');
-      link.href = url;
+      link.href = file.file_url;
       link.download = fileName;
       document.body.appendChild(link);
       link.click();
-      window.URL.revokeObjectURL(url);
       link.remove();
 
       showToast('✅ Ficheiro descarregado!', 'success');
@@ -1973,5 +2044,5 @@
 
   lucide.createIcons();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e6ac20b22c13e9a',t:'MTc3NTI0NzQ1OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e6dff14554c3e9a',t:'MTc3NTI4MTQxNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
