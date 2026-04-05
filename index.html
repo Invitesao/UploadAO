@@ -140,10 +140,10 @@
       <div id="edit-event-fields" style="display:none;padding:16px;background:#f0f8ff;border-radius:12px;border:1px solid #2563eb33;margin-bottom:16px;">
        <h3 style="font-size:14px;font-weight:600;margin:0 0 12px 0;">✏️ Editar Evento</h3><input type="text" id="edit-event-title" placeholder="Novo nome" style="width:100%;padding:10px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;margin-bottom:8px;"> <input type="date" id="edit-event-date" style="width:100%;padding:10px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;margin-bottom:8px;"> <input type="text" id="edit-event-message" placeholder="Nova mensagem" style="width:100%;padding:10px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;margin-bottom:8px;">
        <div><label style="display:block;font-size:12px;font-weight:600;margin:0 0 6px 0;opacity:0.7;">📊 Limite Total de Fotos do Evento</label>
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;"><input type="number" id="edit-event-max-photos" min="1" max="2000" placeholder="Fotos (1-2000)" style="width:120px;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;"> <span id="edit-event-storage-display" style="font-size:11px;opacity:0.6;">Tamanho: 0 MB</span>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;"><input type="number" id="edit-event-max-photos" min="1" max="2000" placeholder="Fotos (1-2000)" style="width:120px;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;"> <span id="edit-event-storage-display" style="font-size:11px;opacity:0.6;">Estimativa: 0 MB</span>
         </div>
         <div style="background:rgba(37,99,235,0.08);padding:8px 12px;border-radius:8px;border-left:3px solid #2563eb;margin-bottom:12px;">
-         <p style="font-size:11px;opacity:0.7;margin:0;"><strong>ℹ️</strong> Padrão: 1000 fotos | Máximo permitido: 2000 fotos | Cada foto: ~140KB</p>
+         <p style="font-size:11px;opacity:0.7;margin:0;"><strong>ℹ️</strong> Padrão: 1000 fotos | Máximo permitido: 2000 fotos | Cada foto: até 3 MB (o tamanho real costuma ficar abaixo disso após otimização)</p>
         </div>
        </div>
        <div><label style="display:block;font-size:12px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">👥 Limite por Convidado</label>
@@ -1065,33 +1065,67 @@
     function deleteFilesAndRecords() {
       if (allUploads.length > 0) {
         const paths = allUploads.map(u => u.storage_path);
-        
-        let pathIndex = 0;
-        function deleteNextChunk() {
-          const chunk = paths.slice(pathIndex, pathIndex + 100);
-          if (chunk.length === 0) {
-            deleteFromDatabase();
-            return;
-          }
+        fetch(WORKER_URL + '?action=deleteEventAssets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ eventId, paths })
+        })
+          .then(async (response) => {
+            if (!response.ok) {
+              let errorMessage = 'Falha ao apagar ficheiros do evento no R2';
+              try {
+                const errorData = await response.json();
+                if (errorData?.error) {
+                  errorMessage = errorData.error;
+                }
+              } catch (e) {
+                // ignore parse failure and keep generic error
+              }
+              throw new Error(errorMessage);
+            }
 
-          fetch(WORKER_URL, {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paths: chunk })
+            const result = await response.json().catch(() => ({}));
+            if (result && result.success === false) {
+              throw new Error(result.error || 'Falha ao apagar ficheiros do evento no R2');
+            }
+
+            deleteFromDatabase();
           })
-            .then(() => {
-              pathIndex += 100;
-              deleteNextChunk();
-            })
-            .catch(err => {
-              console.warn('Erro ao remover chunk do R2:', err);
-              pathIndex += 100;
-              deleteNextChunk();
-            });
-        }
-        deleteNextChunk();
+          .catch(err => {
+            console.error('Erro ao remover ficheiros do R2:', err);
+            showToast(`Erro ao apagar fotos no R2: ${err.message || 'tenta novamente'}`, 'error');
+          });
       } else {
-        deleteFromDatabase();
+        fetch(WORKER_URL + '?action=deleteEventAssets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ eventId, paths: [] })
+        })
+          .then(async (response) => {
+            if (!response.ok) {
+              let errorMessage = 'Falha ao limpar restos do evento no R2';
+              try {
+                const errorData = await response.json();
+                if (errorData?.error) {
+                  errorMessage = errorData.error;
+                }
+              } catch (e) {
+                // ignore parse failure and keep generic error
+              }
+              throw new Error(errorMessage);
+            }
+
+            const result = await response.json().catch(() => ({}));
+            if (result && result.success === false) {
+              throw new Error(result.error || 'Falha ao limpar restos do evento no R2');
+            }
+
+            deleteFromDatabase();
+          })
+          .catch(err => {
+            console.error('Erro ao limpar restos do evento no R2:', err);
+            showToast(`Erro ao limpar restos no R2: ${err.message || 'tenta novamente'}`, 'error');
+          });
       }
     }
 
@@ -1100,15 +1134,30 @@
         .from('uploads')
         .delete()
         .eq('event_id', eventId)
-        .then(() => {
+        .then(({ error: uploadsError }) => {
+          if (uploadsError) {
+            throw uploadsError;
+          }
+
           supabaseClient
             .from('events')
             .delete()
             .eq('id', eventId)
-            .then(() => {
+            .then(({ error: eventError }) => {
+              if (eventError) {
+                throw eventError;
+              }
               loadEvents();
               showToast(`✅ Evento apagado! ${allUploads.length} foto(s) eliminada(s) do R2`, 'success');
+            })
+            .catch((err) => {
+              console.error('Erro ao apagar evento:', err);
+              showToast(`Erro ao apagar o evento: ${err.message || 'tenta novamente'}`, 'error');
             });
+        })
+        .catch((err) => {
+          console.error('Erro ao apagar uploads:', err);
+          showToast(`Erro ao apagar registos do evento: ${err.message || 'tenta novamente'}`, 'error');
         });
     }
 
@@ -1143,6 +1192,10 @@
 
   function calculateStorageFromPhotos(photoCount) {
     return Math.ceil((photoCount * KB_PER_PHOTO) / 1024 * 10) / 10;
+  }
+
+  function calculateMaxStorageFromPhotos(photoCount) {
+    return Math.ceil(photoCount * STORAGE_LIMITS.MAX_FILE_SIZE_MB * 10) / 10;
   }
 
   function calculatePhotosFromStorage(storageMB) {
@@ -1207,8 +1260,9 @@
   }
 
   function updateStorageDisplay(photoCount) {
-    const storageMB = calculateStorageFromPhotos(photoCount);
-    document.getElementById('edit-event-storage-display').textContent = `Tamanho: ${storageMB} MB (~${photoCount} fotos)`;
+    const estimatedStorageMB = calculateStorageFromPhotos(photoCount);
+    const maxStorageMB = calculateMaxStorageFromPhotos(photoCount);
+    document.getElementById('edit-event-storage-display').textContent = `Estimativa: ${estimatedStorageMB} MB | Máximo: ${maxStorageMB} MB`;
   }
 
   function showEventQuotaIndicator(event) {
