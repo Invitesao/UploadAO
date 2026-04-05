@@ -284,6 +284,11 @@
   // --- CLOUDFLARE R2 CONFIG ---
   const WORKER_URL = "https://uploadao-worker.araujocataca16.workers.dev";
   const R2_PUBLIC_URL = "https://pub-8eca4f7d3ed74d5286d757b5f7af49df.r2.dev";
+  const PUBLIC_APP_URL = "https://invitesao.github.io/UploadAO/";
+
+  function getPublicAppBaseUrl() {
+    return PUBLIC_APP_URL;
+  }
 
   // --- HELPER: FETCH COM CORS ---
   async function fetchWithCors(url, options = {}) {
@@ -654,7 +659,7 @@
     const expirationDate = new Date(eventDateObj);
     expirationDate.setDate(expirationDate.getDate() + 15);
 
-    const currentUrl = window.location.origin + window.location.pathname;
+    const currentUrl = getPublicAppBaseUrl();
     const uploadUrl = currentUrl + '?event=' + eventId;
     const galleryUrl = currentUrl + '?gallery=' + eventId;
     
