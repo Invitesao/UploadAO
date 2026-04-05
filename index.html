@@ -235,6 +235,7 @@
       <p style="font-size:13px;opacity:0.4;margin:0;">ou arraste fotos aqui</p>
      </div>
      <div id="file-list" class="mt-4 flex flex-col gap-2"></div><button id="upload-btn" class="w-full mt-5 py-4 rounded-xl font-semibold text-base tracking-wide transition-all duration-300 hidden" style="border:none;cursor:pointer;" onclick="startUpload()"> <span id="upload-btn-text" class="flex items-center justify-center gap-2"> <i data-lucide="send" style="width:18px;height:18px;"></i> <span id="btn-label">Enviar Fotos</span> </span> </button>
+     <p id="upload-leave-warning" style="display:none;margin:10px 0 0 0;font-size:12px;line-height:1.5;color:#b45309;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);padding:10px 12px;border-radius:10px;text-align:center;">Não saia da página enquanto as fotos estiverem a carregar.</p>
     </section>
     <div class="grid grid-cols-3 gap-3 text-center" style="font-size:12px;opacity:0.35;">
      <div><i data-lucide="smartphone" style="width:20px;height:20px;margin:0 auto 6px;display:block;"></i> Abre o link
@@ -364,6 +365,7 @@
   const PENDING_UPLOAD_DB_NAME = 'UploadAOOffline';
   const PENDING_UPLOAD_STORE = 'pendingUploads';
   let uploadBroadcastChannel = null;
+  let renderFileListFrame = null;
 
   function getFileStateKey(file) {
     return `${file.name}__${file.size}__${file.lastModified || 0}`;
@@ -381,7 +383,16 @@
     const key = getFileStateKey(file);
     const current = getUploadFileState(file);
     uploadFileStates.set(key, { ...current, ...patch });
-    renderFileList();
+    scheduleRenderFileList();
+  }
+
+  function scheduleRenderFileList() {
+    if (renderFileListFrame !== null) return;
+    const scheduler = window.requestAnimationFrame || ((cb) => setTimeout(cb, 16));
+    renderFileListFrame = scheduler(() => {
+      renderFileListFrame = null;
+      renderFileList();
+    });
   }
 
   function getGuestStorageKey(eventId) {
@@ -634,6 +645,14 @@
     window.addEventListener('beforeunload', () => {
       selectedFiles.forEach(file => releaseUpload(file));
     });
+
+    window.addEventListener('beforeunload', (event) => {
+      if (!hasPendingUploadWork()) return;
+      const message = 'Não saia da página enquanto as fotos estiverem a carregar.';
+      event.preventDefault();
+      event.returnValue = message;
+      return message;
+    });
   }
   let galleryPhotosLoaded = false;
   let galleryCurrentPage = 0;
@@ -751,9 +770,19 @@
     setupUploadCoordination();
   });
 
-  const CONCURRENT_UPLOADS = 8;
+  const CONCURRENT_UPLOADS = 3;
   let uploadQueue = [];
   let activeUploads = 0;
+
+  function hasPendingUploadWork() {
+    return isUploading || activeUploads > 0 || uploadQueue.length > 0;
+  }
+
+  function setUploadLeaveWarningVisible(visible) {
+    const warningEl = document.getElementById('upload-leave-warning');
+    if (!warningEl) return;
+    warningEl.style.display = visible ? 'block' : 'none';
+  }
 
   function processUploadQueue() {
     while (uploadQueue.length > 0 && activeUploads < CONCURRENT_UPLOADS) {
@@ -2794,6 +2823,7 @@
     if (selectedFiles.length === 0) {
       uploadBtn.classList.add('hidden');
       uploadBtn.classList.remove('btn-pulse');
+      if (!isUploading) setUploadLeaveWarningVisible(false);
       return;
     }
 
@@ -2954,6 +2984,7 @@
     renderFileList();
 
     isUploading = true;
+    setUploadLeaveWarningVisible(true);
     uploadBtn.classList.remove('btn-pulse');
     uploadBtn.disabled = true;
     uploadBtn.style.opacity = '0.7';
@@ -3005,6 +3036,7 @@
 
   function finishUpload(successCount, totalCount) {
     isUploading = false;
+    setUploadLeaveWarningVisible(false);
     uploadBtn.disabled = false;
     uploadBtn.style.opacity = '1';
 
