@@ -283,8 +283,6 @@
   // --- SUPABASE & COMPRESSION CONFIG ---
   const SUPABASE_URL = "https://gysvyobbjetlhpakwatc.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5c3Z5b2JiamV0bGhwYWt3YXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNzYzMjksImV4cCI6MjA5MDc1MjMyOX0.3FLSilwG7-hI1ZPZQwa-HHXsxPR4t1XYrUpP24yPg7c";
-  const ADMIN_PASSWORD = "adkira2026invites!!@";
-  
   // --- CLOUDFLARE R2 CONFIG ---
   const WORKER_URL = "https://uploadao-worker.araujocataca16.workers.dev";
   const R2_PUBLIC_URL = "https://pub-8eca4f7d3ed74d5286d757b5f7af49df.r2.dev";
@@ -360,6 +358,12 @@
   let editingEventId = null;
   let viewerTouchStartX = 0;
   let viewerTouchStartY = 0;
+  let restoredPendingUploadsKey = null;
+  const uploadTabId = 'tab_' + Math.random().toString(36).slice(2, 10);
+  const UPLOAD_CLAIM_TTL_MS = 15 * 60 * 1000;
+  const PENDING_UPLOAD_DB_NAME = 'UploadAOOffline';
+  const PENDING_UPLOAD_STORE = 'pendingUploads';
+  let uploadBroadcastChannel = null;
 
   function getFileStateKey(file) {
     return `${file.name}__${file.size}__${file.lastModified || 0}`;
@@ -420,16 +424,216 @@
     const input = document.getElementById('fileInput');
     if (!input) return;
     input.accept = eventAllowsVideos()
-      ? 'image/*,video/mp4,video/quicktime,video/webm'
-      : 'image/*';
+      ? 'image/*,image/heic,image/heif,video/mp4,video/quicktime,video/webm'
+      : 'image/*,image/heic,image/heif';
   }
 
   function isVideoFile(file) {
     return !!file && VIDEO_CONFIG.allowedFormats.includes(file.type);
   }
 
+  function isHeicFile(file) {
+    if (!file) return false;
+    const type = (file.type || '').toLowerCase();
+    const name = (file.name || '').toLowerCase();
+    return type === 'image/heic' || type === 'image/heif' || /\.heic$|\.heif$/i.test(name);
+  }
+
   function isVideoPhoto(photo) {
     return !!photo && (VIDEO_CONFIG.allowedFormats.includes(photo.file_type) || /\.(mp4|mov|webm)$/i.test(photo.file_name || ''));
+  }
+
+  function getPendingUploadId(file, eventId = currentEventId, guestId = currentGuestId) {
+    return `${eventId || 'noevent'}__${guestId || 'noguest'}__${file.name}__${file.size}__${file.lastModified || 0}`;
+  }
+
+  function getUploadClaimStorageKey(file, eventId = currentEventId, guestId = currentGuestId) {
+    return `uploadao_upload_claim_${getPendingUploadId(file, eventId, guestId)}`;
+  }
+
+  function cleanupUploadClaims() {
+    const now = Date.now();
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith('uploadao_upload_claim_')) continue;
+      try {
+        const claim = JSON.parse(localStorage.getItem(key));
+        if (!claim || now - Number(claim.timestamp || 0) > UPLOAD_CLAIM_TTL_MS) {
+          localStorage.removeItem(key);
+        }
+      } catch (e) {
+        localStorage.removeItem(key);
+      }
+    }
+  }
+
+  function claimUpload(file) {
+    cleanupUploadClaims();
+    const key = getUploadClaimStorageKey(file);
+    const now = Date.now();
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        const existing = JSON.parse(raw);
+        if (existing && existing.tabId !== uploadTabId && now - Number(existing.timestamp || 0) < UPLOAD_CLAIM_TTL_MS) {
+          return false;
+        }
+      }
+    } catch (e) {
+      localStorage.removeItem(key);
+    }
+
+    localStorage.setItem(key, JSON.stringify({
+      tabId: uploadTabId,
+      timestamp: now
+    }));
+
+    if (uploadBroadcastChannel) {
+      uploadBroadcastChannel.postMessage({ type: 'claim', key, tabId: uploadTabId, timestamp: now });
+    }
+    return true;
+  }
+
+  function releaseUpload(file) {
+    const key = getUploadClaimStorageKey(file);
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return;
+      const existing = JSON.parse(raw);
+      if (!existing || existing.tabId === uploadTabId) {
+        localStorage.removeItem(key);
+      }
+    } catch (e) {
+      localStorage.removeItem(key);
+    }
+
+    if (uploadBroadcastChannel) {
+      uploadBroadcastChannel.postMessage({ type: 'release', key, tabId: uploadTabId });
+    }
+  }
+
+  function isClaimedInAnotherTab(file, eventId = currentEventId, guestId = currentGuestId) {
+    cleanupUploadClaims();
+    const key = getUploadClaimStorageKey(file, eventId, guestId);
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return false;
+      const claim = JSON.parse(raw);
+      if (!claim) return false;
+      return claim.tabId !== uploadTabId && (Date.now() - Number(claim.timestamp || 0) < UPLOAD_CLAIM_TTL_MS);
+    } catch (e) {
+      localStorage.removeItem(key);
+      return false;
+    }
+  }
+
+  function openPendingUploadsDb() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(PENDING_UPLOAD_DB_NAME, 1);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains(PENDING_UPLOAD_STORE)) {
+          db.createObjectStore(PENDING_UPLOAD_STORE, { keyPath: 'id' });
+        }
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error || new Error('Erro ao abrir IndexedDB'));
+    });
+  }
+
+  async function savePendingUpload(file) {
+    if (!currentEventId || !currentGuestId) return;
+    const db = await openPendingUploadsDb();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(PENDING_UPLOAD_STORE, 'readwrite');
+      tx.objectStore(PENDING_UPLOAD_STORE).put({
+        id: getPendingUploadId(file),
+        eventId: currentEventId,
+        guestId: currentGuestId,
+        guestName: currentGuestName || '',
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        lastModified: file.lastModified || Date.now(),
+        createdAt: Date.now(),
+        blob: file
+      });
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error || new Error('Erro ao guardar ficheiro pendente'));
+    });
+    db.close();
+  }
+
+  async function removePendingUpload(file, eventId = currentEventId, guestId = currentGuestId) {
+    if (!eventId || !guestId) return;
+    const db = await openPendingUploadsDb();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(PENDING_UPLOAD_STORE, 'readwrite');
+      tx.objectStore(PENDING_UPLOAD_STORE).delete(getPendingUploadId(file, eventId, guestId));
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error || new Error('Erro ao remover ficheiro pendente'));
+    });
+    db.close();
+  }
+
+  async function restorePendingUploads(eventId, guestId) {
+    if (!eventId || !guestId) return;
+    const restoreKey = `${eventId}__${guestId}`;
+    if (restoredPendingUploadsKey === restoreKey) return;
+    restoredPendingUploadsKey = restoreKey;
+
+    const db = await openPendingUploadsDb();
+    const pendingItems = await new Promise((resolve, reject) => {
+      const tx = db.transaction(PENDING_UPLOAD_STORE, 'readonly');
+      const request = tx.objectStore(PENDING_UPLOAD_STORE).getAll();
+      request.onsuccess = () => resolve((request.result || []).filter(item => item.eventId === eventId && item.guestId === guestId));
+      request.onerror = () => reject(request.error || new Error('Erro ao restaurar uploads pendentes'));
+    }).catch((err) => {
+      console.warn('Erro ao restaurar ficheiros pendentes:', err);
+      return [];
+    });
+    db.close();
+
+    let restoredCount = 0;
+    for (const item of pendingItems) {
+      if (!item?.blob) continue;
+      const file = new File([item.blob], item.name, {
+        type: item.type || item.blob.type || '',
+        lastModified: item.lastModified || Date.now()
+      });
+
+      const exists = selectedFiles.find(f => getPendingUploadId(f, eventId, guestId) === item.id);
+      if (!exists && !isClaimedInAnotherTab(file, eventId, guestId)) {
+        selectedFiles.push(file);
+        restoredCount++;
+      }
+    }
+
+    if (restoredCount > 0) {
+      showToast(`${restoredCount} ficheiro(s) restaurado(s) após interrupção`, 'info');
+      renderFileList();
+    }
+  }
+
+  function setupUploadCoordination() {
+    cleanupUploadClaims();
+
+    if ('BroadcastChannel' in window) {
+      uploadBroadcastChannel = new BroadcastChannel('uploadao_uploads');
+      uploadBroadcastChannel.onmessage = () => {
+        cleanupUploadClaims();
+      };
+    }
+
+    window.addEventListener('storage', (event) => {
+      if (event.key && event.key.startsWith('uploadao_upload_claim_')) {
+        cleanupUploadClaims();
+      }
+    });
+
+    window.addEventListener('beforeunload', () => {
+      selectedFiles.forEach(file => releaseUpload(file));
+    });
   }
   let galleryPhotosLoaded = false;
   let galleryCurrentPage = 0;
@@ -544,6 +748,7 @@
 
   window.addEventListener('load', () => {
     setTimeout(cleanOldCache, 1000);
+    setupUploadCoordination();
   });
 
   const CONCURRENT_UPLOADS = 8;
@@ -661,23 +866,37 @@
   applyConfig(defaultConfig);
 
   // --- ADMIN FUNCTIONS ---
-  function adminLogin() {
+  async function adminLogin() {
     const password = document.getElementById('admin-password').value;
     if (!password.trim()) {
       showToast('Digite a senha', 'warning');
       return;
     }
 
-    if (password === ADMIN_PASSWORD) {
-      saveAdminSession();
+    try {
+      const response = await fetch(WORKER_URL + '?action=adminLogin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      });
+      const result = await response.json().catch(() => null);
+
+      if (!response.ok || !result?.success) {
+        showToast(result?.error || 'Senha incorreta', 'error');
+        document.getElementById('admin-password').value = '';
+        return;
+      }
+
+      saveAdminSession(result.adminId || 'admin');
       showToast('✅ Bem-vindo!', 'success');
       document.getElementById('login-view').style.display = 'none';
       document.getElementById('admin-view').style.display = 'block';
       document.getElementById('admin-password').value = '';
       loadEvents();
       lucide.createIcons();
-    } else {
-      showToast('❌ Senha incorreta', 'error');
+    } catch (err) {
+      console.error('Erro no login admin:', err);
+      showToast('Erro ao validar login', 'error');
       document.getElementById('admin-password').value = '';
     }
   }
@@ -690,10 +909,11 @@
     currentGuestId = null;
   }
 
-  function saveAdminSession() {
+  function saveAdminSession(adminId = 'admin') {
     sessionStorage.setItem('adminSession', JSON.stringify({
       timestamp: Date.now(),
-      authenticated: true
+      authenticated: true,
+      adminId
     }));
   }
 
@@ -1787,6 +2007,9 @@
     showEventQuotaIndicator(event);
 
     applyConfig(config);
+    restorePendingUploads(currentEventId, currentGuestId).catch(err => {
+      console.warn('Erro ao restaurar uploads pendentes:', err);
+    });
     renderFileList();
   }
 
@@ -2527,8 +2750,14 @@
         const rejected = mediaFiles.length - filesToAdd.length;
         const canAdd = Math.min(filesToAdd.length, remainingSlots);
 
+        const filesAccepted = [];
         filesToAdd.slice(0, canAdd).forEach(f => {
+          if (isClaimedInAnotherTab(f)) {
+            duplicates++;
+            return;
+          }
           selectedFiles.push(f);
+          filesAccepted.push(f);
         });
 
         if (duplicates > 0) {
@@ -2538,6 +2767,12 @@
         if (canAdd < filesToAdd.length) {
           showToast(`⚠️ ${filesToAdd.length - canAdd} ficheiro(s) não adicionado(s) - limite de 20 por vez`, 'warning');
         }
+
+        Promise.all(filesAccepted.map(file => savePendingUpload(file).catch(err => {
+          console.warn('Erro ao guardar ficheiro pendente:', err);
+        }))).finally(() => {
+          renderFileList();
+        });
 
         renderFileList();
       })
@@ -2586,16 +2821,24 @@
       div.style.cssText = `position:relative;border-radius:12px;overflow:hidden;aspect-ratio:1;background:${primary}1f;display:flex;align-items:center;justify-content:center;transition:all 0.2s;`;
 
       const previewUrl = URL.createObjectURL(f);
-      const mediaEl = isVideo ? document.createElement('video') : document.createElement('img');
-      mediaEl.src = previewUrl;
-      mediaEl.style.cssText = isVideo
-        ? `width:100%;height:100%;object-fit:contain;background:#000;`
-        : `width:100%;height:100%;object-fit:cover;`;
+      let mediaEl = null;
 
-      if (isVideo) {
-        mediaEl.muted = true;
-        mediaEl.playsInline = true;
-        mediaEl.preload = 'metadata';
+      if (isHeicFile(f)) {
+        mediaEl = document.createElement('div');
+        mediaEl.style.cssText = `width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg, rgba(37,99,235,0.16), rgba(15,23,42,0.4));color:#fff;padding:12px;text-align:center;`;
+        mediaEl.innerHTML = `<i data-lucide="image" style="width:28px;height:28px;"></i><span style="font-size:${baseSize * 0.62}px;font-weight:700;">HEIC</span><span style="font-size:${baseSize * 0.52}px;opacity:0.82;">Pré-visualização depende do dispositivo</span>`;
+      } else {
+        mediaEl = isVideo ? document.createElement('video') : document.createElement('img');
+        mediaEl.src = previewUrl;
+        mediaEl.style.cssText = isVideo
+          ? `width:100%;height:100%;object-fit:contain;background:#000;`
+          : `width:100%;height:100%;object-fit:cover;`;
+
+        if (isVideo) {
+          mediaEl.muted = true;
+          mediaEl.playsInline = true;
+          mediaEl.preload = 'metadata';
+        }
       }
 
       const overlay = document.createElement('div');
@@ -2648,9 +2891,13 @@
         deleteBtn.style.opacity = '0';
       };
 
-      mediaEl.addEventListener('load', () => URL.revokeObjectURL(previewUrl), { once: true });
-      mediaEl.addEventListener('loadeddata', () => URL.revokeObjectURL(previewUrl), { once: true });
-      mediaEl.addEventListener('error', () => URL.revokeObjectURL(previewUrl), { once: true });
+      if (!isHeicFile(f) && typeof mediaEl.addEventListener === 'function') {
+        mediaEl.addEventListener('load', () => URL.revokeObjectURL(previewUrl), { once: true });
+        mediaEl.addEventListener('loadeddata', () => URL.revokeObjectURL(previewUrl), { once: true });
+        mediaEl.addEventListener('error', () => URL.revokeObjectURL(previewUrl), { once: true });
+      } else {
+        URL.revokeObjectURL(previewUrl);
+      }
 
       gridContainer.appendChild(div);
       lucide.createIcons();
@@ -2689,6 +2936,10 @@
     const removedFile = selectedFiles[index];
     if (removedFile) {
       uploadFileStates.delete(getFileStateKey(removedFile));
+      removePendingUpload(removedFile).catch(err => {
+        console.warn('Erro ao remover ficheiro pendente:', err);
+      });
+      releaseUpload(removedFile);
     }
     selectedFiles.splice(index, 1);
     renderFileList();
@@ -2761,7 +3012,10 @@
     const msg = config.thank_you_message || defaultConfig.thank_you_message;
     showToast(`${msg} (${successCount}/${totalCount})`, 'success');
 
-    selectedFiles = [];
+    selectedFiles = selectedFiles.filter(file => {
+      const state = getUploadFileState(file);
+      return state.status === 'error';
+    });
     renderFileList();
 
     document.getElementById('upload-btn-text').innerHTML = `
@@ -3019,15 +3273,23 @@
       uploadQueue.push(async () => {
         updateUploadButtonProgress();
         try {
+          if (!claimUpload(file)) {
+            markUploadStage(file, 'error', 'Noutra aba', 100);
+            throw new Error('Este ficheiro já está a ser enviado noutra aba');
+          }
           markUploadStage(file, 'hashing', 'A validar', 10);
           await uploadFile(file, index);
           successCount++;
+          await removePendingUpload(file).catch(err => {
+            console.warn('Erro ao limpar ficheiro pendente:', err);
+          });
           markUploadStage(file, 'done', 'Concluido', 100);
         } catch (err) {
           console.error('Erro ao enviar:', file.name, err);
           showToast(`Erro ao enviar ${file.name}`, 'error');
           markUploadStage(file, 'error', 'Falhou', 100);
         } finally {
+          releaseUpload(file);
           completedCount++;
           updateUploadButtonProgress();
           if (completedCount === filesToUpload.length) {
@@ -3172,13 +3434,10 @@
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
+      decodeImageFile(file).then((decoded) => {
           const canvas = document.createElement('canvas');
-          const originalWidth = img.width;
-          const originalHeight = img.height;
+          const originalWidth = decoded.width;
+          const originalHeight = decoded.height;
           let width = originalWidth;
           let height = originalHeight;
 
@@ -3197,7 +3456,7 @@
 
           const encodeWithQuality = (quality) => new Promise((blobResolve) => {
             ctx.clearRect(0, 0, width, height);
-            ctx.drawImage(img, 0, 0, width, height);
+            ctx.drawImage(decoded.source, 0, 0, width, height);
             canvas.toBlob(
               (blob) => blobResolve(blob),
               COMPRESSION_CONFIG.mimeType,
@@ -3258,11 +3517,45 @@
               shrinkCanvas();
             }
           })().catch(reject);
+      }).catch((err) => {
+        if (isHeicFile(file) && file.size <= COMPRESSION_CONFIG.targetSizeBytes) {
+          resolve({ blob: file, mimeType: file.type || COMPRESSION_CONFIG.mimeType });
+          return;
+        }
+        reject(err);
+      });
+    });
+  }
+
+  function decodeImageFile(file) {
+    return new Promise((resolve, reject) => {
+      if ('createImageBitmap' in window) {
+        createImageBitmap(file)
+          .then(bitmap => {
+            resolve({ source: bitmap, width: bitmap.width, height: bitmap.height });
+          })
+          .catch(() => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const img = new Image();
+              img.onload = () => resolve({ source: img, width: img.width, height: img.height });
+              img.onerror = () => reject(new Error(isHeicFile(file) ? 'HEIC/HEIF não suportado neste dispositivo para compressão' : 'Erro ao carregar imagem'));
+              img.src = e.target.result;
+            };
+            reader.onerror = () => reject(new Error('Erro ao ler imagem'));
+            reader.readAsDataURL(file);
+          });
+      } else {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => resolve({ source: img, width: img.width, height: img.height });
+          img.onerror = () => reject(new Error(isHeicFile(file) ? 'HEIC/HEIF não suportado neste dispositivo para compressão' : 'Erro ao carregar imagem'));
+          img.src = e.target.result;
         };
-        img.onerror = () => reject(new Error('Erro ao carregar imagem'));
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
+        reader.onerror = () => reject(new Error('Erro ao ler imagem'));
+        reader.readAsDataURL(file);
+      }
     });
   }
 
