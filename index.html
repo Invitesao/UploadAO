@@ -121,16 +121,16 @@
    </div><!-- ADMIN VIEW -->
    <div id="admin-view" style="display:none;" class="h-full w-full overflow-auto">
     <header style="background:#f5f5f5;border-bottom:1px solid rgba(26,26,26,0.1);padding:16px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;">
-     <div style="display:flex;align-items:center;gap:12px;"><i data-lucide="settings" style="width:20px;height:20px;"></i> <span style="font-weight:600;">Painel de AdministraÃ§Ã£o</span>
+     <div style="display:flex;align-items:center;gap:12px;"><i data-lucide="settings" style="width:20px;height:20px;"></i> <span style="font-weight:600;">Painel de Administração</span>
      </div><button onclick="adminLogout()" style="background:none;border:none;cursor:pointer;display:flex;gap:6px;align-items:center;opacity:0.6;font-family:'Poppins',sans-serif;font-size:13px;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'"> <i data-lucide="log-out" style="width:18px;height:18px;"></i> <span>Sair</span> </button>
     </header>
     <div style="padding:24px;max-width:900px;margin:0 auto;">
      <div style="background:#fff;border:1px solid rgba(26,26,26,0.1);border-radius:16px;padding:24px;margin-bottom:24px;">
       <h2 style="font-size:18px;font-weight:600;margin:0 0 20px 0;">Criar Novo Evento</h2>
-      <div style="display:flex;gap:12px;margin-bottom:16px;"><input type="text" id="search-events" placeholder="ðŸ” Buscar eventos..." style="flex:1;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;"> <button onclick="showAllEvents()" style="background:#e74c3c;color:#fff;border:none;padding:12px 16px;border-radius:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Limpar</button>
+      <div style="display:flex;gap:12px;margin-bottom:16px;"><input type="text" id="search-events" placeholder="Buscar eventos..." style="flex:1;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;"> <button onclick="showAllEvents()" style="background:#e74c3c;color:#fff;border:none;padding:12px 16px;border-radius:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Limpar</button>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-       <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Nome do Evento</label> <input type="text" id="new-event-title" placeholder="Ex: JoÃ£o &amp; Maria" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;">
+       <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Nome do Evento</label> <input type="text" id="new-event-title" placeholder="Ex: João &amp; Maria" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;">
        </div>
        <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Data do Evento</label> <input type="date" id="new-event-date" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;">
        </div>
@@ -138,22 +138,22 @@
       <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Mensagem Personalizada</label> <input type="text" id="new-event-message" placeholder="Ex: Partilha as tuas fotos!" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;margin-bottom:16px;">
       </div>
       <div id="edit-event-fields" style="display:none;padding:16px;background:#f0f8ff;border-radius:12px;border:1px solid #2563eb33;margin-bottom:16px;">
-       <h3 style="font-size:14px;font-weight:600;margin:0 0 12px 0;">âœï¸ Editar Evento</h3><input type="text" id="edit-event-title" placeholder="Novo nome" style="width:100%;padding:10px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;margin-bottom:8px;"> <input type="date" id="edit-event-date" style="width:100%;padding:10px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;margin-bottom:8px;"> <input type="text" id="edit-event-message" placeholder="Nova mensagem" style="width:100%;padding:10px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;margin-bottom:8px;">
-       <div><label style="display:block;font-size:12px;font-weight:600;margin:0 0 6px 0;opacity:0.7;">ðŸ“Š Limite Total de Fotos do Evento</label>
+       <h3 style="font-size:14px;font-weight:600;margin:0 0 12px 0;">✏️ Editar Evento</h3><input type="text" id="edit-event-title" placeholder="Novo nome" style="width:100%;padding:10px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;margin-bottom:8px;"> <input type="date" id="edit-event-date" style="width:100%;padding:10px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;margin-bottom:8px;"> <input type="text" id="edit-event-message" placeholder="Nova mensagem" style="width:100%;padding:10px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;margin-bottom:8px;">
+       <div><label style="display:block;font-size:12px;font-weight:600;margin:0 0 6px 0;opacity:0.7;">📊 Limite Total de Fotos do Evento</label>
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;"><input type="number" id="edit-event-max-photos" min="1" max="2000" placeholder="Fotos (1-2000)" style="width:120px;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;"> <span id="edit-event-storage-display" style="font-size:11px;opacity:0.6;">Tamanho: 0 MB</span>
         </div>
         <div style="background:rgba(37,99,235,0.08);padding:8px 12px;border-radius:8px;border-left:3px solid #2563eb;margin-bottom:12px;">
-         <p style="font-size:11px;opacity:0.7;margin:0;"><strong>â„¹ï¸</strong> PadrÃ£o: 1000 fotos | MÃ¡ximo permitido: 2000 fotos | Cada foto: ~140KB</p>
+         <p style="font-size:11px;opacity:0.7;margin:0;"><strong>ℹ️</strong> Padrão: 1000 fotos | Máximo permitido: 2000 fotos | Cada foto: ~140KB</p>
         </div>
        </div>
-       <div><label style="display:block;font-size:12px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">ðŸ‘¥ Limite por Convidado</label>
+       <div><label style="display:block;font-size:12px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">👥 Limite por Convidado</label>
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;"><input type="checkbox" id="edit-event-enable-guest-limit" style="cursor:pointer;"> <label for="edit-event-enable-guest-limit" style="cursor:pointer;font-size:12px;flex:1;">Ativar limite de fotos por convidado</label>
         </div>
-        <div id="guest-limit-config" style="display:none;background:#fff;padding:12px;border-radius:8px;border:1px solid rgba(37,99,235,0.2);"><input type="number" id="edit-event-guest-max-photos" min="1" placeholder="MÃ¡x fotos por convidado" style="width:100%;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;">
-         <p style="font-size:11px;opacity:0.6;margin:8px 0 0 0;">Cada convidado poderÃ¡ enviar no mÃ¡ximo este nÃºmero de fotos.</p>
+        <div id="guest-limit-config" style="display:none;background:#fff;padding:12px;border-radius:8px;border:1px solid rgba(37,99,235,0.2);"><input type="number" id="edit-event-guest-max-photos" min="1" placeholder="Máx fotos por convidado" style="width:100%;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;">
+         <p style="font-size:11px;opacity:0.6;margin:8px 0 0 0;">Cada convidado poderá enviar no máximo este número de fotos.</p>
         </div>
        </div>
-       <div><label style="display:block;font-size:12px;font-weight:600;margin:0 0 6px 0;opacity:0.7;">ðŸ“… Data de AtivaÃ§Ã£o dos Links</label> <input type="date" id="edit-event-activation-date" style="width:100%;padding:10px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;margin-bottom:8px;">
+       <div><label style="display:block;font-size:12px;font-weight:600;margin:0 0 6px 0;opacity:0.7;">📅 Data de Ativação dos Links</label> <input type="date" id="edit-event-activation-date" style="width:100%;padding:10px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;margin-bottom:8px;">
         <div style="display:flex;gap:8px;margin-bottom:12px;"><button onclick="setActivationToToday()" style="background:#27ae60;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;flex:1;">Hoje (Teste)</button> <button onclick="setActivationToPastDate()" style="background:#e74c3c;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;flex:1;">Ontem (Demo)</button>
         </div>
         <p id="activation-info" style="font-size:11px;opacity:0.6;margin:0;">Links ficam ativos a partir desta data</p>
@@ -163,7 +163,7 @@
         </div>
         <div style="display:flex;gap:8px;align-items:center;"><input type="number" id="extend-event-days" min="1" max="60" placeholder="Dias" style="width:60px;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;"> <button onclick="extendEventExpiration()" style="background:#f39c12;color:#fff;border:none;padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;flex:1;">Estender +</button>
         </div>
-        <p id="expiration-info" style="font-size:11px;opacity:0.6;margin:8px 0 0 0;">DuraÃ§Ã£o atual: 15 dias</p>
+        <p id="expiration-info" style="font-size:11px;opacity:0.6;margin:8px 0 0 0;">Duração atual: 15 dias</p>
        </div>
        <div style="display:flex;gap:8px;"><button onclick="saveEventChanges()" style="background:#2563eb;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Guardar</button> <button onclick="cancelEditEvent()" style="background:#e0e0e0;border:none;padding:8px 16px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Cancelar</button>
        </div>
@@ -184,10 +184,10 @@
       <div style="width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:#2563eb;color:#fff;margin:0 auto 20px;"><i data-lucide="user-plus" style="width:32px;height:32px;"></i>
       </div>
       <h1 id="guest-login-title" style="font-family:'Poppins',sans-serif;font-size:28px;font-weight:700;margin:0 0 8px 0;"></h1>
-      <p style="font-size:14px;opacity:0.5;margin:0;">Qual Ã© o teu nome?</p>
+      <p style="font-size:14px;opacity:0.5;margin:0;">Qual é o teu nome?</p>
      </div>
      <div class="space-y-4">
-      <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Teu Nome</label> <input type="text" id="guest-name-input" placeholder="Ex: JoÃ£o Silva" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;transition:all 0.3s;" onkeypress="if(event.key==='Enter') confirmGuestName();">
+      <div><label style="display:block;font-size:13px;font-weight:600;margin:0 0 8px 0;opacity:0.7;">Teu Nome</label> <input type="text" id="guest-name-input" placeholder="Ex: João Silva" style="width:100%;padding:12px 16px;border:1px solid rgba(26,26,26,0.15);border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;transition:all 0.3s;" onkeypress="if(event.key==='Enter') confirmGuestName();">
       </div><button onclick="confirmGuestName()" style="width:100%;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> Continuar </button>
      </div>
     </div>
@@ -222,7 +222,7 @@
     <section id="activation-countdown-box" class="px-4 max-w-lg mx-auto pb-6 fade-in stagger-2" style="display:none;">
      <div id="activation-countdown-content" style="background:#e3f2fd;border-left:4px solid #2196f3;padding:16px;border-radius:8px;text-align:center;">
       <p id="activation-countdown-text" style="font-size:14px;margin:0 0 8px 0;color:#1976d2;font-weight:600;"></p>
-      <p style="font-size:12px;margin:0;opacity:0.8;">Os uploads estarÃ£o disponÃ­veis a partir dessa data â°</p>
+      <p style="font-size:12px;margin:0;opacity:0.8;">Os uploads estarão disponíveis a partir dessa data ⏰</p>
      </div>
     </section>
     <section class="px-4 max-w-lg mx-auto pb-6 fade-in stagger-3">
@@ -245,7 +245,7 @@
      </div>
     </div>
     <footer style="text-align:center;padding:12px 16px;margin-top:24px;border-top:1px solid rgba(26,26,26,0.08);font-size:12px;">
-     <p style="margin:0 0 8px 0;opacity:0.6;">Gostaria de ter este serviÃ§o no seu evento?</p><a href="https://wa.me/244959823409" target="_blank" rel="noopener noreferrer" style="background:#2563eb;color:#fff;padding:8px 16px;border-radius:8px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-weight:600;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> <i data-lucide="phone" style="width:16px;height:16px;"></i> Contacte-nos: +244 959 823 409 </a>
+     <p style="margin:0 0 8px 0;opacity:0.6;">Gostaria de ter este serviço no seu evento?</p><a href="https://wa.me/244959823409" target="_blank" rel="noopener noreferrer" style="background:#2563eb;color:#fff;padding:8px 16px;border-radius:8px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-weight:600;transition:all 0.3s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> <i data-lucide="phone" style="width:16px;height:16px;"></i> Contacte-nos: +244 959 823 409 </a>
     </footer>
    </div><!-- GALLERY VIEW -->
    <div id="gallery-view" style="display:none;" class="h-full w-full overflow-auto">
@@ -265,13 +265,13 @@
     </section>
     <section class="px-4 max-w-3xl mx-auto pb-4 fade-in stagger-3">
      <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;width:100%;">
-      <input type="text" id="gallery-search-input" placeholder="ðŸ” Pesquisar convidado..." style="flex:1;min-width:120px;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;"> <button onclick="filterGalleryByGuest()" style="background:#2563eb;color:#fff;border:none;padding:8px 12px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:12px;display:flex;gap:4px;align-items:center;transition:all 0.3s;white-space:nowrap;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> <i data-lucide="search" style="width:12px;height:12px;"></i> </button> <button onclick="clearGalleryFilter()" style="background:#95a5a6;color:#fff;border:none;padding:8px 12px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:12px;display:none;white-space:nowrap;" id="clear-filter-btn" onmouseover="this.style.background='#7f8c8d'" onmouseout="this.style.background='#95a5a6'">Limpar</button> <button id="download-all-zip-btn" onclick="downloadAllPhotosAsZip()" style="background:#27ae60;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:12px;display:flex;gap:6px;align-items:center;transition:all 0.3s;white-space:nowrap;" onmouseover="this.style.background='#229954'" onmouseout="this.style.background='#27ae60'"> <i data-lucide="download" style="width:12px;height:12px;"></i> ZIP Tudo </button>
+      <input type="text" id="gallery-search-input" placeholder="Pesquisar convidado..." style="flex:1;min-width:120px;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;"> <button onclick="filterGalleryByGuest()" style="background:#2563eb;color:#fff;border:none;padding:8px 12px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:12px;display:flex;gap:4px;align-items:center;transition:all 0.3s;white-space:nowrap;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> <i data-lucide="search" style="width:12px;height:12px;"></i> </button> <button onclick="clearGalleryFilter()" style="background:#95a5a6;color:#fff;border:none;padding:8px 12px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:12px;display:none;white-space:nowrap;" id="clear-filter-btn" onmouseover="this.style.background='#7f8c8d'" onmouseout="this.style.background='#95a5a6'">Limpar</button> <button id="download-all-zip-btn" onclick="downloadAllPhotosAsZip()" style="background:#27ae60;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:12px;display:flex;gap:6px;align-items:center;transition:all 0.3s;white-space:nowrap;" onmouseover="this.style.background='#229954'" onmouseout="this.style.background='#27ae60'"> <i data-lucide="download" style="width:12px;height:12px;"></i> ZIP Tudo </button>
      </div>
      <section id="gallery-grid" style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;padding-bottom:12px;"></section>
      <div id="gallery-empty" style="text-align:center;padding:40px 20px;opacity:0.5;"><i data-lucide="inbox" style="width:48px;height:48px;margin:0 auto 16px;display:block;opacity:0.3;"></i>
-      <p style="font-size:16px;margin:0;">Nenhuma foto foi partilhada ainda ðŸ“·</p>
+      <p style="font-size:16px;margin:0;">Nenhuma foto foi partilhada ainda</p>
      </div>
-     <div id="gallery-pagination" style="display:flex;gap:12px;justify-content:center;margin-top:24px;align-items:center;"><button id="gallery-prev-btn" onclick="previousGalleryPage()" style="background:#95a5a6;color:#fff;border:none;padding:10px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:none;transition:all 0.3s;display:flex;gap:6px;align-items:center;" onmouseover="this.style.background='#7f8c8d'" onmouseout="this.style.background='#95a5a6'"> <i data-lucide="chevron-left" style="width:16px;height:16px;"></i> Voltar </button> <span id="gallery-page-info" style="font-size:13px;font-weight:600;opacity:0.6;min-width:80px;text-align:center;"></span> <button id="gallery-next-btn" onclick="nextGalleryPage()" style="background:#2563eb;color:#fff;border:none;padding:10px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:none;transition:all 0.3s;display:flex;gap:6px;align-items:center;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> Ver PrÃ³ximas <i data-lucide="chevron-right" style="width:16px;height:16px;"></i> </button>
+     <div id="gallery-pagination" style="display:flex;gap:12px;justify-content:center;margin-top:24px;align-items:center;"><button id="gallery-prev-btn" onclick="previousGalleryPage()" style="background:#95a5a6;color:#fff;border:none;padding:10px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:none;transition:all 0.3s;display:flex;gap:6px;align-items:center;" onmouseover="this.style.background='#7f8c8d'" onmouseout="this.style.background='#95a5a6'"> <i data-lucide="chevron-left" style="width:16px;height:16px;"></i> Voltar </button> <span id="gallery-page-info" style="font-size:13px;font-weight:600;opacity:0.6;min-width:80px;text-align:center;"></span> <button id="gallery-next-btn" onclick="nextGalleryPage()" style="background:#2563eb;color:#fff;border:none;padding:10px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;display:none;transition:all 0.3s;display:flex;gap:6px;align-items:center;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> Ver Próximas <i data-lucide="chevron-right" style="width:16px;height:16px;"></i> </button>
      </div>
     </section>
     <footer class="text-center pb-8 px-4" style="font-size:11px;opacity:0.25;">
@@ -314,7 +314,7 @@
   const STORAGE_LIMITS = {
     MAX_STORAGE_MB: 1024,
     MAX_STORAGE_BYTES: 1024 * 1024 * 1024,
-    MAX_FILE_SIZE_MB: 1,
+    MAX_FILE_SIZE_MB: 3,
     MAX_FILES_PER_EVENT: 2000,
     MAX_PHOTOS_DEFAULT: 1000,
     MAX_PHOTOS_ABSOLUTE_MAX: 2000,
@@ -323,9 +323,14 @@
   };
 
   const COMPRESSION_CONFIG = {
-    quality: 0.85,
-    maxWidth: 1200,
-    maxHeight: 1600,
+    targetSizeBytes: 3 * 1024 * 1024,
+    initialQuality: 0.96,
+    minQuality: 0.72,
+    qualityStep: 0.04,
+    maxWidth: 2400,
+    maxHeight: 3200,
+    resizeStep: 0.9,
+    minScale: 0.45,
     mimeType: 'image/jpeg'
   };
 
@@ -436,7 +441,7 @@
   const CACHE_CONFIG = {
     PREFIX: 'uploadao_r2_cache_',
     EXPIRATION_MS: 3600000, // 1 hora
-    MAX_CACHE_SIZE_KB: 5000 // 5MB mÃ¡ximo de cache
+    MAX_CACHE_SIZE_KB: 5000 // 5MB máximo de cache
   };
 
   // --- CACHE FUNCTIONS ---
@@ -458,7 +463,7 @@
         try {
           localStorage.setItem(getCacheKey(storagePath), JSON.stringify(cacheData));
         } catch (e) {
-          console.warn('NÃ£o foi possÃ­vel guardar em cache:', e);
+          console.warn('Não foi possível guardar em cache:', e);
         }
       }
     }
@@ -471,7 +476,7 @@
 
       const data = JSON.parse(cached);
       
-      // Verificar se ainda Ã© vÃ¡lido
+      // Verificar se ainda é válido
       if (Date.now() > data.expires) {
         localStorage.removeItem(getCacheKey(storagePath));
         return null;
@@ -570,7 +575,7 @@
     font_family: "Poppins",
     font_size: 16,
     upload_button_text: "Enviar Fotos",
-    thank_you_message: "Obrigado por partilhar! ðŸŽ‰",
+    thank_you_message: "Obrigado por partilhar! 🎉",
     event_message: "Partilha as tuas fotos do evento!"
   };
 
@@ -665,14 +670,14 @@
 
     if (password === ADMIN_PASSWORD) {
       saveAdminSession();
-      showToast('âœ… Bem-vindo!', 'success');
+      showToast('✅ Bem-vindo!', 'success');
       document.getElementById('login-view').style.display = 'none';
       document.getElementById('admin-view').style.display = 'block';
       document.getElementById('admin-password').value = '';
       loadEvents();
       lucide.createIcons();
     } else {
-      showToast('âŒ Senha incorreta', 'error');
+      showToast('❌ Senha incorreta', 'error');
       document.getElementById('admin-password').value = '';
     }
   }
@@ -705,7 +710,7 @@
           return true;
         }
       } catch (e) {
-        console.error('Erro ao restaurar sessÃ£o:', e);
+        console.error('Erro ao restaurar sessão:', e);
       }
     }
     return false;
@@ -713,7 +718,7 @@
 
   function addNewEvent() {
     if (!supabaseClient) {
-      showToast('Supabase nÃ£o inicializou', 'error');
+      showToast('Supabase não inicializou', 'error');
       return;
     }
 
@@ -874,24 +879,24 @@
     list.innerHTML = allEvents.map((event) => {
       const isActive = event.is_active !== false;
       const statusColor = isActive ? '#27ae60' : '#95a5a6';
-      const statusText = isActive ? 'âœ… Ativo' : 'â›” Inativo';
+      const statusText = isActive ? '✅ Ativo' : '⛔ Inativo';
       
       return `
       <div style="padding:16px;background:#f9f9f9;border-radius:12px;border:1px solid rgba(26,26,26,0.08);">
         <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px;">
           <div>
             <h3 style="font-weight:600;margin:0 0 4px 0;font-size:15px;">${event.event_title}</h3>
-            <p style="font-size:13px;opacity:0.6;margin:0;">ðŸ“… ${event.event_date}</p>
+            <p style="font-size:13px;opacity:0.6;margin:0;">📅 ${event.event_date}</p>
           </div>
           <div style="background:${statusColor};color:#fff;padding:4px 12px;border-radius:8px;font-size:11px;font-weight:600;white-space:nowrap;">${statusText}</div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button onclick="copyLink('${event.upload_url}')" style="background:#2563eb;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Link Upload</button>
           <button onclick="copyLink('${event.gallery_url}')" style="background:#e74c3c;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Link Galeria</button>
-          <button onclick="showEventStats('${event.id}')" style="background:#f39c12;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">EstatÃ­sticas</button>
+          <button onclick="showEventStats('${event.id}')" style="background:#f39c12;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Estatísticas</button>
           <button onclick="toggleEventActive('${event.id}', ${isActive})" style="background:${isActive ? '#e67e22' : '#27ae60'};color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">${isActive ? 'Desativar' : 'Ativar'}</button>
-          <button onclick="togglePhotosEnabled('${event.id}', ${event.photos_enabled !== false})" style="background:${event.photos_enabled !== false ? '#c0392b' : '#27ae60'};color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">${event.photos_enabled !== false ? 'ðŸ”’ Fotos' : 'ðŸ”“ Fotos'}</button>
-          <button onclick="toggleVideosEnabled('${event.id}', ${event.videos_enabled !== false})" style="background:${event.videos_enabled !== false ? '#c0392b' : '#27ae60'};color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">${event.videos_enabled !== false ? 'ðŸ”’ VÃ­deos' : 'ðŸ”“ VÃ­deos'}</button>
+          <button onclick="togglePhotosEnabled('${event.id}', ${event.photos_enabled !== false})" style="background:${event.photos_enabled !== false ? '#c0392b' : '#27ae60'};color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">${event.photos_enabled !== false ? '🔒 Fotos' : '🔓 Fotos'}</button>
+          <button onclick="toggleVideosEnabled('${event.id}', ${event.videos_enabled !== false})" style="background:${event.videos_enabled !== false ? '#c0392b' : '#27ae60'};color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">${event.videos_enabled !== false ? '🔒 Vídeos' : '🔓 Vídeos'}</button>
           <button onclick="startEditEvent('${event.id}', '${event.event_title}', '${event.event_date}', '${(event.event_message || '').replace(/'/g, "&#39;")}')" style="background:#8e44ad;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Editar</button>
           <button onclick="downloadEventPhotos('${event.id}')" style="background:#27ae60;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Download</button>
           <button onclick="deleteEvent('${event.id}')" style="background:#95a5a6;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;">Apagar</button>
@@ -915,14 +920,14 @@
         }
 
         const status = newState ? 'Ativado' : 'Desativado';
-        showToast(`âœ… Evento ${status}!`, 'success');
+        showToast(`✅ Evento ${status}!`, 'success');
         loadEvents();
       });
   }
 
   function togglePhotosEnabled(eventId, currentlyEnabled) {
     if (!supabaseClient || !eventId || eventId.trim() === '') {
-      showToast('Erro: ID do evento invÃ¡lido', 'error');
+      showToast('Erro: ID do evento inválido', 'error');
       return;
     }
 
@@ -945,7 +950,7 @@
         }
 
         const status = newState ? 'Ativadas' : 'Bloqueadas';
-        showToast(`âœ… Fotos ${status}!`, 'success');
+        showToast(`✅ Fotos ${status}!`, 'success');
         
         renderEventsList();
       });
@@ -953,7 +958,7 @@
 
   function toggleVideosEnabled(eventId, currentlyEnabled) {
     if (!supabaseClient || !eventId || eventId.trim() === '') {
-      showToast('Erro: ID do evento invÃ¡lido', 'error');
+      showToast('Erro: ID do evento inválido', 'error');
       return;
     }
 
@@ -966,7 +971,7 @@
       .then(({ error }) => {
         if (error) {
           console.error('Erro Supabase:', error);
-          showToast('Erro ao atualizar vÃ­deos: ' + (error.message || 'desconhecido'), 'error');
+          showToast('Erro ao atualizar vídeos: ' + (error.message || 'desconhecido'), 'error');
           return;
         }
 
@@ -976,7 +981,7 @@
         }
 
         const status = newState ? 'Ativados' : 'Bloqueados';
-        showToast(`âœ… VÃ­deos ${status}!`, 'success');
+        showToast(`✅ Vídeos ${status}!`, 'success');
         
         renderEventsList();
       });
@@ -984,7 +989,7 @@
 
   function copyLink(url) {
     navigator.clipboard.writeText(url).then(() => {
-      showToast('Link copiado! ðŸ“‹', 'success');
+      showToast('Link copiado! 📋', 'success');
     });
   }
 
@@ -999,7 +1004,7 @@
         const totalMB = (uploads || []).reduce((sum, f) => sum + (f.file_size_mb || 0), 0);
         const guests = new Set((uploads || []).map(f => f.guest_id)).size;
 
-        const statText = `ðŸ“Š EstatÃ­sticas:\n\nðŸ“· Fotos: ${totalPhotos}\nðŸ‘¥ Convidados: ${guests}\nðŸ’¾ Armazenamento: ${totalMB.toFixed(1)} MB`;
+        const statText = `📊 Estatísticas:\n\n📷 Fotos: ${totalPhotos}\n👥 Convidados: ${guests}\n💾 Armazenamento: ${totalMB.toFixed(1)} MB`;
         
         const modal = document.createElement('div');
         modal.style.cssText = `position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:99999;`;
@@ -1018,7 +1023,7 @@
     modal.style.cssText = `position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:99999;`;
     modal.innerHTML = `
       <div style="background:#fff;padding:24px;border-radius:12px;text-align:center;max-width:400px;font-family:'Poppins',sans-serif;">
-        <p style="margin:0 0 24px 0;font-size:16px;font-weight:600;">âš ï¸ Isto vai apagar TODAS as fotos no R2 e metadados. Tem a certeza?</p>
+        <p style="margin:0 0 24px 0;font-size:16px;font-weight:600;">⚠️ Isto vai apagar TODAS as fotos no R2 e metadados. Tem a certeza?</p>
         <div style="display:flex;gap:12px;justify-content:center;">
           <button onclick="deleteEventWithPhotos('${eventId}'); this.closest('[style*=fixed]').remove()" style="background:#e74c3c;color:#fff;border:none;padding:10px 24px;border-radius:8px;cursor:pointer;font-weight:600;">Apagar</button>
           <button onclick="this.closest('[style*=fixed]').remove()" style="background:#95a5a6;color:#fff;border:none;padding:10px 24px;border-radius:8px;cursor:pointer;font-weight:600;">Cancelar</button>
@@ -1029,7 +1034,7 @@
   }
 
   function deleteEventWithPhotos(eventId) {
-    showToast('â³ A apagar evento e fotos...', 'info');
+    showToast('⏳ A apagar evento e fotos...', 'info');
 
     let allUploads = [];
     let offset = 0;
@@ -1102,7 +1107,7 @@
             .eq('id', eventId)
             .then(() => {
               loadEvents();
-              showToast(`âœ… Evento apagado! ${allUploads.length} foto(s) eliminada(s) do R2`, 'success');
+              showToast(`✅ Evento apagado! ${allUploads.length} foto(s) eliminada(s) do R2`, 'success');
             });
         });
     }
@@ -1223,21 +1228,21 @@
     const quotaBar = document.getElementById('quota-bar');
     const quotaStatus = document.getElementById('quota-status');
 
-    quotaLabel.textContent = `ðŸ“Š ${currentCount}/${maxCount} fotos`;
+    quotaLabel.textContent = `📊 ${currentCount}/${maxCount} fotos`;
     quotaPercentage.textContent = `${percentage}%`;
     quotaBar.style.width = `${percentage}%`;
 
     if (percentage >= 95) {
       quotaBar.style.background = 'linear-gradient(90deg, #e74c3c, #c0392b)';
-      quotaStatus.textContent = `ðŸš¨ CRÃTICO! Apenas ${remainingCount} lugar(es) disponÃ­vel(is)`;
+      quotaStatus.textContent = `🚨 CRÍTICO! Apenas ${remainingCount} lugar(es) disponível(is)`;
       quotaStatus.style.color = '#e74c3c';
     } else if (percentage >= 80) {
       quotaBar.style.background = 'linear-gradient(90deg, #f39c12, #e67e22)';
-      quotaStatus.textContent = `âš ï¸ AVISO! ${remainingCount} lugar(es) disponÃ­vel(is)`;
+      quotaStatus.textContent = `⚠️ AVISO! ${remainingCount} lugar(es) disponível(is)`;
       quotaStatus.style.color = '#f39c12';
     } else {
       quotaBar.style.background = 'linear-gradient(90deg, #27ae60, #2563eb)';
-      quotaStatus.textContent = `âœ… ${remainingCount} fotos ainda podem ser carregadas`;
+      quotaStatus.textContent = `✅ ${remainingCount} fotos ainda podem ser carregadas`;
       quotaStatus.style.color = '#27ae60';
     }
 
@@ -1253,14 +1258,14 @@
       const photoCount = parseInt(e.target.value) || 0;
       
       if (photoCount < 1) {
-        showToast('âš ï¸ MÃ­nimo: 1 foto', 'warning');
+        showToast('⚠️ Mínimo: 1 foto', 'warning');
         e.target.value = 1;
         updateStorageDisplay(1);
         return;
       }
       
       if (photoCount > STORAGE_LIMITS.MAX_PHOTOS_ABSOLUTE_MAX) {
-        showToast(`âš ï¸ MÃ¡ximo: ${STORAGE_LIMITS.MAX_PHOTOS_ABSOLUTE_MAX} fotos`, 'warning');
+        showToast(`⚠️ Máximo: ${STORAGE_LIMITS.MAX_PHOTOS_ABSOLUTE_MAX} fotos`, 'warning');
         e.target.value = STORAGE_LIMITS.MAX_PHOTOS_ABSOLUTE_MAX;
         updateStorageDisplay(STORAGE_LIMITS.MAX_PHOTOS_ABSOLUTE_MAX);
         return;
@@ -1297,7 +1302,7 @@
       }
     });
     
-    document.getElementById('expiration-info').textContent = `DuraÃ§Ã£o atual: ${currentEventExpirationDays} dias`;
+    document.getElementById('expiration-info').textContent = `Duração atual: ${currentEventExpirationDays} dias`;
   }
 
   function setActivationToToday() {
@@ -1308,7 +1313,7 @@
     const todayString = `${year}-${month}-${day}`;
     
     document.getElementById('edit-event-activation-date').value = todayString;
-    showToast('âœ… AtivaÃ§Ã£o marcada para HOJE (teste imediato)', 'success');
+    showToast('✅ Ativação marcada para HOJE (teste imediato)', 'success');
   }
 
   function setActivationToPastDate() {
@@ -1320,7 +1325,7 @@
     const yesterdayString = `${year}-${month}-${day}`;
     
     document.getElementById('edit-event-activation-date').value = yesterdayString;
-    showToast('âœ… AtivaÃ§Ã£o marcada para ONTEM (acesso jÃ¡ aberto - demo)', 'success');
+    showToast('✅ Ativação marcada para ONTEM (acesso já aberto - demo)', 'success');
   }
 
   function setEventExpiration(days) {
@@ -1333,19 +1338,19 @@
     const daysToAdd = parseInt(input.value);
     
     if (!daysToAdd || daysToAdd < 1) {
-      showToast('Digite um nÃºmero de dias vÃ¡lido', 'warning');
+      showToast('Digite um número de dias válido', 'warning');
       return;
     }
 
     currentEventExpirationDays += daysToAdd;
     input.value = '';
     updateExpirationUI();
-    showToast(`âœ… Evento estendido para ${currentEventExpirationDays} dias`, 'success');
+    showToast(`✅ Evento estendido para ${currentEventExpirationDays} dias`, 'success');
   }
 
   function saveEventChanges() {
     if (!editingEventId || !supabaseClient) {
-      showToast('Erro: dados invÃ¡lidos', 'error');
+      showToast('Erro: dados inválidos', 'error');
       return;
     }
     
@@ -1359,23 +1364,23 @@
     const guestMaxPhotos = enableGuestLimit ? parseInt(document.getElementById('edit-event-guest-max-photos').value) || 5 : null;
 
     if (!newTitle || !newDateInput || !activationDateInput) {
-      showToast('Preencha nome, data do evento e data de ativaÃ§Ã£o', 'warning');
+      showToast('Preencha nome, data do evento e data de ativação', 'warning');
       return;
     }
 
     if (newMaxPhotos < 1 || newMaxPhotos > STORAGE_LIMITS.MAX_PHOTOS_ABSOLUTE_MAX) {
-      showToast(`NÃºmero de fotos deve estar entre 1 e ${STORAGE_LIMITS.MAX_PHOTOS_ABSOLUTE_MAX}`, 'warning');
+      showToast(`Número de fotos deve estar entre 1 e ${STORAGE_LIMITS.MAX_PHOTOS_ABSOLUTE_MAX}`, 'warning');
       return;
     }
     
     if (enableGuestLimit && (!guestMaxPhotos || guestMaxPhotos < 1)) {
-      showToast('NÃºmero de fotos por convidado deve ser pelo menos 1', 'warning');
+      showToast('Número de fotos por convidado deve ser pelo menos 1', 'warning');
       return;
     }
 
     const newStorageMB = calculateStorageFromPhotos(newMaxPhotos);
     if (newStorageMB > 1000) {
-      showToast(`âš ï¸ Limite de armazenamento mÃ¡ximo: 1000 MB (mÃ¡x ~1428 fotos)`, 'warning');
+      showToast(`⚠️ Limite de armazenamento máximo: 1000 MB (máx ~1428 fotos)`, 'warning');
       return;
     }
 
@@ -1412,7 +1417,7 @@
 
         cancelEditEvent();
         loadEvents();
-        showToast(`âœ… Evento atualizado! (${newMaxPhotos} fotos / ${newStorageMB} MB / ${currentEventExpirationDays} dias / AtivaÃ§Ã£o: ${activationDateInput})`, 'success');
+        showToast(`✅ Evento atualizado! (${newMaxPhotos} fotos / ${newStorageMB} MB / ${currentEventExpirationDays} dias / Ativação: ${activationDateInput})`, 'success');
       });
   }
 
@@ -1421,11 +1426,11 @@
     
     const event = allEvents.find(e => e.id === eventId);
     if (!event) {
-      showToast('Evento nÃ£o encontrado', 'error');
+      showToast('Evento não encontrado', 'error');
       return;
     }
 
-    showToast('â³ A preparar download em massa...', 'info');
+    showToast('⏳ A preparar download em massa...', 'info');
     
     supabaseClient
       .from('uploads')
@@ -1440,7 +1445,7 @@
         const totalSize = uploads.reduce((sum, f) => sum + (f.file_size_mb || 0), 0);
         
         if (totalSize > 500) {
-          showToast(`âš ï¸ Aviso: ${totalSize.toFixed(0)}MB para descarregar`, 'warning');
+          showToast(`⚠️ Aviso: ${totalSize.toFixed(0)}MB para descarregar`, 'warning');
         }
 
         supabaseClient
@@ -1477,7 +1482,7 @@
             });
 
             setTimeout(() => {
-              showToast(`âœ… ${downloaded}/${total} fotos descarregadas!`, 'success');
+              showToast(`✅ ${downloaded}/${total} fotos descarregadas!`, 'success');
             }, total * 300 + 500);
           });
       });
@@ -1490,7 +1495,7 @@
     const eventId = params.get('event');
     const galleryId = params.get('gallery');
     
-    // Esconder loading imediatamente se nÃ£o hÃ¡ parÃ¢metros
+    // Esconder loading imediatamente se não há parâmetros
     if (!eventId && !galleryId) {
       loadingScreen.style.display = 'none';
       if (!checkAdminSession()) {
@@ -1545,14 +1550,14 @@
             allEvents = [event];
             showGuestLoginView(event);
           } else {
-            showToast('âš ï¸ Evento nÃ£o encontrado ou foi eliminado', 'error');
+            showToast('⚠️ Evento não encontrado ou foi eliminado', 'error');
             document.getElementById('login-view').style.display = 'flex';
           }
         })
         .catch(err => {
           console.error('Erro:', err);
           loadingScreen.style.display = 'none';
-          showToast('âŒ Erro ao carregar evento', 'error');
+          showToast('❌ Erro ao carregar evento', 'error');
           document.getElementById('login-view').style.display = 'flex';
         });
       
@@ -1574,14 +1579,14 @@
             allEvents = [event];
             showGalleryView(event);
           } else {
-            showToast('âš ï¸ Evento nÃ£o encontrado ou foi eliminado', 'error');
+            showToast('⚠️ Evento não encontrado ou foi eliminado', 'error');
             document.getElementById('login-view').style.display = 'flex';
           }
         })
         .catch(err => {
           console.error('Erro:', err);
           loadingScreen.style.display = 'none';
-          showToast('âŒ Erro ao carregar galeria', 'error');
+          showToast('❌ Erro ao carregar galeria', 'error');
           document.getElementById('login-view').style.display = 'flex';
         });
       
@@ -1601,7 +1606,7 @@
   function confirmGuestName() {
     const name = document.getElementById('guest-name-input').value.trim();
     if (!name || name.length > 50) {
-      showToast('Nome invÃ¡lido', 'warning');
+      showToast('Nome inválido', 'warning');
       return;
     }
 
@@ -1619,7 +1624,7 @@
     const event = allEvents.find(e => e.id === currentEventId);
     if (event) {
       showGuestView(event);
-      showToast(`ðŸ‘‹ Bem-vindo, ${currentGuestName}!`, 'success');
+      showToast(`👋 Bem-vindo, ${currentGuestName}!`, 'success');
     }
   }
 
@@ -1669,7 +1674,7 @@
       const countdownBox = document.getElementById('activation-countdown-box');
       const countdownText = document.getElementById('activation-countdown-text');
       
-      countdownText.textContent = `â³ Os uploads estarÃ£o disponÃ­veis em ${daysUntilActivation} ${daysUntilActivation === 1 ? 'dia' : 'dias'} (${event.activation_date})`;
+      countdownText.textContent = `Os uploads estarão disponíveis em ${daysUntilActivation} ${daysUntilActivation === 1 ? 'dia' : 'dias'} (${event.activation_date})`;
       countdownBox.style.display = 'block';
       
       document.getElementById('drop-zone').style.display = 'none';
@@ -1686,10 +1691,10 @@
       document.getElementById('file-list').innerHTML = `
         <div style="background:${limitReached ? '#ffebee' : '#ffebee'};border:2px solid ${limitReached ? '#e74c3c' : '#e74c3c'};border-radius:12px;padding:24px;text-align:center;">
           <i data-lucide="lock" style="width:48px;height:48px;color:#e74c3c;margin:0 auto 12px;display:block;"></i>
-          <h2 style="font-size:18px;font-weight:600;margin:0 0 8px 0;color:#e74c3c;">${limitReached ? 'ðŸ“¸ Limite de Fotos Atingido' : event.uploads_enabled === false ? 'ðŸ”’ Uploads Bloqueados' : 'Evento Encerrado'}</h2>
-          <p style="font-size:14px;opacity:0.7;margin:0 0 12px 0;">${limitReached ? `Este evento jÃ¡ alcanÃ§ou o limite de ${event.max_photos} fotos. Obrigado por compreender! ðŸ™` : event.uploads_enabled === false ? 'Os uploads foram bloqueados pelo organizador. Contacte-o para mais informaÃ§Ãµes! ðŸ“§' : 'Este evento nÃ£o estÃ¡ mais aceitando fotos. Obrigado pela compreensÃ£o! ðŸ™'}</p>
+          <h2 style="font-size:18px;font-weight:600;margin:0 0 8px 0;color:#e74c3c;">${limitReached ? 'Limite de Fotos Atingido' : event.uploads_enabled === false ? 'Uploads Bloqueados' : 'Evento Encerrado'}</h2>
+          <p style="font-size:14px;opacity:0.7;margin:0 0 12px 0;">${limitReached ? `Este evento já alcançou o limite de ${event.max_photos} fotos. Obrigado por compreender!` : event.uploads_enabled === false ? 'Os uploads foram bloqueados pelo organizador. Contacte-o para mais informações.' : 'Este evento não está mais aceitando fotos. Obrigado pela compreensão!'}</p>
           <div style="background:#fff;border-radius:8px;padding:12px;margin-top:12px;">
-            <p style="font-size:12px;margin:0;opacity:0.6;"><strong>${event.max_photos} fotos mÃ¡ximo</strong> para este evento</p>
+            <p style="font-size:12px;margin:0;opacity:0.6;"><strong>${event.max_photos} fotos máximo</strong> para este evento</p>
           </div>
         </div>
       `;
@@ -1699,7 +1704,7 @@
 
     document.getElementById('event-title').textContent = event.event_title;
     document.getElementById('event-date').textContent = event.event_date;
-    document.getElementById('guest-name-display').textContent = `ðŸ‘‹ ${currentGuestName}`;
+    document.getElementById('guest-name-display').textContent = currentGuestName;
 
     const msgEl = document.getElementById('event-message');
     if (event.event_message) {
@@ -1749,7 +1754,7 @@
       const countdownBox = document.getElementById('gallery-countdown-box');
       const countdownText = document.getElementById('gallery-countdown-text');
       
-      countdownText.textContent = `â³ A galeria ficarÃ¡ disponÃ­vel em ${daysUntilActivation} ${daysUntilActivation === 1 ? 'dia' : 'dias'} (${event.activation_date})`;
+      countdownText.textContent = `A galeria ficará disponível em ${daysUntilActivation} ${daysUntilActivation === 1 ? 'dia' : 'dias'} (${event.activation_date})`;
       countdownBox.style.display = 'block';
       
       document.getElementById('gallery-event-title').textContent = event.event_title;
@@ -1783,10 +1788,10 @@
     if (daysRemaining <= 0) {
       countdownBox.style.display = 'none';
     } else if (daysRemaining <= 3) {
-      countdownText.textContent = `â° Este evento serÃ¡ eliminado em ${daysRemaining} ${daysRemaining === 1 ? 'dia' : 'dias'}`;
+      countdownText.textContent = `Este evento será eliminado em ${daysRemaining} ${daysRemaining === 1 ? 'dia' : 'dias'}`;
       countdownBox.style.display = 'block';
     } else {
-      countdownText.textContent = `â³ DisponÃ­vel por mais ${daysRemaining} dias`;
+      countdownText.textContent = `Disponível por mais ${daysRemaining} dias`;
       countdownBox.style.display = 'block';
     }
   }
@@ -1916,11 +1921,11 @@
   }
 
   function togglePhotoSelection(photoId) {
-    // FunÃ§Ã£o removida - seleÃ§Ã£o desativada
+    // Função removida - seleção desativada
   }
 
   function updateGallerySelectionUI() {
-    // FunÃ§Ã£o removida - UI de seleÃ§Ã£o desativada
+    // Função removida - UI de seleção desativada
   }
 
   function getVisiblePhotos() {
@@ -1949,7 +1954,7 @@
     if (galleryFilteredPhotos.length === 0) {
       showToast(`Nenhuma foto encontrada de "${query}"`, 'info');
     } else {
-      showToast(`âœ… ${galleryFilteredPhotos.length} foto(s) encontrada(s)`, 'success');
+      showToast(`✅ ${galleryFilteredPhotos.length} foto(s) encontrada(s)`, 'success');
     }
 
     document.getElementById('clear-filter-btn').style.display = 'inline-block';
@@ -1986,10 +1991,10 @@
   }
 
   function downloadSelectedPhotos() {
-    // FunÃ§Ã£o removida - download em massa desativado
+    // Função removida - download em massa desativado
   }
 
-  // --- ZIP DOWNLOAD ULTRA-RÃPIDO ---
+  // --- ZIP DOWNLOAD ULTRA-RÁPIDO ---
   let isZipDownloading = false;
 
   async function downloadAllPhotosAsZip() {
@@ -2017,15 +2022,15 @@
       }
 
       if (totalPhotos > 500) {
-        showToast(`âš ï¸ Aviso: ${totalPhotos} fotos podem demorar (limite: 500 recomendado)`, 'warning');
+        showToast(`⚠️ Aviso: ${totalPhotos} fotos podem demorar (limite: 500 recomendado)`, 'warning');
       }
 
       if (totalSizeMB > 500) {
-        showToast(`âš ï¸ Aviso: ~${totalSizeMB.toFixed(0)}MB para descarregar (pode demorar)`, 'warning');
+        showToast(`⚠️ Aviso: ~${totalSizeMB.toFixed(0)}MB para descarregar (pode demorar)`, 'warning');
       }
 
-      // ðŸš€ Chamar Worker para gerar ZIP direto no R2
-      showToast(`ðŸ“¦ A gerar ZIP com ${totalPhotos} fotos (~${totalSizeMB.toFixed(0)}MB)...`, 'info');
+      // 🚀 Chamar Worker para gerar ZIP direto no R2
+      showToast(`📦 A gerar ZIP com ${totalPhotos} fotos (~${totalSizeMB.toFixed(0)}MB)...`, 'info');
 
       const photosPaths = photosToDownload.map(p => p.storage_path);
       const event = allEvents.find(e => e.id === currentEventId);
@@ -2062,8 +2067,8 @@
         throw new Error(zipData.error || 'Erro ao gerar ZIP no servidor');
       }
 
-      // Download direto do link temporÃ¡rio
-      showToast(`âœ… ZIP criado! A descarregar (${zipData.sizeMB}MB)...`, 'success');
+      // Download direto do link temporário
+      showToast(`✅ ZIP criado! A descarregar (${zipData.sizeMB}MB)...`, 'success');
 
       // Dar tempo para o servidor disponibilizar o ficheiro
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -2200,7 +2205,7 @@
 
     const event = allEvents.find(e => e.id === currentEventId);
     if (!event) {
-      console.error('Evento nÃ£o encontrado');
+      console.error('Evento não encontrado');
       return;
     }
 
@@ -2223,7 +2228,7 @@
         if (!uploads || uploads.length === 0) {
           grid.innerHTML = '';
           empty.style.display = 'block';
-          photoCount.textContent = 'ðŸ“· 0 fotos partilhadas';
+          photoCount.textContent = '0 fotos partilhadas';
           allGalleryPhotos = [];
           galleryFilteredPhotos = null;
           galleryCurrentPage = 0;
@@ -2240,7 +2245,7 @@
         const photosToShow = galleryFilteredPhotos || allGalleryPhotos;
         const displayCount = photosToShow.length;
         
-        photoCount.textContent = `ðŸ“· ${displayCount} ${displayCount === 1 ? 'foto' : 'fotos'} partilhada${displayCount === 1 ? '' : 's'}`;
+        photoCount.textContent = `${displayCount} ${displayCount === 1 ? 'foto' : 'fotos'} partilhada${displayCount === 1 ? '' : 's'}`;
 
         empty.style.display = 'none';
 
@@ -2249,7 +2254,7 @@
         const prevBtn = document.getElementById('gallery-prev-btn');
         const nextBtn = document.getElementById('gallery-next-btn');
         
-        pageInfo.textContent = `PÃ¡gina ${galleryCurrentPage + 1} de ${totalPages}`;
+        pageInfo.textContent = `Página ${galleryCurrentPage + 1} de ${totalPages}`;
         prevBtn.style.display = galleryCurrentPage > 0 ? 'inline-flex' : 'none';
         nextBtn.style.display = galleryCurrentPage < totalPages - 1 ? 'inline-flex' : 'none';
         pagination.style.display = totalPages > 1 ? 'flex' : 'none';
@@ -2279,7 +2284,7 @@
             videoThumb.muted = true;
             videoThumb.playsInline = true;
             videoThumb.preload = 'metadata';
-            videoThumb.style.cssText = `width:100%;height:100%;object-fit:cover;background:#000;`;
+            videoThumb.style.cssText = `width:100%;height:100%;object-fit:contain;background:#000;`;
             mediaEl = videoThumb;
 
             const playBadge = document.createElement('div');
@@ -2339,7 +2344,7 @@
         downloadedPhotos = new Set(JSON.parse(saved));
       }
     } catch (e) {
-      console.warn('Erro ao carregar histÃ³rico de downloads:', e);
+      console.warn('Erro ao carregar histórico de downloads:', e);
       downloadedPhotos = new Set();
     }
   }
@@ -2404,7 +2409,7 @@
 
     const remainingSlots = 20 - selectedFiles.length;
     if (remainingSlots <= 0) {
-      showToast('âŒ MÃ¡ximo 20 ficheiros por vez - enviar estes primeiro', 'error');
+      showToast('❌ Máximo 20 ficheiros por vez - enviar estes primeiro', 'error');
       return;
     }
 
@@ -2439,11 +2444,11 @@
         });
 
         if (duplicates > 0) {
-          showToast(`âš ï¸ ${duplicates} ficheiro(s) jÃ¡ enviado(s) neste evento`, 'warning');
+          showToast(`⚠️ ${duplicates} ficheiro(s) já enviado(s) neste evento`, 'warning');
         }
 
         if (canAdd < filesToAdd.length) {
-          showToast(`âš ï¸ ${filesToAdd.length - canAdd} ficheiro(s) nÃ£o adicionado(s) - limite de 20 por vez`, 'warning');
+          showToast(`⚠️ ${filesToAdd.length - canAdd} ficheiro(s) não adicionado(s) - limite de 20 por vez`, 'warning');
         }
 
         renderFileList();
@@ -2495,7 +2500,9 @@
       const previewUrl = URL.createObjectURL(f);
       const mediaEl = isVideo ? document.createElement('video') : document.createElement('img');
       mediaEl.src = previewUrl;
-      mediaEl.style.cssText = `width:100%;height:100%;object-fit:cover;`;
+      mediaEl.style.cssText = isVideo
+        ? `width:100%;height:100%;object-fit:contain;background:#000;`
+        : `width:100%;height:100%;object-fit:cover;`;
 
       if (isVideo) {
         mediaEl.muted = true;
@@ -2643,7 +2650,7 @@
           successCount++;
         } catch (err) {
           console.error('Erro ao enviar:', file.name, err);
-          showToast(`âŒ Erro ao enviar ${file.name}`, 'error');
+          showToast(`❌ Erro ao enviar ${file.name}`, 'error');
         } finally {
           completedCount++;
           updateUploadButtonProgress();
@@ -2985,10 +2992,10 @@
       return;
     }
 
-    markUploadStage(file, 'compressing', 'A comprimir', 28);
+    markUploadStage(file, 'compressing', file.size <= COMPRESSION_CONFIG.targetSizeBytes ? 'A otimizar' : 'A comprimir', 28);
     const result = await compressImage(file);
     markUploadStage(file, 'uploading', 'A enviar', 58);
-    await uploadToR2(result.blob, 'image/jpeg', file);
+    await uploadToR2(result.blob, result.mimeType || file.type || 'image/jpeg', file);
   }
 
   async function uploadToR2(fileOrBlob, mimeType, originalFile) {
@@ -3072,12 +3079,20 @@
   }
   function compressImage(file) {
     return new Promise((resolve, reject) => {
+      if (file.size <= COMPRESSION_CONFIG.targetSizeBytes) {
+        resolve({ blob: file, mimeType: file.type || COMPRESSION_CONFIG.mimeType });
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (e) => {
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          let { width, height } = img;
+          const originalWidth = img.width;
+          const originalHeight = img.height;
+          let width = originalWidth;
+          let height = originalHeight;
 
           if (width > COMPRESSION_CONFIG.maxWidth || height > COMPRESSION_CONFIG.maxHeight) {
             const ratio = Math.min(
@@ -3091,13 +3106,70 @@
           canvas.width = width;
           canvas.height = height;
           const ctx = canvas.getContext('2d', { alpha: false });
-          ctx.drawImage(img, 0, 0, width, height);
 
-          canvas.toBlob(
-            (blob) => resolve({ blob }),
-            COMPRESSION_CONFIG.mimeType,
-            COMPRESSION_CONFIG.quality
-          );
+          const encodeWithQuality = (quality) => new Promise((blobResolve) => {
+            ctx.clearRect(0, 0, width, height);
+            ctx.drawImage(img, 0, 0, width, height);
+            canvas.toBlob(
+              (blob) => blobResolve(blob),
+              COMPRESSION_CONFIG.mimeType,
+              quality
+            );
+          });
+
+          const buildCompressedVersion = async () => {
+            let quality = COMPRESSION_CONFIG.initialQuality;
+            let bestBlob = null;
+
+            while (quality >= COMPRESSION_CONFIG.minQuality) {
+              const blob = await encodeWithQuality(quality);
+              if (blob) {
+                bestBlob = blob;
+                if (blob.size <= COMPRESSION_CONFIG.targetSizeBytes) {
+                  return blob;
+                }
+              }
+              quality -= COMPRESSION_CONFIG.qualityStep;
+            }
+
+            return bestBlob;
+          };
+
+          const shrinkCanvas = () => {
+            width = Math.max(1, Math.round(width * COMPRESSION_CONFIG.resizeStep));
+            height = Math.max(1, Math.round(height * COMPRESSION_CONFIG.resizeStep));
+            canvas.width = width;
+            canvas.height = height;
+          };
+
+          (async () => {
+            let bestBlob = null;
+
+            while (true) {
+              const blob = await buildCompressedVersion();
+              if (!blob) {
+                reject(new Error('Erro ao comprimir imagem'));
+                return;
+              }
+
+              bestBlob = blob;
+              if (blob.size <= COMPRESSION_CONFIG.targetSizeBytes) {
+                resolve({ blob, mimeType: COMPRESSION_CONFIG.mimeType });
+                return;
+              }
+
+              const canShrinkMore =
+                width > originalWidth * COMPRESSION_CONFIG.minScale &&
+                height > originalHeight * COMPRESSION_CONFIG.minScale;
+
+              if (!canShrinkMore) {
+                resolve({ blob: bestBlob, mimeType: COMPRESSION_CONFIG.mimeType });
+                return;
+              }
+
+              shrinkCanvas();
+            }
+          })().catch(reject);
         };
         img.onerror = () => reject(new Error('Erro ao carregar imagem'));
         img.src = e.target.result;
@@ -3107,7 +3179,7 @@
   }
 
   function downloadFile(fileId, fileName) {
-    showToast('â³ A preparar descarregamento...', 'info');
+    showToast('⏳ A preparar descarregamento...', 'info');
 
     supabaseClient
       .from('uploads')
@@ -3116,7 +3188,7 @@
       .single()
       .then(({ data: file }) => {
         if (!file) {
-          showToast('Ficheiro nÃ£o encontrado', 'error');
+          showToast('Ficheiro não encontrado', 'error');
           return;
         }
 
@@ -3127,7 +3199,7 @@
         link.click();
         link.remove();
 
-        showToast('âœ… Ficheiro descarregado!', 'success');
+        showToast('✅ Ficheiro descarregado!', 'success');
       })
       .catch(err => {
         console.error('Erro:', err);
