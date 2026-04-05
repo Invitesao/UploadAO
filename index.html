@@ -338,6 +338,7 @@
 
   // --- STATE ---
   let selectedFiles = [];
+  let uploadFileStates = new Map();
   let isUploading = false;
   let currentEventId = null;
   let allEvents = [];
@@ -348,6 +349,25 @@
   let currentPhotoIndex = 0;
   let gallerySelectedPhotos = new Set();
   let editingEventId = null;
+
+  function getFileStateKey(file) {
+    return `${file.name}__${file.size}__${file.lastModified || 0}`;
+  }
+
+  function getUploadFileState(file) {
+    return uploadFileStates.get(getFileStateKey(file)) || {
+      progress: 0,
+      status: 'ready',
+      label: 'Pronto'
+    };
+  }
+
+  function setUploadFileState(file, patch) {
+    const key = getFileStateKey(file);
+    const current = getUploadFileState(file);
+    uploadFileStates.set(key, { ...current, ...patch });
+    renderFileList();
+  }
   let galleryPhotosLoaded = false;
   let galleryCurrentPage = 0;
   let galleryFilteredPhotos = null;
@@ -2010,8 +2030,7 @@
           return;
         }
 
-        const publicUrl = R2_PUBLIC_URL + '/' + file.storage_path;
-        triggerDirectDownload(publicUrl, fileName);
+        triggerWorkerDownload(file.storage_path, fileName);
         markPhotoAsDownloaded(fileId);
         showToast('Foto preparada para descarregamento', 'success');
       })
@@ -2032,6 +2051,37 @@
     setTimeout(() => link.remove(), 100);
   }
 
+  async function triggerWorkerDownload(path, fileName) {
+    const response = await fetch(WORKER_URL + '?action=download', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path, fileName })
+    });
+
+    if (!response.ok) {
+      let errorMsg = `Worker error: ${response.status}`;
+      try {
+        const errorData = await response.json();
+        errorMsg = errorData.error || errorMsg;
+      } catch (e) {
+        // ignore parse error
+      }
+      throw new Error(errorMsg);
+    }
+
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = fileName || 'download.bin';
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      link.remove();
+      URL.revokeObjectURL(blobUrl);
+    }, 100);
+  }
+
   function fallbackDownloadPhotosIndividually() {
     if (!Array.isArray(allGalleryPhotos) || allGalleryPhotos.length === 0) {
       showToast('Nenhuma foto disponivel para descarregar', 'warning');
@@ -2039,9 +2089,13 @@
     }
 
     allGalleryPhotos.forEach((photo, index) => {
-      const publicUrl = R2_PUBLIC_URL + '/' + photo.storage_path;
       const fileName = photo.file_name || `foto_${index + 1}.jpg`;
-      setTimeout(() => triggerDirectDownload(publicUrl, fileName), index * 250);
+      setTimeout(() => {
+        triggerWorkerDownload(photo.storage_path, fileName).catch(err => {
+          console.error('Erro ao descarregar foto do fallback:', err);
+          showToast(`Erro ao descarregar ${fileName}`, 'error');
+        });
+      }, index * 250);
     });
   }
 
@@ -2302,6 +2356,18 @@
 
     selectedFiles.forEach((f, i) => {
       const sizeMB = (f.size / 1024 / 1024).toFixed(1);
+      const fileState = getUploadFileState(f);
+      const statusColorMap = {
+        ready: 'rgba(15,23,42,0.72)',
+        hashing: 'rgba(37,99,235,0.88)',
+        compressing: 'rgba(124,58,237,0.88)',
+        uploading: 'rgba(2,132,199,0.88)',
+        saving: 'rgba(234,88,12,0.88)',
+        duplicate: 'rgba(22,163,74,0.88)',
+        done: 'rgba(22,163,74,0.92)',
+        error: 'rgba(220,38,38,0.92)'
+      };
+      const statusColor = statusColorMap[fileState.status] || statusColorMap.ready;
 
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -2328,10 +2394,24 @@
         sizeLabel.style.cssText = `position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,0.6);color:#fff;padding:3px 6px;border-radius:6px;font-size:${baseSize * 0.6}px;font-weight:600;font-family:'Poppins',sans-serif;`;
         sizeLabel.textContent = `${sizeMB}MB`;
 
+        const statusLabel = document.createElement('div');
+        statusLabel.style.cssText = `position:absolute;top:6px;left:6px;max-width:calc(100% - 12px);background:${statusColor};color:#fff;padding:4px 8px;border-radius:999px;font-size:${baseSize * 0.58}px;font-weight:700;font-family:'Poppins',sans-serif;line-height:1.2;backdrop-filter:blur(6px);`;
+        statusLabel.textContent = fileState.label;
+
+        const progressTrack = document.createElement('div');
+        progressTrack.style.cssText = `position:absolute;left:6px;right:6px;bottom:6px;height:6px;background:rgba(255,255,255,0.28);border-radius:999px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,0.15);`;
+
+        const progressBar = document.createElement('div');
+        progressBar.className = 'upload-progress';
+        progressBar.style.cssText = `width:${Math.max(0, Math.min(100, fileState.progress || 0))}%;height:100%;background:linear-gradient(90deg, ${secondary}, ${primary});border-radius:999px;`;
+        progressTrack.appendChild(progressBar);
+
         overlay.appendChild(deleteBtn);
         div.appendChild(img);
         div.appendChild(overlay);
         div.appendChild(sizeLabel);
+        div.appendChild(statusLabel);
+        div.appendChild(progressTrack);
 
         div.onmouseover = () => {
           overlay.style.background = 'rgba(0,0,0,0.5)';
@@ -2379,12 +2459,21 @@
 
   function removeFile(index) {
     if (isUploading) return;
+    const removedFile = selectedFiles[index];
+    if (removedFile) {
+      uploadFileStates.delete(getFileStateKey(removedFile));
+    }
     selectedFiles.splice(index, 1);
     renderFileList();
   }
 
   function startUpload() {
     if (isUploading || !selectedFiles.length) return;
+
+    uploadFileStates = new Map(
+      selectedFiles.map(file => [getFileStateKey(file), { progress: 2, status: 'ready', label: 'Na fila' }])
+    );
+    renderFileList();
 
     isUploading = true;
     uploadBtn.classList.remove('btn-pulse');
@@ -2417,6 +2506,7 @@
       uploadQueue.push(async () => {
         updateUploadButtonProgress();
         try {
+          setUploadFileState(file, { progress: 10, status: 'hashing', label: 'A validar' });
           await uploadFile(file, index);
           successCount++;
         } catch (err) {
@@ -2642,6 +2732,190 @@
       showToast(`Foto comprimida (-${saved}%)`, 'info');
     }
 
+    await saveUploadRecord({
+      id: 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+      event_id: currentEventId,
+      guest_id: currentGuestId,
+      guest_name: currentGuestName,
+      file_name: originalFileName,
+      file_size_mb: parseFloat(compressedSizeMB),
+      file_type: mimeType,
+      uploaded_at: new Date().toISOString(),
+      storage_path: storagePath,
+      file_url: fileUrl,
+      is_duplicate_reference: false,
+      file_hash: fileHash,
+      compression_ratio: compressionRatio
+    });
+  }
+
+  function markUploadStage(file, status, label, progress) {
+    setUploadFileState(file, { status, label, progress });
+  }
+
+  function startUpload() {
+    if (isUploading || !selectedFiles.length) return;
+
+    uploadFileStates = new Map(
+      selectedFiles.map(file => [getFileStateKey(file), { progress: 2, status: 'ready', label: 'Na fila' }])
+    );
+    renderFileList();
+
+    isUploading = true;
+    uploadBtn.classList.remove('btn-pulse');
+    uploadBtn.disabled = true;
+    uploadBtn.style.opacity = '0.7';
+
+    document.getElementById('upload-btn-text').innerHTML = `
+      <svg class="animate-spin" style="width:18px;height:18px;" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25"></circle>
+        <path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>
+      </svg> A processar...
+    `;
+
+    const filesToUpload = [...selectedFiles];
+    let successCount = 0;
+    let completedCount = 0;
+    const totalCount = filesToUpload.length;
+
+    function updateUploadButtonProgress() {
+      const current = Math.min(completedCount + activeUploads, totalCount);
+      document.getElementById('upload-btn-text').innerHTML = `
+        <svg class="animate-spin" style="width:18px;height:18px;" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25"></circle>
+          <path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>
+        </svg> A enviar ${current}/${totalCount}
+      `;
+    }
+
+    filesToUpload.forEach((file, index) => {
+      uploadQueue.push(async () => {
+        updateUploadButtonProgress();
+        try {
+          markUploadStage(file, 'hashing', 'A validar', 10);
+          await uploadFile(file, index);
+          successCount++;
+          markUploadStage(file, 'done', 'Concluido', 100);
+        } catch (err) {
+          console.error('Erro ao enviar:', file.name, err);
+          showToast(`Erro ao enviar ${file.name}`, 'error');
+          markUploadStage(file, 'error', 'Falhou', 100);
+        } finally {
+          completedCount++;
+          updateUploadButtonProgress();
+          if (completedCount === filesToUpload.length) {
+            finishUpload(successCount, filesToUpload.length);
+          }
+        }
+      });
+    });
+
+    processUploadQueue();
+  }
+
+  async function uploadFile(file, index) {
+    if (!file.type.startsWith('image/') && !VIDEO_CONFIG.allowedFormats.includes(file.type)) {
+      markUploadStage(file, 'error', 'Formato invalido', 100);
+      showToast(`Erro: ${file.name} nao e uma imagem ou video valido`, 'error');
+      throw new Error('Invalid MIME type');
+    }
+
+    if (!supabaseClient || !currentEventId || !currentGuestId) {
+      markUploadStage(file, 'error', 'Dados em falta', 100);
+      throw new Error('Missing required data');
+    }
+
+    const maxSize = file.type.startsWith('video/') ?
+      VIDEO_CONFIG.maxSizeMB * 1024 * 1024 :
+      STORAGE_LIMITS.MAX_FILE_SIZE_MB * 1024 * 1024;
+
+    if (file.size > maxSize) {
+      markUploadStage(file, 'error', 'Ficheiro grande', 100);
+      showToast(`Erro: ${file.name} ultrapassa o tamanho maximo permitido`, 'error');
+      throw new Error('File size exceeds limit');
+    }
+
+    await processFileUpload(file);
+  }
+
+  async function processFileUpload(file) {
+    const isVideo = VIDEO_CONFIG.allowedFormats.includes(file.type);
+
+    if (isVideo) {
+      markUploadStage(file, 'uploading', 'A enviar video', 55);
+      await uploadToR2(file, file.type, file);
+      return;
+    }
+
+    markUploadStage(file, 'compressing', 'A comprimir', 28);
+    const result = await compressImage(file);
+    markUploadStage(file, 'uploading', 'A enviar', 58);
+    await uploadToR2(result.blob, 'image/jpeg', file);
+  }
+
+  async function uploadToR2(fileOrBlob, mimeType, originalFile) {
+    const originalFileName = originalFile.name;
+    const fileHash = await calculateFileHash(fileOrBlob);
+    fileHashCache.set(originalFileName, fileHash);
+    markUploadStage(originalFile, 'hashing', 'Hash validado', 18);
+
+    const existingPath = await checkForDuplicateInR2(fileHash, currentEventId);
+    if (existingPath) {
+      markUploadStage(originalFile, 'duplicate', 'Duplicado', 92);
+      showToast('Foto duplicada encontrada - referencia reutilizada!', 'info');
+
+      await saveUploadRecord({
+        id: 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        event_id: currentEventId,
+        guest_id: currentGuestId,
+        guest_name: currentGuestName,
+        file_name: originalFileName,
+        file_size_mb: 0,
+        file_type: mimeType,
+        uploaded_at: new Date().toISOString(),
+        storage_path: existingPath,
+        file_url: R2_PUBLIC_URL + '/' + existingPath,
+        is_duplicate_reference: true,
+        file_hash: fileHash
+      });
+      return;
+    }
+
+    const uploadPath = buildUploadPath(originalFileName, mimeType, fileHash);
+    const formData = new FormData();
+    formData.append('file', fileOrBlob, originalFileName);
+    formData.append('path', uploadPath);
+    formData.append('fileHash', fileHash);
+    formData.append('eventId', currentEventId);
+    formData.append('guestId', currentGuestId);
+    formData.append('guestName', currentGuestName || '');
+
+    markUploadStage(originalFile, 'uploading', 'Upload em curso', 72);
+    const workerResponse = await fetch(WORKER_URL, {
+      method: 'POST',
+      body: formData
+    });
+    const workerData = await parseWorkerResponse(workerResponse, originalFileName, fileOrBlob.size, mimeType);
+
+    if (!workerData.success) {
+      const errorMsg = workerData.error || 'Upload failed';
+      console.error('Worker error:', workerData);
+      markUploadStage(originalFile, 'error', 'Falhou no Worker', 100);
+      showToast(`Erro: ${errorMsg}`, 'error');
+      throw new Error(errorMsg);
+    }
+
+    const storagePath = workerData.path;
+    const fileUrl = R2_PUBLIC_URL + '/' + storagePath;
+    const compressedSizeMB = workerData.compressedSizeMB || (fileOrBlob.size / 1024 / 1024).toFixed(1);
+    const compressionRatio = workerData.compressionRatio || 0;
+
+    if (compressionRatio > 0) {
+      const saved = ((1 - compressionRatio) * 100).toFixed(0);
+      showToast(`Foto comprimida (-${saved}%)`, 'info');
+    }
+
+    markUploadStage(originalFile, 'saving', 'A guardar', 90);
     await saveUploadRecord({
       id: 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
       event_id: currentEventId,
