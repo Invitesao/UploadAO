@@ -2770,19 +2770,18 @@
 
         allGalleryPhotos = uploads;
         
-        if (!galleryFilteredPhotos) {
-          galleryCurrentPage = 0;
-        }
-
         const photosToShow = galleryFilteredPhotos || allGalleryPhotos;
+        const perPage = getGalleryPhotosPerPage();
+        const totalPages = Math.max(1, Math.ceil(photosToShow.length / perPage));
+        if (galleryCurrentPage > totalPages - 1) {
+          galleryCurrentPage = totalPages - 1;
+        }
         const displayCount = photosToShow.length;
         
         photoCount.textContent = `${displayCount} ${displayCount === 1 ? 'foto' : 'fotos'} partilhada${displayCount === 1 ? '' : 's'}`;
 
         empty.style.display = 'none';
 
-        const perPage = getGalleryPhotosPerPage();
-        const totalPages = Math.ceil(photosToShow.length / perPage);
         const pageInfo = document.getElementById('gallery-page-info');
         const prevBtn = document.getElementById('gallery-prev-btn');
         const nextBtn = document.getElementById('gallery-next-btn');
