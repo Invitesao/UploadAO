@@ -2489,6 +2489,46 @@
     await uploadToR2(result.blob, 'image/jpeg', file.name);
   }
 
+  // --- DEDUPLICATION SYSTEM ---
+  const fileHashCache = new Map();
+
+  function calculateFileHash(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const buffer = e.target.result;
+          const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+          const hashArray = Array.from(new Uint8Array(hashBuffer));
+          const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+          resolve(hashHex);
+        } catch (err) {
+          reject(err);
+        }
+      };
+      reader.onerror = () => reject(new Error('Erro ao ler ficheiro'));
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  async function checkForDuplicateInR2(fileHash, eventId) {
+    try {
+      const result = await fetch(WORKER_URL + '?action=checkHash', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hash: fileHash, eventId })
+      });
+
+      if (!result.ok) return null;
+
+      const data = await result.json();
+      return data.exists ? data.existingPath : null;
+    } catch (err) {
+      console.warn('Erro ao verificar duplicacao:', err);
+      return null;
+    }
+  }
+
   function buildUploadPath(fileName, mimeType, fileHash) {
     const fileExt = mimeType === 'image/jpeg'
       ? 'jpg'
