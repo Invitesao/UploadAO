@@ -265,7 +265,7 @@
     </section>
     <section class="px-4 max-w-3xl mx-auto pb-4 fade-in stagger-3">
      <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;width:100%;">
-      <input type="text" id="gallery-search-input" placeholder="Pesquisar convidado..." style="flex:1;min-width:120px;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;"> <button onclick="filterGalleryByGuest()" style="background:#2563eb;color:#fff;border:none;padding:8px 12px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:12px;display:flex;gap:4px;align-items:center;transition:all 0.3s;white-space:nowrap;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> <i data-lucide="search" style="width:12px;height:12px;"></i> </button> <button onclick="clearGalleryFilter()" style="background:#95a5a6;color:#fff;border:none;padding:8px 12px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:12px;display:none;white-space:nowrap;" id="clear-filter-btn" onmouseover="this.style.background='#7f8c8d'" onmouseout="this.style.background='#95a5a6'">Limpar</button> <button id="download-all-zip-btn" onclick="downloadAllPhotosAsZip()" style="background:#27ae60;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:12px;display:flex;gap:6px;align-items:center;transition:all 0.3s;white-space:nowrap;" onmouseover="this.style.background='#229954'" onmouseout="this.style.background='#27ae60'"> <i data-lucide="download" style="width:12px;height:12px;"></i> ZIP Tudo </button>
+      <input type="text" id="gallery-search-input" placeholder="Pesquisar convidado..." style="flex:1;min-width:120px;padding:8px 12px;border:1px solid rgba(26,26,26,0.15);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;"> <button onclick="filterGalleryByGuest()" style="background:#2563eb;color:#fff;border:none;padding:8px 12px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:12px;display:flex;gap:4px;align-items:center;transition:all 0.3s;white-space:nowrap;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'"> <i data-lucide="search" style="width:12px;height:12px;"></i> </button> <button onclick="clearGalleryFilter()" style="background:#95a5a6;color:#fff;border:none;padding:8px 12px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:12px;display:none;white-space:nowrap;" id="clear-filter-btn" onmouseover="this.style.background='#7f8c8d'" onmouseout="this.style.background='#95a5a6'">Limpar</button> <button id="download-guest-zip-btn" onclick="downloadFilteredGuestPhotos()" style="background:#8e44ad;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:12px;display:none;gap:6px;align-items:center;transition:all 0.3s;white-space:nowrap;" onmouseover="this.style.background='#7d3c98'" onmouseout="this.style.background='#8e44ad'"> <i data-lucide="users" style="width:12px;height:12px;"></i> ZIP Convidado </button> <button id="download-all-zip-btn" onclick="downloadAllPhotosAsZip()" style="background:#27ae60;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;font-size:12px;display:flex;gap:6px;align-items:center;transition:all 0.3s;white-space:nowrap;" onmouseover="this.style.background='#229954'" onmouseout="this.style.background='#27ae60'"> <i data-lucide="download" style="width:12px;height:12px;"></i> ZIP Tudo </button>
      </div>
      <section id="gallery-grid" style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;padding-bottom:12px;"></section>
      <div id="gallery-empty" style="text-align:center;padding:40px 20px;opacity:0.5;"><i data-lucide="inbox" style="width:48px;height:48px;margin:0 auto 16px;display:block;opacity:0.3;"></i>
@@ -1504,40 +1504,45 @@
 
         supabaseClient
           .from('uploads')
-          .select('id, file_name, file_url, storage_path')
+          .select('id, file_name, storage_path')
           .eq('event_id', eventId)
-          .then(({ data: uploadsFull }) => {
+          .then(async ({ data: uploadsFull }) => {
             if (!uploadsFull || uploadsFull.length === 0) {
               showToast('Nenhuma foto para descarregar', 'warning');
               return;
             }
 
-            let downloaded = 0;
-            const total = uploadsFull.length;
+            const paths = uploadsFull.map(file => file.storage_path).filter(Boolean);
+            const safeEventTitle = (event.event_title || 'evento').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 50);
 
-            uploadsFull.forEach((file, index) => {
-              setTimeout(() => {
-                try {
-                  const publicUrl = R2_PUBLIC_URL + "/" + file.storage_path;
-                  
-                  const link = document.createElement('a');
-                  link.href = publicUrl;
-                  link.download = file.file_name;
-                  link.setAttribute('download', file.file_name);
-                  document.body.appendChild(link);
-                  link.click();
-                  link.remove();
-                  
-                  downloaded++;
-                } catch (err) {
-                  console.error('Erro:', err);
-                }
-              }, index * 300);
-            });
+            try {
+              const response = await fetch(WORKER_URL + '?action=generateZip', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  eventId,
+                  eventTitle: safeEventTitle,
+                  paths
+                })
+              });
 
-            setTimeout(() => {
-              showToast(`✅ ${downloaded}/${total} fotos descarregadas!`, 'success');
-            }, total * 300 + 500);
+              const zipData = await response.json().catch(() => null);
+              if (!response.ok || !zipData?.success || !zipData?.zipUrl) {
+                throw new Error(zipData?.error || 'Nao foi possivel gerar o ZIP');
+              }
+
+              const link = document.createElement('a');
+              link.href = zipData.zipUrl;
+              link.download = `${safeEventTitle}_fotos.zip`;
+              document.body.appendChild(link);
+              link.click();
+              setTimeout(() => link.remove(), 100);
+
+              showToast(`✅ ${uploadsFull.length} ficheiro(s) preparados para download`, 'success');
+            } catch (err) {
+              console.error('Erro ao gerar ZIP do evento:', err);
+              showToast(`Erro ao gerar ZIP: ${err.message || 'tenta novamente'}`, 'error');
+            }
           });
       });
   }
@@ -1827,6 +1832,7 @@
     setInterval(() => updateGalleryCountdown(event.event_date, event.expires_at), 60000);
 
     applyConfig(config);
+    updateGalleryDownloadButtons();
     
     if (!galleryPhotosLoaded) {
       renderGalleryPhotos();
@@ -2012,6 +2018,7 @@
     }
 
     document.getElementById('clear-filter-btn').style.display = 'inline-block';
+    updateGalleryDownloadButtons();
     renderGalleryPhotos();
   }
 
@@ -2021,8 +2028,33 @@
     gallerySelectedPhotos.clear();
     document.getElementById('gallery-search-input').value = '';
     document.getElementById('clear-filter-btn').style.display = 'none';
+    updateGalleryDownloadButtons();
     renderGalleryPhotos();
     showToast('Filtro removido', 'info');
+  }
+
+  function updateGalleryDownloadButtons() {
+    const guestZipBtn = document.getElementById('download-guest-zip-btn');
+    const allZipBtn = document.getElementById('download-all-zip-btn');
+    if (!guestZipBtn || !allZipBtn) return;
+
+    const hasGuestFilter = Array.isArray(galleryFilteredPhotos) && galleryFilteredPhotos.length > 0;
+    guestZipBtn.style.display = hasGuestFilter ? 'inline-flex' : 'none';
+    allZipBtn.innerHTML = hasGuestFilter
+      ? '<i data-lucide="download" style="width:12px;height:12px;"></i> ZIP Visível'
+      : '<i data-lucide="download" style="width:12px;height:12px;"></i> ZIP Tudo';
+    lucide.createIcons();
+  }
+
+  function downloadFilteredGuestPhotos() {
+    if (!Array.isArray(galleryFilteredPhotos) || galleryFilteredPhotos.length === 0) {
+      showToast('Filtra primeiro um convidado', 'warning');
+      return;
+    }
+
+    const guestName = galleryFilteredPhotos[0]?.guest_name || 'convidado';
+    showToast(`A preparar ZIP de ${guestName}`, 'info');
+    downloadAllPhotosAsZip();
   }
 
   function nextGalleryPage() {
@@ -2287,6 +2319,7 @@
           galleryFilteredPhotos = null;
           galleryCurrentPage = 0;
           pagination.style.display = 'none';
+          updateGalleryDownloadButtons();
           return;
         }
 
@@ -2312,6 +2345,7 @@
         prevBtn.style.display = galleryCurrentPage > 0 ? 'inline-flex' : 'none';
         nextBtn.style.display = galleryCurrentPage < totalPages - 1 ? 'inline-flex' : 'none';
         pagination.style.display = totalPages > 1 ? 'flex' : 'none';
+        updateGalleryDownloadButtons();
 
         const start = galleryCurrentPage * PHOTOS_PER_PAGE;
         const end = start + PHOTOS_PER_PAGE;
@@ -3237,23 +3271,23 @@
 
     supabaseClient
       .from('uploads')
-      .select('file_url')
+      .select('storage_path')
       .eq('id', fileId)
       .single()
       .then(({ data: file }) => {
-        if (!file) {
+        if (!file || !file.storage_path) {
           showToast('Ficheiro não encontrado', 'error');
           return;
         }
 
-        const link = document.createElement('a');
-        link.href = file.file_url;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-
-        showToast('✅ Ficheiro descarregado!', 'success');
+        triggerWorkerDownload(file.storage_path, fileName)
+          .then(() => {
+            showToast('✅ Ficheiro descarregado!', 'success');
+          })
+          .catch((err) => {
+            console.error('Erro:', err);
+            showToast('Erro ao descarregar', 'error');
+          });
       })
       .catch(err => {
         console.error('Erro:', err);
