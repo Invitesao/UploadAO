@@ -366,6 +366,8 @@
   const PENDING_UPLOAD_STORE = 'pendingUploads';
   let uploadBroadcastChannel = null;
   let renderFileListFrame = null;
+  const filePreviewUrlCache = new Map();
+  const filePreviewTaskCache = new Map();
 
   function getFileStateKey(file) {
     return `${file.name}__${file.size}__${file.lastModified || 0}`;
@@ -393,6 +395,87 @@
       renderFileListFrame = null;
       renderFileList();
     });
+  }
+
+  function revokePreviewUrl(file) {
+    const key = getFileStateKey(file);
+    const url = filePreviewUrlCache.get(key);
+    if (url) {
+      URL.revokeObjectURL(url);
+      filePreviewUrlCache.delete(key);
+    }
+    filePreviewTaskCache.delete(key);
+  }
+
+  function getPreviewUrl(file) {
+    const key = getFileStateKey(file);
+    if (filePreviewUrlCache.has(key)) {
+      return filePreviewUrlCache.get(key);
+    }
+
+    if (isHeicFile(file)) {
+      return null;
+    }
+
+    if (isVideoFile(file)) {
+      const url = URL.createObjectURL(file);
+      filePreviewUrlCache.set(key, url);
+      return url;
+    }
+
+    if (!filePreviewTaskCache.has(key)) {
+      const task = createImageThumbnailUrl(file)
+        .then((url) => {
+          if (url) {
+            filePreviewUrlCache.set(key, url);
+            scheduleRenderFileList();
+          }
+        })
+        .catch((err) => {
+          console.warn('Erro ao gerar miniatura:', err);
+          const fallbackUrl = URL.createObjectURL(file);
+          filePreviewUrlCache.set(key, fallbackUrl);
+          scheduleRenderFileList();
+        })
+        .finally(() => {
+          filePreviewTaskCache.delete(key);
+        });
+
+      filePreviewTaskCache.set(key, task);
+    }
+
+    return null;
+  }
+
+  async function createImageThumbnailUrl(file) {
+    const decoded = await decodeImageFile(file);
+    const maxSide = 360;
+    const ratio = Math.min(maxSide / decoded.width, maxSide / decoded.height, 1);
+    const width = Math.max(1, Math.round(decoded.width * ratio));
+    const height = Math.max(1, Math.round(decoded.height * ratio));
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d', { alpha: false });
+    ctx.drawImage(decoded.source, 0, 0, width, height);
+
+    const blob = await new Promise((resolve) => {
+      canvas.toBlob(
+        (thumbBlob) => resolve(thumbBlob),
+        'image/jpeg',
+        0.72
+      );
+    });
+
+    if (decoded.source && typeof decoded.source.close === 'function') {
+      decoded.source.close();
+    }
+
+    if (!blob) {
+      throw new Error('Miniatura indisponível');
+    }
+
+    return URL.createObjectURL(blob);
   }
 
   function getGuestStorageKey(eventId) {
@@ -658,6 +741,7 @@
   let galleryCurrentPage = 0;
   let galleryFilteredPhotos = null;
   const PHOTOS_PER_PAGE = 18;
+  const GALLERY_RENDER_BATCH = 6;
   let currentEventExpirationDays = 15;
 
   // --- CACHE CONFIG ---
@@ -2241,10 +2325,15 @@
   }
 
   function getVisiblePhotos() {
-    const start = galleryCurrentPage * PHOTOS_PER_PAGE;
-    const end = start + PHOTOS_PER_PAGE;
+    const perPage = getGalleryPhotosPerPage();
+    const start = galleryCurrentPage * perPage;
+    const end = start + perPage;
     const photosToShow = galleryFilteredPhotos || allGalleryPhotos;
     return photosToShow.slice(start, end);
+  }
+
+  function getGalleryPhotosPerPage() {
+    return window.innerWidth <= 640 ? 12 : PHOTOS_PER_PAGE;
   }
 
   function filterGalleryByGuest() {
@@ -2310,7 +2399,7 @@
   }
 
   function nextGalleryPage() {
-    const maxPage = Math.ceil(allGalleryPhotos.length / PHOTOS_PER_PAGE) - 1;
+    const maxPage = Math.ceil(allGalleryPhotos.length / getGalleryPhotosPerPage()) - 1;
     if (galleryCurrentPage < maxPage) {
       galleryCurrentPage++;
       gallerySelectedPhotos.clear();
@@ -2588,7 +2677,8 @@
 
         empty.style.display = 'none';
 
-        const totalPages = Math.ceil(photosToShow.length / PHOTOS_PER_PAGE);
+        const perPage = getGalleryPhotosPerPage();
+        const totalPages = Math.ceil(photosToShow.length / perPage);
         const pageInfo = document.getElementById('gallery-page-info');
         const prevBtn = document.getElementById('gallery-prev-btn');
         const nextBtn = document.getElementById('gallery-next-btn');
@@ -2599,72 +2689,15 @@
         pagination.style.display = totalPages > 1 ? 'flex' : 'none';
         updateGalleryDownloadButtons();
 
-        const start = galleryCurrentPage * PHOTOS_PER_PAGE;
-        const end = start + PHOTOS_PER_PAGE;
+        const start = galleryCurrentPage * perPage;
+        const end = start + perPage;
         const visiblePhotos = photosToShow.slice(start, end);
 
         const config = window.elementSdk?.config || defaultConfig;
         const primary = config.primary_action || defaultConfig.primary_action;
 
         grid.innerHTML = '';
-
-        visiblePhotos.forEach((file) => {
-          const card = document.createElement('div');
-          card.setAttribute('data-file-id', file.id);
-          card.style.cssText = `position:relative;border-radius:12px;overflow:hidden;aspect-ratio:1;background:linear-gradient(135deg, ${primary}20, ${primary}05);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.2s;`;
-          
-          const publicUrl = R2_PUBLIC_URL + "/" + file.storage_path;
-
-          const isVideo = isVideoPhoto(file);
-          let mediaEl = null;
-
-          if (isVideo) {
-            const videoThumb = document.createElement('video');
-            videoThumb.src = publicUrl;
-            videoThumb.muted = true;
-            videoThumb.playsInline = true;
-            videoThumb.preload = 'metadata';
-            videoThumb.style.cssText = `width:100%;height:100%;object-fit:contain;background:#000;`;
-            mediaEl = videoThumb;
-
-            const playBadge = document.createElement('div');
-            playBadge.style.cssText = `position:absolute;inset:auto auto 10px 10px;background:rgba(0,0,0,0.6);color:#fff;padding:6px 10px;border-radius:999px;font-size:11px;font-weight:700;font-family:'Poppins',sans-serif;z-index:11;`;
-            playBadge.textContent = 'VIDEO';
-            card.appendChild(playBadge);
-          } else {
-            const img = document.createElement('img');
-            img.src = publicUrl;
-            img.loading = 'lazy';
-            img.style.cssText = `width:100%;height:100%;object-fit:cover;`;
-            img.alt = file.file_name;
-            img.onload = function() {
-              saveUrlToCache(file.storage_path, publicUrl);
-              galleryPhotosCache.set(file.storage_path, publicUrl);
-            };
-            img.onerror = function() {
-              console.error('Erro ao carregar imagem:', publicUrl);
-              img.style.display = 'none';
-              card.innerHTML = `<div style="text-align:center;"><i data-lucide="image" style="width:40px;height:40px;color:${primary};opacity:0.5;display:block;margin:0 auto;"></i><p style="font-size:11px;opacity:0.5;margin:4px 0 0 0;">Erro ao carregar</p></div>`;
-              lucide.createIcons();
-            };
-            mediaEl = img;
-          }
-          
-          const downloadIndicator = document.createElement('div');
-          downloadIndicator.setAttribute('data-download-indicator', 'true');
-          downloadIndicator.style.cssText = `position:absolute;top:8px;left:8px;width:28px;height:28px;border-radius:50%;background:rgba(39,174,96,0.95);display:flex;align-items:center;justify-content:center;z-index:10;${isPhotoDownloaded(file.id) ? 'flex' : 'none'};box-shadow:0 2px 8px rgba(39,174,96,0.4);`;
-          downloadIndicator.innerHTML = `<i data-lucide="download-cloud" style="width:16px;height:16px;color:#fff;"></i>`;
-          
-          card.appendChild(mediaEl);
-          card.appendChild(downloadIndicator);
-          
-          const fileIndex = allGalleryPhotos.findIndex(p => p.id === file.id);
-          card.onclick = () => openPhotoViewer(file.id, fileIndex);
-          
-          grid.appendChild(card);
-        });
-
-        lucide.createIcons();
+        renderGalleryCardsInBatches(grid, visiblePhotos, primary);
       });
   }
 
@@ -2850,7 +2883,7 @@
       div.setAttribute('data-file-index', i);
       div.style.cssText = `position:relative;border-radius:12px;overflow:hidden;aspect-ratio:1;background:${primary}1f;display:flex;align-items:center;justify-content:center;transition:all 0.2s;`;
 
-      const previewUrl = URL.createObjectURL(f);
+      const previewUrl = getPreviewUrl(f);
       let mediaEl = null;
 
       if (isHeicFile(f)) {
@@ -2859,7 +2892,11 @@
         mediaEl.innerHTML = `<i data-lucide="image" style="width:28px;height:28px;"></i><span style="font-size:${baseSize * 0.62}px;font-weight:700;">HEIC</span><span style="font-size:${baseSize * 0.52}px;opacity:0.82;">Pré-visualização depende do dispositivo</span>`;
       } else {
         mediaEl = isVideo ? document.createElement('video') : document.createElement('img');
-        mediaEl.src = previewUrl;
+        if (previewUrl) {
+          mediaEl.src = previewUrl;
+        } else {
+          mediaEl.style.opacity = '0.45';
+        }
         mediaEl.style.cssText = isVideo
           ? `width:100%;height:100%;object-fit:contain;background:#000;`
           : `width:100%;height:100%;object-fit:cover;`;
@@ -2921,12 +2958,11 @@
         deleteBtn.style.opacity = '0';
       };
 
-      if (!isHeicFile(f) && typeof mediaEl.addEventListener === 'function') {
-        mediaEl.addEventListener('load', () => URL.revokeObjectURL(previewUrl), { once: true });
-        mediaEl.addEventListener('loadeddata', () => URL.revokeObjectURL(previewUrl), { once: true });
-        mediaEl.addEventListener('error', () => URL.revokeObjectURL(previewUrl), { once: true });
-      } else {
-        URL.revokeObjectURL(previewUrl);
+      if (!isHeicFile(f) && !previewUrl) {
+        const loader = document.createElement('div');
+        loader.style.cssText = `position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,0.14);color:#fff;font-size:${baseSize * 0.56}px;font-weight:700;font-family:'Poppins',sans-serif;`;
+        loader.textContent = 'A gerar miniatura...';
+        div.appendChild(loader);
       }
 
       gridContainer.appendChild(div);
@@ -2966,6 +3002,7 @@
     const removedFile = selectedFiles[index];
     if (removedFile) {
       uploadFileStates.delete(getFileStateKey(removedFile));
+      revokePreviewUrl(removedFile);
       removePendingUpload(removedFile).catch(err => {
         console.warn('Erro ao remover ficheiro pendente:', err);
       });
@@ -2973,6 +3010,83 @@
     }
     selectedFiles.splice(index, 1);
     renderFileList();
+  }
+
+  function createGalleryMediaCard(file, primary) {
+    const card = document.createElement('div');
+    card.setAttribute('data-file-id', file.id);
+    card.style.cssText = `position:relative;border-radius:12px;overflow:hidden;aspect-ratio:1;background:linear-gradient(135deg, ${primary}20, ${primary}05);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.2s;content-visibility:auto;contain-intrinsic-size:220px 220px;`;
+
+    const publicUrl = R2_PUBLIC_URL + "/" + file.storage_path;
+    const isVideo = isVideoPhoto(file);
+    let mediaEl = null;
+
+    if (isVideo) {
+      const videoPlaceholder = document.createElement('div');
+      videoPlaceholder.style.cssText = `width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:linear-gradient(160deg, rgba(15,23,42,0.92), rgba(37,99,235,0.38));color:#fff;padding:12px;text-align:center;`;
+      videoPlaceholder.innerHTML = `<i data-lucide="film" style="width:28px;height:28px;"></i><span style="font-size:11px;font-weight:700;">VIDEO</span><span style="font-size:10px;opacity:0.75;">Toque para abrir</span>`;
+      mediaEl = videoPlaceholder;
+
+      const playBadge = document.createElement('div');
+      playBadge.style.cssText = `position:absolute;inset:auto auto 10px 10px;background:rgba(0,0,0,0.6);color:#fff;padding:6px 10px;border-radius:999px;font-size:11px;font-weight:700;font-family:'Poppins',sans-serif;z-index:11;`;
+      playBadge.textContent = 'VIDEO';
+      card.appendChild(playBadge);
+    } else {
+      const img = document.createElement('img');
+      img.src = publicUrl;
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      img.fetchPriority = 'low';
+      img.style.cssText = `width:100%;height:100%;object-fit:cover;`;
+      img.alt = file.file_name;
+      img.onload = function() {
+        saveUrlToCache(file.storage_path, publicUrl);
+        galleryPhotosCache.set(file.storage_path, publicUrl);
+      };
+      img.onerror = function() {
+        console.error('Erro ao carregar imagem:', publicUrl);
+        img.style.display = 'none';
+        card.innerHTML = `<div style="text-align:center;"><i data-lucide="image" style="width:40px;height:40px;color:${primary};opacity:0.5;display:block;margin:0 auto;"></i><p style="font-size:11px;opacity:0.5;margin:4px 0 0 0;">Erro ao carregar</p></div>`;
+        lucide.createIcons();
+      };
+      mediaEl = img;
+    }
+
+    const downloadIndicator = document.createElement('div');
+    downloadIndicator.setAttribute('data-download-indicator', 'true');
+    downloadIndicator.style.cssText = `position:absolute;top:8px;left:8px;width:28px;height:28px;border-radius:50%;background:rgba(39,174,96,0.95);display:flex;align-items:center;justify-content:center;z-index:10;${isPhotoDownloaded(file.id) ? 'flex' : 'none'};box-shadow:0 2px 8px rgba(39,174,96,0.4);`;
+    downloadIndicator.innerHTML = `<i data-lucide="download-cloud" style="width:16px;height:16px;color:#fff;"></i>`;
+
+    card.appendChild(mediaEl);
+    card.appendChild(downloadIndicator);
+
+    const fileIndex = allGalleryPhotos.findIndex(p => p.id === file.id);
+    card.onclick = () => openPhotoViewer(file.id, fileIndex);
+
+    return card;
+  }
+
+  function renderGalleryCardsInBatches(grid, files, primary) {
+    let cursor = 0;
+
+    function appendBatch() {
+      const fragment = document.createDocumentFragment();
+      const slice = files.slice(cursor, cursor + GALLERY_RENDER_BATCH);
+
+      slice.forEach((file) => {
+        fragment.appendChild(createGalleryMediaCard(file, primary));
+      });
+
+      grid.appendChild(fragment);
+      lucide.createIcons();
+      cursor += slice.length;
+
+      if (cursor < files.length) {
+        (window.requestAnimationFrame || ((cb) => setTimeout(cb, 16)))(appendBatch);
+      }
+    }
+
+    appendBatch();
   }
 
   function startUpload() {
@@ -3044,9 +3158,15 @@
     const msg = config.thank_you_message || defaultConfig.thank_you_message;
     showToast(`${msg} (${successCount}/${totalCount})`, 'success');
 
+    const previousFiles = [...selectedFiles];
     selectedFiles = selectedFiles.filter(file => {
       const state = getUploadFileState(file);
       return state.status === 'error';
+    });
+    previousFiles.forEach(file => {
+      if (!selectedFiles.includes(file)) {
+        revokePreviewUrl(file);
+      }
     });
     renderFileList();
 
